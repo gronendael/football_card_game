@@ -2,7 +2,7 @@
   {
 	"id": "speed_burst",
 	"name": "Speed Burst",
-	"cost": 2,
+	"cost": 1,
 	"type": "instant",
 	"description": "Gain +1 zone bonus this play.",
 	"target_scope": "global",
@@ -62,7 +62,7 @@
 {
 	"id": "speed_burst",
 	"name": "Speed Burst",
-	"cost": 2,
+	"cost": 1,
 	"type": "instant",
 	"description": "Gain +1 zone bonus this play.",
 	"target_scope": "global",
@@ -122,7 +122,7 @@
 {
 	"id": "speed_burst",
 	"name": "Speed Burst",
-	"cost": 2,
+	"cost": 1,
 	"type": "instant",
 	"description": "Gain +1 zone bonus this play.",
 	"target_scope": "global",

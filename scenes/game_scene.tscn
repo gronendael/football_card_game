@@ -18,170 +18,402 @@ script = ExtResource("2_ycayy")
 [node name="Field" type="Node2D" parent="." unique_id=299702429]
 
 [node name="FieldBackground" type="ColorRect" parent="Field" unique_id=619995503]
-offset_right = 900.0
-offset_bottom = 1400.0
+offset_right = 1200.0
+offset_bottom = 980.0
 color = Color(0, 0.22352941, 0, 1)
 
-[node name="Zone1" type="ColorRect" parent="Field" unique_id=482307400]
-offset_right = 900.0
+[node name="EndZone" type="ColorRect" parent="Field" unique_id=482307400]
+offset_right = 1200.0
+offset_bottom = 140.0
+color = Color(0, 0.95686275, 0, 1)
+
+[node name="RedZone" type="ColorRect" parent="Field" unique_id=96853098]
+offset_top = 140.0
+offset_right = 1200.0
 offset_bottom = 280.0
 color = Color(0, 0.56078434, 0, 1)
 
-[node name="Zone2" type="ColorRect" parent="Field" unique_id=1541062543]
+[node name="AttackZone" type="ColorRect" parent="Field" unique_id=1016696629]
 offset_top = 280.0
-offset_right = 900.0
+offset_right = 1200.0
+offset_bottom = 420.0
+color = Color(0, 0.56078434, 0, 1)
+
+[node name="MidfieldZone" type="ColorRect" parent="Field" unique_id=1804672075]
+offset_top = 420.0
+offset_right = 1200.0
 offset_bottom = 560.0
 color = Color(0, 0.56078434, 0, 1)
 
-[node name="Zone3" type="ColorRect" parent="Field" unique_id=1804672075]
+[node name="BuildZone" type="ColorRect" parent="Field" unique_id=1541062543]
 offset_top = 560.0
-offset_right = 900.0
+offset_right = 1200.0
+offset_bottom = 700.0
+color = Color(0, 0.56078434, 0, 1)
+
+[node name="StartZone" type="ColorRect" parent="Field" unique_id=684012021]
+offset_top = 700.0
+offset_right = 1200.0
 offset_bottom = 840.0
 color = Color(0, 0.56078434, 0, 1)
 
-[node name="Zone4" type="ColorRect" parent="Field" unique_id=1016696629]
+[node name="MyEndZone" type="ColorRect" parent="Field" unique_id=975590496]
 offset_top = 840.0
-offset_right = 900.0
-offset_bottom = 1120.0
-color = Color(0, 0.56078434, 0, 1)
+offset_right = 1200.0
+offset_bottom = 980.0
+color = Color(0, 1, 0, 1)
 
-[node name="EndZone" type="ColorRect" parent="Field" unique_id=975590496]
-offset_top = 1120.0
-offset_right = 900.0
-offset_bottom = 1400.0
-color = Color(0, 0.56078434, 0, 1)
+[node name="YardLine" type="ColorRect" parent="Field" unique_id=1648149118]
+offset_top = 130.0
+offset_right = 1200.0
+offset_bottom = 150.0
 
-[node name="PlayersLayer" type="Node2D" parent="." unique_id=426364647]
+[node name="YardLine2" type="ColorRect" parent="Field" unique_id=2140712927]
+offset_top = 270.0
+offset_right = 1200.0
+offset_bottom = 290.0
 
-[node name="PlayersContainer" type="HBoxContainer" parent="PlayersLayer" unique_id=1194859753]
-offset_left = 712.0
-offset_top = 304.0
-offset_right = 752.0
-offset_bottom = 344.0
+[node name="YardLine3" type="ColorRect" parent="Field" unique_id=620567150]
+offset_top = 410.0
+offset_right = 1200.0
+offset_bottom = 430.0
 
-[node name="Player1" parent="PlayersLayer/PlayersContainer" unique_id=2089160178 instance=ExtResource("1_onqr8")]
-layout_mode = 2
+[node name="YardLine4" type="ColorRect" parent="Field" unique_id=26914628]
+offset_top = 550.0
+offset_right = 1200.0
+offset_bottom = 570.0
 
-[node name="HUDLayer" type="VBoxContainer" parent="." unique_id=713179604]
-layout_mode = 0
-offset_left = 24.0
-offset_top = 96.0
-offset_right = 188.0
-offset_bottom = 389.0
+[node name="YardLine5" type="ColorRect" parent="Field" unique_id=1547075226]
+offset_top = 690.0
+offset_right = 1200.0
+offset_bottom = 710.0
+
+[node name="YardLine6" type="ColorRect" parent="Field" unique_id=924876756]
+offset_top = 830.0
+offset_right = 1200.0
+offset_bottom = 850.0
+
+[node name="BallMarker" type="ColorRect" parent="Field" unique_id=755711630]
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="PossessionArrow" type="Label" parent="Field" unique_id=616276943]
+offset_right = 40.0
+offset_bottom = 23.0
 scale = Vector2(2, 2)
 
-[node name="ClockLabel" type="Label" parent="HUDLayer" unique_id=699685548]
+[node name="PossessionOnFieldLabel" type="Label" parent="Field" unique_id=1110146253]
+offset_right = 40.0
+offset_bottom = 23.0
+scale = Vector2(2.5, 2.5)
+
+[node name="GlobalHUD" type="VBoxContainer" parent="." unique_id=713179604]
+layout_mode = 0
+offset_left = 1210.0
+offset_top = 10.0
+offset_right = 1510.0
+offset_bottom = 410.0
+scale = Vector2(1.75, 1.75)
+
+[node name="QuitButton" type="Button" parent="GlobalHUD" unique_id=875355186]
+layout_mode = 2
+text = "Quit"
+
+[node name="UserTeamLabel" type="Label" parent="GlobalHUD" unique_id=1163176269]
+layout_mode = 2
+text = "You are: Bees (Home)"
+
+[node name="ClockLabel" type="Label" parent="GlobalHUD" unique_id=699685548]
+modulate = Color(1, 1, 0, 1)
 layout_mode = 2
 text = "05:00"
 vertical_alignment = 1
 
-[node name="HalfLabel" type="Label" parent="HUDLayer" unique_id=2086931693]
+[node name="HalfLabel" type="Label" parent="GlobalHUD" unique_id=2086931693]
 layout_mode = 2
 text = "Half: 1"
 vertical_alignment = 1
 
-[node name="ScoreLabel" type="Label" parent="HUDLayer" unique_id=512817301]
+[node name="ScoreLabel" type="Label" parent="GlobalHUD" unique_id=512817301]
 layout_mode = 2
-text = "Score H:0 A:0"
+text = "Score Bees:0 Cavs:0"
 vertical_alignment = 1
 
-[node name="PossessionLabel" type="Label" parent="HUDLayer" unique_id=1876753419]
+[node name="PossessionLabel" type="Label" parent="GlobalHUD" unique_id=1876753419]
 layout_mode = 2
-text = "Possession: home"
+text = "Possession: Bees Ball"
 vertical_alignment = 1
 
-[node name="ZoneLabel" type="Label" parent="HUDLayer" unique_id=2136180461]
+[node name="ZoneLabel" type="Label" parent="GlobalHUD" unique_id=2136180461]
 layout_mode = 2
-text = "Zone: 2/7"
+text = "Zone: StartZone"
 vertical_alignment = 1
 
-[node name="DrivePointsLabel" type="Label" parent="HUDLayer" unique_id=1550221750]
+[node name="DrivePointsLabel" type="Label" parent="GlobalHUD" unique_id=1550221750]
 layout_mode = 2
 text = "Drive Points: 6"
 vertical_alignment = 1
 
-[node name="PhaseLabel" type="Label" parent="HUDLayer" unique_id=1534667255]
+[node name="PhaseLabel" type="Label" parent="GlobalHUD" unique_id=1534667255]
 layout_mode = 2
 text = "Phase: play_selection"
 vertical_alignment = 1
 
-[node name="MomentumLabel" type="Label" parent="HUDLayer" unique_id=171919185]
-layout_mode = 2
-text = "Momentum: "
-vertical_alignment = 1
-
-[node name="HandLabel" type="Label" parent="HUDLayer" unique_id=1574796013]
-layout_mode = 2
-text = "Hand: "
-vertical_alignment = 1
-
-[node name="StaffSummaryLabel" type="Label" parent="HUDLayer" unique_id=2076082348]
-layout_mode = 2
-text = "Staff Summary: "
-vertical_alignment = 1
-
-[node name="ResultText" type="RichTextLabel" parent="HUDLayer" unique_id=1248807707]
+[node name="ResultText" type="RichTextLabel" parent="GlobalHUD" unique_id=1248807707]
 layout_mode = 2
 text = "Ready."
 fit_content = true
 
-[node name="PlayButtons" type="HBoxContainer" parent="." unique_id=35939323]
+[node name="SimStatusLabel" type="Label" parent="GlobalHUD" unique_id=435840413]
+visible = false
+layout_mode = 2
+text = "SIM: OFF | 1.00x"
+
+[node name="SimStatsLabel" type="Label" parent="GlobalHUD" unique_id=2002326592]
+visible = false
+layout_mode = 2
+text = "N=0 | H:0 A:0 T:0"
+
+[node name="OpponentHUD" type="VBoxContainer" parent="." unique_id=1850213906]
 layout_mode = 0
-offset_right = 400.0
-offset_bottom = 40.0
+offset_left = -832.0
+offset_top = 222.0
+offset_right = -432.0
+offset_bottom = 361.0
 scale = Vector2(2, 2)
 
-[node name="RunButton" type="Button" parent="PlayButtons" unique_id=2077301709]
+[node name="OpponentMomentumLabel" type="Label" parent="OpponentHUD" unique_id=171919185]
+layout_mode = 2
+text = "Momentum:"
+vertical_alignment = 1
+
+[node name="OpponentHandLabel" type="Label" parent="OpponentHUD" unique_id=1574796013]
+layout_mode = 2
+text = "Cards in Hand:"
+vertical_alignment = 1
+
+[node name="OpponentTeamLabel" type="Label" parent="OpponentHUD" unique_id=2076082348]
+layout_mode = 2
+text = "Team Name:"
+vertical_alignment = 1
+
+[node name="OpponentTimeoutsLabel" type="Label" parent="OpponentHUD" unique_id=881910455]
+layout_mode = 2
+text = "Timeouts: 3"
+vertical_alignment = 1
+
+[node name="OpponentTimeoutButton" type="Button" parent="OpponentHUD" unique_id=1679034249]
+layout_mode = 2
+text = "Call Timeout"
+
+[node name="UserHUD" type="VBoxContainer" parent="." unique_id=1295362970]
+layout_mode = 0
+offset_left = 8.0
+offset_top = 1096.0
+offset_right = 308.0
+offset_bottom = 1235.0
+scale = Vector2(2, 2)
+
+[node name="UserMomentumLabel" type="Label" parent="UserHUD" unique_id=1505117761]
+layout_mode = 2
+text = "Momentum:"
+vertical_alignment = 1
+
+[node name="UserHandLabel" type="Label" parent="UserHUD" unique_id=189760659]
+layout_mode = 2
+text = "Cards in Hand:"
+vertical_alignment = 1
+
+[node name="UserTeamLabel" type="Label" parent="UserHUD" unique_id=1641103785]
+layout_mode = 2
+text = "Team Name:"
+vertical_alignment = 1
+
+[node name="UserTimeoutsLabel" type="Label" parent="UserHUD" unique_id=1343374615]
+layout_mode = 2
+text = "Timeouts: 3"
+vertical_alignment = 1
+
+[node name="UserTimeoutButton" type="Button" parent="UserHUD" unique_id=1599738781]
+layout_mode = 2
+text = "Call Timeout"
+
+[node name="OpponentPlayButtons" type="HBoxContainer" parent="." unique_id=35939323]
+layout_mode = 0
+offset_left = -1264.0
+offset_top = 512.0
+offset_right = -643.0
+offset_bottom = 552.0
+scale = Vector2(2, 2)
+
+[node name="OpponentRunButton" type="Button" parent="OpponentPlayButtons" unique_id=2077301709]
 layout_mode = 2
 text = "Run"
 
-[node name="ShortPassButton" type="Button" parent="PlayButtons" unique_id=1568332844]
+[node name="OpponentShortPassButton" type="Button" parent="OpponentPlayButtons" unique_id=1568332844]
 layout_mode = 2
 text = "Short Pass"
 
-[node name="DeepPassButton" type="Button" parent="PlayButtons" unique_id=318575843]
+[node name="OpponentDeepPassButton" type="Button" parent="OpponentPlayButtons" unique_id=318575843]
 layout_mode = 2
 text = "Deep Pass"
 
-[node name="FieldGoalButton" type="Button" parent="PlayButtons" unique_id=1504513508]
+[node name="OpponentFieldGoalButton" type="Button" parent="OpponentPlayButtons" unique_id=1504513508]
 layout_mode = 2
 text = "Field Goal"
 
-[node name="PlayCardButton" type="Button" parent="PlayButtons" unique_id=1171292001]
+[node name="OpponentPlayCardButton" type="Button" parent="OpponentPlayButtons" unique_id=1171292001]
 layout_mode = 2
 text = "Play Card"
 
-[node name="ReadyButton" type="Button" parent="PlayButtons" unique_id=1536603709]
+[node name="OpponentReadyButton" type="Button" parent="OpponentPlayButtons" unique_id=1536603709]
 layout_mode = 2
 text = "Ready"
 
-[node name="GameState" type="Node" parent="." unique_id=599128438]
-script = ExtResource("3_ycayy")
+[node name="OpponentExtraPointButton" type="Button" parent="OpponentPlayButtons" unique_id=1732787514]
+layout_mode = 2
+text = "Extra Point"
 
-[node name="PlayResolver" type="Node" parent="." unique_id=2090671328]
-script = ExtResource("4_utbpp")
+[node name="OpponentTwoPointButton" type="Button" parent="OpponentPlayButtons" unique_id=1344702792]
+layout_mode = 2
+text = "2-Point"
 
-[node name="CardManager" type="Node" parent="." unique_id=1141755344]
-script = ExtResource("5_mw25s")
+[node name="UserPlayButtons" type="HBoxContainer" parent="." unique_id=1602781797]
+layout_mode = 0
+offset_top = 984.0
+offset_right = 621.0
+offset_bottom = 1034.0
+scale = Vector2(2, 2)
 
-[node name="EffectManager" type="Node" parent="." unique_id=259823744]
-script = ExtResource("6_tcjrq")
+[node name="UserRunButton" type="Button" parent="UserPlayButtons" unique_id=278693041]
+layout_mode = 2
+text = "Run"
 
-[node name="TargetingManager" type="Node" parent="." unique_id=2019780804]
-script = ExtResource("7_rvs2r")
+[node name="UserShortPassButton" type="Button" parent="UserPlayButtons" unique_id=1114373608]
+layout_mode = 2
+text = "Short Pass"
 
-[node name="PlayerData" type="Node" parent="." unique_id=1060686007]
-script = ExtResource("8_tqxxy")
+[node name="UserDeepPassButton" type="Button" parent="UserPlayButtons" unique_id=395435213]
+layout_mode = 2
+text = "Deep Pass"
 
-[node name="CoachData" type="Node" parent="." unique_id=936287308]
-script = ExtResource("9_5ay1a")
+[node name="UserFieldGoalButton" type="Button" parent="UserPlayButtons" unique_id=1149738216]
+layout_mode = 2
+text = "Field Goal"
 
-[node name="FieldRoot" type="Node" parent="." unique_id=927544046]
+[node name="UserPlayCardButton" type="Button" parent="UserPlayButtons" unique_id=1423532865]
+layout_mode = 2
+text = "Play Card"
+
+[node name="UserReadyButton" type="Button" parent="UserPlayButtons" unique_id=404468002]
+layout_mode = 2
+text = "Ready"
+
+[node name="UserExtraPointButton" type="Button" parent="UserPlayButtons" unique_id=1314709409]
+layout_mode = 2
+text = "Extra Point"
+
+[node name="UserTwoPointButton" type="Button" parent="UserPlayButtons" unique_id=67731116]
+layout_mode = 2
+text = "2-Point"
+
+[node name="SimButtons" type="BoxContainer" parent="." unique_id=443397089]
+layout_direction = 2
+layout_mode = 0
+offset_left = 728.0
+offset_top = 1200.0
+offset_right = 967.0
+offset_bottom = 1240.0
+scale = Vector2(2, 2)
+alignment = 2
+
+[node name="Start" type="Button" parent="SimButtons" unique_id=1920083864]
+layout_mode = 2
+text = "Sim"
+
+[node name="Pause" type="Button" parent="SimButtons" unique_id=1197508879]
+layout_mode = 2
+text = "Pause"
+
+[node name="Restart" type="Button" parent="SimButtons" unique_id=1378524459]
+layout_mode = 2
+text = "Restart"
+
+[node name="SpeedPanel" type="HBoxContainer" parent="." unique_id=1238859256]
+layout_mode = 0
+offset_left = 992.0
+offset_top = 1296.0
+offset_right = 1099.0
+offset_bottom = 1336.0
+scale = Vector2(2, 2)
+alignment = 2
+
+[node name="-" type="Button" parent="SpeedPanel" unique_id=1905762627]
+layout_mode = 2
+text = "  -  "
+
+[node name="+" type="Button" parent="SpeedPanel" unique_id=496017142]
+layout_mode = 2
+text = "  +  "
+
+[node name="SpeedLabel" type="Label" parent="SpeedPanel" unique_id=1002611365]
+layout_mode = 2
+text = "  x1  "
+
+[node name="PlayerDetailsPanel" type="Panel" parent="." unique_id=1199021344]
+visible = false
+layout_mode = 0
+offset_left = 1736.0
+offset_right = 2240.0
+offset_bottom = 1400.0
+
+[node name="PlayerDetailsLabel" type="Label" parent="PlayerDetailsPanel" unique_id=128992331]
+layout_mode = 0
+offset_left = 12.0
+offset_top = 12.0
+offset_right = 492.0
+offset_bottom = 1308.0
+theme_override_font_sizes/font_size = 24
+text = "Select a player token to view details."
+vertical_alignment = 1
+autowrap_mode = 3
+
+[node name="EventLogPanel" type="Panel" parent="." unique_id=565045101]
+clip_contents = true
+layout_mode = 1
+offset_left = 1224.0
+offset_top = 898.00006
+offset_right = 1728.0
+offset_bottom = 1298.0
+scale = Vector2(1.2, 1.2)
+
+[node name="EventLogTitle" type="Label" parent="EventLogPanel" unique_id=1273462195]
+layout_mode = 0
+offset_left = 12.0
+offset_top = 8.0
+offset_right = 240.0
+offset_bottom = 44.0
+theme_override_font_sizes/font_size = 22
+text = "Event Log"
+
+[node name="EventLogText" type="RichTextLabel" parent="EventLogPanel" unique_id=1051814017]
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 12.0
+offset_top = 48.0
+offset_right = -12.0
+offset_bottom = -12.0
+bbcode_enabled = true
+scroll_following = true
 
 [node name="CardsPanel" type="Panel" parent="." unique_id=1282140977]
 layout_mode = 0
-offset_right = 40.0
-offset_bottom = 40.0
+offset_left = 1824.0
+offset_top = 12.0
+offset_right = 1864.0
+offset_bottom = 52.0
 
 [node name="CardPanel" type="VBoxContainer" parent="CardsPanel" unique_id=1260077017]
 layout_mode = 0
@@ -190,11 +422,74 @@ offset_bottom = 40.0
 
 [node name="CardTitle" type="Label" parent="CardsPanel/CardPanel" unique_id=1200829912]
 layout_mode = 2
+text = "Cards"
 
 [node name="TargetingPanel" type="VBoxContainer" parent="." unique_id=1703769190]
 layout_mode = 0
-offset_right = 40.0
-offset_bottom = 40.0
+offset_left = 1840.0
+offset_top = 206.0
+offset_right = 1940.0
+offset_bottom = 306.0
 
 [node name="TargetingLabel" type="Label" parent="TargetingPanel" unique_id=892904634]
 layout_mode = 2
+text = "Targeting"
+
+[node name="PlayersLayer" type="Node2D" parent="." unique_id=426364647]
+
+[node name="UserPlayersContainer" type="GridContainer" parent="PlayersLayer" unique_id=1912429368]
+offset_left = 960.0
+offset_top = 744.0
+offset_right = 1160.0
+offset_bottom = 944.0
+theme_override_constants/h_separation = 16
+theme_override_constants/v_separation = 16
+columns = 4
+
+[node name="UserPlayer1" parent="PlayersLayer/UserPlayersContainer" unique_id=2089160178 instance=ExtResource("1_onqr8")]
+layout_mode = 2
+
+[node name="UserPlayer2" parent="PlayersLayer/UserPlayersContainer" unique_id=900997149 instance=ExtResource("1_onqr8")]
+layout_mode = 2
+
+[node name="OpponentPlayersContainer" type="GridContainer" parent="PlayersLayer" unique_id=1438431258]
+offset_left = 976.0
+offset_top = 16.0
+offset_right = 1176.0
+offset_bottom = 216.0
+theme_override_constants/h_separation = 16
+theme_override_constants/v_separation = 16
+columns = 4
+
+[node name="OpponentPlayer1" parent="PlayersLayer/OpponentPlayersContainer" unique_id=125429192 instance=ExtResource("1_onqr8")]
+modulate = Color(1, 0, 0, 1)
+layout_mode = 2
+
+[node name="OpponentPlayer2" parent="PlayersLayer/OpponentPlayersContainer" unique_id=851864178 instance=ExtResource("1_onqr8")]
+modulate = Color(1, 0, 0, 1)
+layout_mode = 2
+
+[node name="GameManagers" type="Node" parent="." unique_id=35103829]
+
+[node name="GameState" type="Node" parent="GameManagers" unique_id=599128438]
+script = ExtResource("3_ycayy")
+
+[node name="PlayResolver" type="Node" parent="GameManagers" unique_id=2090671328]
+script = ExtResource("4_utbpp")
+
+[node name="CardManager" type="Node" parent="GameManagers" unique_id=1141755344]
+script = ExtResource("5_mw25s")
+
+[node name="EffectManager" type="Node" parent="GameManagers" unique_id=259823744]
+script = ExtResource("6_tcjrq")
+
+[node name="TargetingManager" type="Node" parent="GameManagers" unique_id=2019780804]
+script = ExtResource("7_rvs2r")
+
+[node name="PlayerData" type="Node" parent="GameManagers" unique_id=1060686007]
+script = ExtResource("8_tqxxy")
+
+[node name="CoachData" type="Node" parent="GameManagers" unique_id=936287308]
+script = ExtResource("9_5ay1a")
+
+[node name="FieldRoot" type="Node" parent="GameManagers" unique_id=927544046]

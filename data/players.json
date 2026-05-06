@@ -5,12 +5,26 @@
 	"team": "home",
 	"speed": 72,
 	"strength": 65,
-	"agility": 70,
 	"awareness": 68,
-	"hands": 74,
+	"passing": 70,
+	"catching": 74,
+	"blocking": 61,
+	"tackling": 58,
+	"agility": 70,
+	"coverage": 60,
+	"ball_security": 73,
+	"route_running": 69,
+	"stamina": 71,
+	"injury": 10,
+	"toughness": 67,
 	"kick_power": 62,
 	"kick_accuracy": 71,
-	"kick_consistency": 69
+	"kick_consistency": 69,
+	"role": "skill",
+	"skills": {
+	  "frozen_rope": 3,
+	  "wrap_it_up": 2
+	}
   },
   {
 	"id": "home_p2",
@@ -18,12 +32,26 @@
 	"team": "home",
 	"speed": 66,
 	"strength": 73,
-	"agility": 64,
 	"awareness": 67,
-	"hands": 61,
+	"passing": 58,
+	"catching": 61,
+	"blocking": 74,
+	"tackling": 72,
+	"agility": 64,
+	"coverage": 62,
+	"ball_security": 66,
+	"route_running": 57,
+	"stamina": 75,
+	"injury": 8,
+	"toughness": 74,
 	"kick_power": 55,
 	"kick_accuracy": 63,
-	"kick_consistency": 60
+	"kick_consistency": 60,
+	"role": "linebacker",
+	"skills": {
+	  "ball_stripping": 4,
+	  "big_hit": 3
+	}
   },
   {
 	"id": "away_p1",
@@ -31,12 +59,25 @@
 	"team": "away",
 	"speed": 69,
 	"strength": 68,
-	"agility": 67,
 	"awareness": 70,
-	"hands": 66,
+	"passing": 64,
+	"catching": 66,
+	"blocking": 63,
+	"tackling": 68,
+	"agility": 67,
+	"coverage": 71,
+	"ball_security": 69,
+	"route_running": 68,
+	"stamina": 72,
+	"injury": 9,
+	"toughness": 69,
 	"kick_power": 58,
 	"kick_accuracy": 65,
-	"kick_consistency": 62
+	"kick_consistency": 62,
+	"role": "corner",
+	"skills": {
+	  "ball_hawk": 4
+	}
   },
   {
 	"id": "away_p2",
@@ -44,11 +85,25 @@
 	"team": "away",
 	"speed": 64,
 	"strength": 71,
-	"agility": 63,
 	"awareness": 65,
-	"hands": 64,
+	"passing": 56,
+	"catching": 64,
+	"blocking": 69,
+	"tackling": 74,
+	"agility": 63,
+	"coverage": 63,
+	"ball_security": 64,
+	"route_running": 55,
+	"stamina": 74,
+	"injury": 7,
+	"toughness": 76,
 	"kick_power": 57,
 	"kick_accuracy": 61,
-	"kick_consistency": 59
+	"kick_consistency": 59,
+	"role": "safety",
+	"skills": {
+	  "ball_stripping": 3,
+	  "big_hit": 4
+	}
   }
 ]

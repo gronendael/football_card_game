@@ -1,0 +1,44 @@
+[
+  {
+    "id": "ball_stripping",
+    "name": "Ball Stripping",
+    "stat_mods": {},
+    "chance_mods": {
+      "fumble_forced_pct": 0.5
+    }
+  },
+  {
+    "id": "ball_hawk",
+    "name": "Ball Hawk",
+    "stat_mods": {},
+    "chance_mods": {
+      "interception_pct": 0.5
+    }
+  },
+  {
+    "id": "big_hit",
+    "name": "Big Hit",
+    "stat_mods": {
+      "tackling": 1
+    },
+    "chance_mods": {
+      "fumble_forced_pct": 0.5
+    }
+  },
+  {
+    "id": "frozen_rope",
+    "name": "Frozen Rope",
+    "stat_mods": {
+      "passing": 1
+    },
+    "chance_mods": {}
+  },
+  {
+    "id": "wrap_it_up",
+    "name": "Wrap It Up",
+    "stat_mods": {
+      "ball_security": 1
+    },
+    "chance_mods": {}
+  }
+]

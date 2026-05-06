@@ -14,6 +14,7 @@ const PHASE_HALFTIME := "halftime"
 const PHASE_GAME_OVER := "game_over"
 const PHASE_CARD_SELECTION := "card_selection"
 const PHASE_TARGETING := "targeting"
+const PHASE_CONVERSION := "conversion"
 
 const PENDING_NONE := "none"
 const PLAY_RUN := "run"
@@ -24,7 +25,14 @@ const PLAY_FIELD_GOAL := "field_goal"
 const MAX_CLOCK_SECONDS := 300
 const HALF_SECONDS := 150
 const MAX_ZONE := 7
-const DEFAULT_START_ZONE := 2
+const ZONE_MY_END := 1
+const ZONE_START := 2
+const ZONE_ADVANCE := 3
+const ZONE_MIDFIELD := 4
+const ZONE_ATTACK := 5
+const ZONE_RED := 6
+const ZONE_END := 7
+const DEFAULT_START_ZONE := ZONE_START
 const PHASE_CARD_QUEUE := "card_queue"
 
 var game_time_remaining: int = MAX_CLOCK_SECONDS
@@ -41,10 +49,11 @@ var first_half_starting_team: String = "home"
 var home_possessions: int = 0
 var away_possessions: int = 0
 var current_zone: int = DEFAULT_START_ZONE
-var drive_points: int = 6
+var drive_points: int = 4
 var next_drive_start_zone: int = DEFAULT_START_ZONE
 var plays_used_current_drive: int = 0
 var drive_start_zone: int = DEFAULT_START_ZONE
+var drive_positive_zones_gained_this_drive: int = 0
 var _just_switched_for_halftime: bool = false
 
 var phase: String = PHASE_PLAY_SELECTION
@@ -73,6 +82,12 @@ var queued_momentum_spent_home: int = 0
 var queued_momentum_spent_away: int = 0
 var home_ready: bool = false
 var away_ready: bool = false
+var conversion_pending: bool = false
+var conversion_team: String = ""
+var conversion_type: String = ""
+
+var timeouts_home: int = 3
+var timeouts_away: int = 3
 
 func start_game() -> void:
 	game_time_remaining = MAX_CLOCK_SECONDS
@@ -101,13 +116,19 @@ func start_game() -> void:
 
 	card_played_this_play_home = false
 	card_played_this_play_away = false
+	conversion_pending = false
+	conversion_team = ""
+	conversion_type = ""
+	timeouts_home = 3
+	timeouts_away = 3
 	start_possession(possession_team, next_drive_start_zone)
 
 func start_possession(team: String, start_zone: int) -> void:
 	possession_team = team
 	current_zone = clampi(start_zone, 1, MAX_ZONE)
 	drive_start_zone = current_zone
-	drive_points = 6
+	drive_points = 4
+	drive_positive_zones_gained_this_drive = 0
 	plays_used_current_drive = 0
 	selected_player_id = ""
 	pending_play_type = PENDING_NONE
@@ -142,6 +163,11 @@ func apply_clock(seconds_used: int) -> void:
 
 func apply_zone_delta(zone_delta: int) -> void:
 	current_zone = clampi(current_zone + zone_delta, 1, MAX_ZONE)
+	if zone_delta > 0:
+		drive_positive_zones_gained_this_drive += zone_delta
+		while drive_positive_zones_gained_this_drive >= 2:
+			drive_points = 4
+			drive_positive_zones_gained_this_drive -= 2
 
 func add_score(team: String, points: int) -> void:
 	if team == "home":
@@ -150,7 +176,7 @@ func add_score(team: String, points: int) -> void:
 		score_away += points
 
 func is_touchdown() -> bool:
-	return current_zone >= MAX_ZONE
+	return current_zone >= ZONE_END
 
 func end_possession(ended_by: String, points_scored: int = 0) -> void:
 	phase = PHASE_DRIVE_OVER
@@ -164,12 +190,17 @@ func end_possession(ended_by: String, points_scored: int = 0) -> void:
 	drive_summaries.append(summary)
 	emit_signal("possession_ended", summary)
 
+	if conversion_pending and ended_by == "touchdown":
+		emit_signal("state_changed")
+		return
+
 	if game_time_remaining <= 0:
 		end_game_if_time_up()
 		return
 
 	var next_team := "away" if possession_team == "home" else "home"
-	if points_scored <= 0:
+	var keep_turnover_spot := ended_by == "turnover_on_downs" or ended_by == "fumble_recovery" or ended_by == "interception" or ended_by == "missed_field_goal"
+	if points_scored <= 0 and not keep_turnover_spot:
 		next_drive_start_zone = DEFAULT_START_ZONE
 	if phase == PHASE_GAME_OVER:
 		return

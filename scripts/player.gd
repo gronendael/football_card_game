@@ -31,5 +31,5 @@ func _on_pressed() -> void:
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta: float) -> void:
-	$NameLabel.global_position = $PlayerSprite.global_position + Vector2(0, -40)
+	$NameLabel.global_position = $PlayerTextureRec.global_position + Vector2(0, -40)
 	

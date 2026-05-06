@@ -5,9 +5,11 @@
 Deliver a stable 2v2 mobile-first prototype with:
 
 - 7-zone drive progression
-- Simulated game clock with enforced half boundary behavior
+- Real-time game clock with enforced half boundary behavior
 - Possession / drive / score loop
+- Turnover system (downs, fumble, interception, missed FG)
 - Field goals
+- Post-touchdown conversions (Extra Point and 2-Point)
 - Dual-team card economy (both teams progress each play)
 - Queued card execution order per play (with ready states)
 
@@ -25,24 +27,42 @@ Keep a modular gameplay setup:
 
 ## Field and Scoring Rules
 
-- 7 zones:
-  - Zone 1: own endzone
-  - Zone 2: starting field zone
-  - Zone 3: field zone
-  - Zone 4: long FG range
-  - Zone 5: medium FG range
-  - Zone 6: short FG range
-  - Zone 7: scoring endzone
-- Touchdown when `current_zone >= 7`
+- 7 zones, named relative to the team currently in possession:
+  - `MyEndZone` (own endzone)
+  - `StartZone` (default drive start)
+  - `AdvanceZone`
+  - `MidfieldZone`
+  - `AttackZone`
+  - `RedZone`
+  - `EndZone` (scoring endzone)
+- Internal numeric IDs used by the engine map directly to these names:
+  - 1 = `MyEndZone`
+  - 2 = `StartZone`
+  - 3 = `AdvanceZone`
+  - 4 = `MidfieldZone`
+  - 5 = `AttackZone`
+  - 6 = `RedZone`
+  - 7 = `EndZone`
+- Zone names are perspective-based: from the offense's point of view, `MyEndZone` is their own endzone and `EndZone` is the scoring endzone. On a possession change, the named zones flip relative to the new offense.
+- Code rename: replace numeric zone usage with name-based identifiers in scripts, UI, event log, and breakdowns. All displays should use the named zones (e.g. `RedZone` instead of `Zone 6`).
+- Touchdown when offense reaches `EndZone`
 - Touchdown = +6, Field Goal = +3
-- No conversion / extra point / overtime in this version
 - Tie at 0:00 is a valid final result
 
 ## Clock, Halves, and Possession
 
-- Simulated game clock starts at 5:00 (300s)
+- Real-time game clock starts at 5:00 (300s)
 - Two halves of 2:30 (150s each)
-- Each resolved play / FG consumes 5-8s of simulated time
+- Clock counts down at 2 game-seconds per real second at sim speed x1; sim speed multiplies this rate
+- Plays do not consume per-play clock time
+- Clock stops on:
+  - Any turnover (downs, fumble, interception, missed FG)
+  - Any score (TD, FG, future safety)
+  - Throughout post-TD conversion (Extra Point and 2-Point)
+  - Any change of possession (kickoff window)
+  - Any team timeout (3 per team for the entire game)
+  - Future: player injury, penalty
+- Clock resumes when both teams hit Ready on the next play
 - First-half boundary behavior:
   - Halftime triggers at 2:30 regardless of drive completion
   - If a final pre-halftime play scores (TD / FG), that score must count
@@ -55,35 +75,53 @@ Keep a modular gameplay setup:
   - Normal alternating possessions after drives
   - Halftime transition must not double-switch possession
 
+### Timeouts
+
+- Each team has 3 timeouts for the entire game (no per-half reset)
+- Calling a timeout stops the clock until the next play is Ready
+- Sim auto-calls a timeout only when:
+  - Under 0:30 remaining in current half
+  - Calling team is trailing by 1-8 points
+  - Calling team has at least 1 timeout remaining
+- Human mode: per-team Timeout button, callable while clock is running
+
 ## Drive Rules
 
 - Every possession starts from `next_drive_start_zone`
-- Default drive start zone = Zone 2
+- Default drive start zone = `StartZone`
+- Drive points start at 4
 - Each play costs 1 Drive Point
+- If the offense gains 2 cumulative zones during a drive, drive points reset to 4 (can trigger multiple times in the same drive)
 - Drive ends on:
   - Touchdown
   - Drive points depleted
   - Game time expired
   - Field goal attempt result (make / miss)
-- On non-scoring drive end: reset `next_drive_start_zone` to Zone 2
-- On scoring drive end: set `next_drive_start_zone` from kicker `kick_power`:
-  - Higher kick power => opponent Zone 2
-  - Lower kick power => opponent Zone 3
+- On any turnover or change of possession, the team gaining possession starts based on where possession changed:
+  - `MyEndZone` -> defensive touchdown for the team that was not in possession (+6), then normal XP/2PT conversion flow
+  - `StartZone` -> `RedZone`
+  - `AdvanceZone` -> `AttackZone`
+  - `MidfieldZone` -> `MidfieldZone`
+  - `AttackZone` -> `AdvanceZone`
+  - `RedZone` -> `StartZone`
+  - `EndZone` -> `StartZone`
 
 ## Field Goal Rules
 
-- Allowed only in Zones 4, 5, 6
-- Disabled in Zones 1, 2, 3, 7
+- Allowed in `AttackZone` and `RedZone`
+- Allowed in `MidfieldZone` only when the kicking player's `kick_power > 80`
+- Disabled in `MyEndZone`, `StartZone`, `AdvanceZone`, and `EndZone` (unless `MidfieldZone` eligibility is met)
 - Base chance profile:
-  - Zone 6: high
-  - Zone 5: medium
-  - Zone 4: low
+  - `RedZone`: high
+  - `AttackZone`: medium
+  - `MidfieldZone`: low
 - FG make:
   - +3 points to team in possession
   - Possession switches
 - FG miss:
   - Possession switches
-- FG consumes simulated play time (5-8s)
+  - Treated as turnover using turnover field-position mapping
+- FG does not consume per-play clock time
 - Kicker selection:
   - Use selected kicker if provided
   - Fallback to highest `kick_accuracy` on possessing team if none selected
@@ -119,6 +157,13 @@ Allowed `ended_by` values:
 - `game_time_expired`
 - `field_goal`
 - `missed_field_goal`
+- `turnover_on_downs`
+- `fumble_recovery`
+- `interception`
+- `extra_point_made`
+- `extra_point_missed`
+- `two_point_made`
+- `two_point_failed`
 
 ## Card / Momentum System
 
@@ -128,6 +173,98 @@ Allowed `ended_by` values:
   - `momentum`
   - deck / hand / discard
 - Both teams progress each play (not only team in possession)
+- Card draw cadence:
+  - At game start, each team draws 2 cards
+  - Before each play, each team draws 1 card
+
+## Post-Touchdown Conversions
+
+- After every touchdown, the scoring team gets a single conversion attempt before the kickoff.
+- Two options:
+  - Extra Point (XP):
+    - Kick attempt from `AttackZone`
+    - Uses kicking stats (similar to a Field Goal)
+    - Made: +1 point for scoring team
+    - Missed: no additional points
+  - 2-Point Conversion (2PT):
+    - One play (Run, Short Pass, or Deep Pass) from `RedZone`
+    - Card queue + ready phase still applies (cards can affect outcome)
+    - Success only if the team advances to `EndZone` on this play -> +2 points
+    - Failure (zero or negative zone change) -> no additional points
+- Extra Point probability:
+  - Base 80% chance made
+  - Adjusted by kicker baseline stats (and any skills that modify them):
+    - +/- (kick_accuracy - 50) * 0.5
+    - +/- (kick_power - 50) * 0.2
+    - +/- (kick_consistency - 50) * 0.3
+    - minus opponent flat defense modifier
+  - Clamp final chance to 50-99
+- Choice UX:
+  - Human mode: present `Extra Point` and `2-Point` buttons
+  - Sim mode: auto-pick using post-TD score differential (scoring_team - opponent):
+    - Pick 2-Point when differential equals exactly one of: -2, -5, -8, -10, +1, +5, +12
+    - Otherwise pick Extra Point
+- Post-conversion behavior:
+  - Normal post-TD kickoff is performed using the existing kicker `kick_power` rule
+  - Conversion result does not change kickoff logic
+- New `ended_by` values used for conversion outcomes:
+  - `extra_point_made`
+  - `extra_point_missed`
+  - `two_point_made`
+  - `two_point_failed`
+
+## Turnovers and Player Stats
+
+- Turnover types:
+  - Turnover on downs (drive points reach 0)
+  - Fumble recovery (run or post-catch on pass)
+  - Interception (pass plays only)
+  - Missed field goal
+- Defensive matchup selection is position-based defaults:
+  - Run/fumble checks: LB or S profile
+  - Short/deep pass interception checks: CB or S profile
+  - Pass pressure influence via pass-rush profile
+- Offensive ball carrier source is play-type role based:
+  - Run uses runner role
+  - Pass uses receiver role
+- Baseline player stats (authoritative core attributes):
+  - `speed`
+  - `strength`
+  - `awareness`
+  - `passing`
+  - `catching` (replaces `hands`)
+  - `blocking`
+  - `tackling`
+  - `agility`
+  - `coverage`
+  - `ball_security`
+  - `kick_power`
+  - `kick_accuracy`
+  - `kick_consistency`
+  - `route_running`
+  - `stamina`
+  - `injury`
+  - `toughness`
+- Skill system data model:
+  - Skill definitions live in separate [data/skills.json](data/skills.json) for scalability
+  - Player records reference skill levels (per skill) in [data/players.json](data/players.json)
+  - Skill levels use range `1-10`
+  - Skills may apply:
+    - stat modifiers (point-based)
+    - percentage chance modifiers
+- Skill scaling rules:
+  - Modifier skills change target stat by increments of `1` per level
+  - Percentage skills change chance by increments of `0.5%` per level
+- Initial skills:
+  - `ball_stripping`: increases defender fumble-causing chance (%)
+  - `ball_hawk`: increases defender interception chance (%)
+  - `big_hit`: adds modifier to `tackling` and increases fumble-causing chance (%)
+  - `frozen_rope`: adds modifier to `passing`
+  - `wrap_it_up`: adds modifier to baseline `ball_security`
+- Turnover chance profile:
+  - Keep overall turnover frequency low (target ~5-8% of plays before tuning)
+- Turnover notifications:
+  - Use high-visibility UI text when a turnover occurs
 
 ### Possession-Change Momentum Reset
 
@@ -137,9 +274,9 @@ Allowed `ended_by` values:
 ### Queue-and-Ready Card Phase
 
 - Each play enters card queue phase before resolve
-- Both teams can queue multiple cards in chosen order
+- Both teams can queue multiple cards simultaneously
 - Constraint is momentum threshold (no per-play hard card-count limit)
-- Team marks Ready when queue finalized
+- Each team marks Ready independently when their queue is finalized
 - After both teams ready, execute queues in alternating index order:
   - Possession team `queue[0]`
   - Non-possession team `queue[0]`
@@ -156,20 +293,55 @@ In `GameState`, maintain:
 - `queued_momentum_spent_home`, `queued_momentum_spent_away`
 - `home_ready`, `away_ready`
 
+### Dynamic Possession Play UI
+
+- Two team play rows are shown (`AwayPlayButtons`, `HomePlayButtons`) and both teams can select in parallel.
+- Team in possession row is offense controls:
+  - `Run`, `Short Pass`, `Deep Pass`, `Field Goal`, `Play Card`, `Ready`
+- Non-possession row is defense controls:
+  - `Run Def`, `Man-to-Man`, `Zone`, `FG Def`, `Play Card`, `Ready`
+- Simultaneous play selection flow:
+  - Offense selects offensive play
+  - Defense selects defensive play (or defaults to `Zone` by pressing `Ready`)
+  - Both teams press `Ready`
+  - Card queue phase starts (or play resolves directly if card phase disabled)
+- Simultaneous card queue flow:
+  - Both teams can queue cards concurrently
+  - Both teams press `Ready` independently
+  - Resolution begins only when both are ready
+- This first pass includes light defensive effects:
+  - `Run Def` improves defense against `Run`
+  - `Man-to-Man` improves defense against `Short Pass` / `Deep Pass`
+  - `Zone` is neutral baseline
+  - `FG Def` improves defense against `Field Goal` and `Extra Point`
+
 ## Scene / UI Structure
 
 - [scenes/game_scene.tscn](scenes/game_scene.tscn)
   - Root Control with managers as child nodes
   - HUD labels for clock / half / score / possession / zone / drive points / phase / result
+  - `UserTeamLabel` showing random per-game assignment (`You are: Home/Away`)
   - Play buttons (Run, Short Pass, Deep Pass, Field Goal, card controls)
   - Player token container and card / target panels
 - [scenes/player.tscn](scenes/player.tscn)
   - Root Control with `NameLabel` and `SelectButton`
   - [scripts/player.gd](scripts/player.gd) attached to player root
 
+## Single-Player Control Architecture (Current)
+
+- On each game start/restart, user is randomly assigned `home` or `away`.
+- User controls only their assigned team for offense/defense play picks and card queue actions.
+- Opponent team is always AI-controlled.
+- Opponent AI acts immediately when input is needed (play selection, defense call, card queue ready).
+- `SimButtons` provide optional autoplay for the user's team:
+  - When enabled, user team input is AI-driven too
+  - When disabled, user team remains manual while opponent stays AI
+- This architecture is single-player only; multiplayer can be layered later without changing core game rules/state.
+
 ## Data Files
 
 - [data/players.json](data/players.json)
+- [data/skills.json](data/skills.json)
 - [data/cards.json](data/cards.json)
 - [data/coaches.json](data/coaches.json)
 - [data/plays.json](data/plays.json)
@@ -193,4 +365,3 @@ Use typed conversion when loading JSON arrays to satisfy typed GDScript arrays.
 - Economy / ads / meta progression
 - Full 7v7 simulation
 - Advanced animations
-- Real-time clock pressure
