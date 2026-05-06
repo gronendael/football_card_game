@@ -1,0 +1,25 @@
+{
+  "run": {
+	"name": "Run",
+	"zone_min": 0,
+	"zone_max": 2
+  },
+  "short_pass": {
+	"name": "Short Pass",
+	"zone_min": 0,
+	"zone_max": 2
+  },
+  "deep_pass": {
+	"name": "Deep Pass",
+	"zone_min": 0,
+	"zone_max": 3
+  },
+  "field_goal": {
+	"enabled_zones": [4, 5, 6],
+	"base_chance": {
+	  "4": 35,
+	  "5": 55,
+	  "6": 75
+	}
+  }
+}

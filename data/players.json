@@ -1,0 +1,54 @@
+[
+  {
+	"id": "home_p1",
+	"name": "Home One",
+	"team": "home",
+	"speed": 72,
+	"strength": 65,
+	"agility": 70,
+	"awareness": 68,
+	"hands": 74,
+	"kick_power": 62,
+	"kick_accuracy": 71,
+	"kick_consistency": 69
+  },
+  {
+	"id": "home_p2",
+	"name": "Home Two",
+	"team": "home",
+	"speed": 66,
+	"strength": 73,
+	"agility": 64,
+	"awareness": 67,
+	"hands": 61,
+	"kick_power": 55,
+	"kick_accuracy": 63,
+	"kick_consistency": 60
+  },
+  {
+	"id": "away_p1",
+	"name": "Away One",
+	"team": "away",
+	"speed": 69,
+	"strength": 68,
+	"agility": 67,
+	"awareness": 70,
+	"hands": 66,
+	"kick_power": 58,
+	"kick_accuracy": 65,
+	"kick_consistency": 62
+  },
+  {
+	"id": "away_p2",
+	"name": "Away Two",
+	"team": "away",
+	"speed": 64,
+	"strength": 71,
+	"agility": 63,
+	"awareness": 65,
+	"hands": 64,
+	"kick_power": 57,
+	"kick_accuracy": 61,
+	"kick_consistency": 59
+  }
+]

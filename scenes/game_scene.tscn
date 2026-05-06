@@ -1,0 +1,200 @@
+[gd_scene format=3 uid="uid://cvwbna58y8gp8"]
+
+[ext_resource type="PackedScene" uid="uid://budwd3i6u1fn3" path="res://scenes/player.tscn" id="1_onqr8"]
+[ext_resource type="Script" uid="uid://bhxl8t2i1ebag" path="res://scripts/game_scene.gd" id="2_ycayy"]
+[ext_resource type="Script" uid="uid://d33khxi3fnjwc" path="res://scripts/game_state.gd" id="3_ycayy"]
+[ext_resource type="Script" uid="uid://v70plmt1bsuy" path="res://scripts/play_resolver.gd" id="4_utbpp"]
+[ext_resource type="Script" uid="uid://dacgonsechul1" path="res://scripts/card_manager.gd" id="5_mw25s"]
+[ext_resource type="Script" uid="uid://dtmjoyjxbggi3" path="res://scripts/effect_manager.gd" id="6_tcjrq"]
+[ext_resource type="Script" uid="uid://b8i413pl54nq6" path="res://scripts/targeting_manager.gd" id="7_rvs2r"]
+[ext_resource type="Script" uid="uid://1358y0xuv5xd" path="res://scripts/player_data.gd" id="8_tqxxy"]
+[ext_resource type="Script" uid="uid://culivsr7t6exs" path="res://scripts/coach_data.gd" id="9_5ay1a"]
+
+[node name="GameScene" type="Control" unique_id=672677923]
+layout_mode = 3
+anchors_preset = 0
+script = ExtResource("2_ycayy")
+
+[node name="Field" type="Node2D" parent="." unique_id=299702429]
+
+[node name="FieldBackground" type="ColorRect" parent="Field" unique_id=619995503]
+offset_right = 900.0
+offset_bottom = 1400.0
+color = Color(0, 0.22352941, 0, 1)
+
+[node name="Zone1" type="ColorRect" parent="Field" unique_id=482307400]
+offset_right = 900.0
+offset_bottom = 280.0
+color = Color(0, 0.56078434, 0, 1)
+
+[node name="Zone2" type="ColorRect" parent="Field" unique_id=1541062543]
+offset_top = 280.0
+offset_right = 900.0
+offset_bottom = 560.0
+color = Color(0, 0.56078434, 0, 1)
+
+[node name="Zone3" type="ColorRect" parent="Field" unique_id=1804672075]
+offset_top = 560.0
+offset_right = 900.0
+offset_bottom = 840.0
+color = Color(0, 0.56078434, 0, 1)
+
+[node name="Zone4" type="ColorRect" parent="Field" unique_id=1016696629]
+offset_top = 840.0
+offset_right = 900.0
+offset_bottom = 1120.0
+color = Color(0, 0.56078434, 0, 1)
+
+[node name="EndZone" type="ColorRect" parent="Field" unique_id=975590496]
+offset_top = 1120.0
+offset_right = 900.0
+offset_bottom = 1400.0
+color = Color(0, 0.56078434, 0, 1)
+
+[node name="PlayersLayer" type="Node2D" parent="." unique_id=426364647]
+
+[node name="PlayersContainer" type="HBoxContainer" parent="PlayersLayer" unique_id=1194859753]
+offset_left = 712.0
+offset_top = 304.0
+offset_right = 752.0
+offset_bottom = 344.0
+
+[node name="Player1" parent="PlayersLayer/PlayersContainer" unique_id=2089160178 instance=ExtResource("1_onqr8")]
+layout_mode = 2
+
+[node name="HUDLayer" type="VBoxContainer" parent="." unique_id=713179604]
+layout_mode = 0
+offset_left = 24.0
+offset_top = 96.0
+offset_right = 188.0
+offset_bottom = 389.0
+scale = Vector2(2, 2)
+
+[node name="ClockLabel" type="Label" parent="HUDLayer" unique_id=699685548]
+layout_mode = 2
+text = "05:00"
+vertical_alignment = 1
+
+[node name="HalfLabel" type="Label" parent="HUDLayer" unique_id=2086931693]
+layout_mode = 2
+text = "Half: 1"
+vertical_alignment = 1
+
+[node name="ScoreLabel" type="Label" parent="HUDLayer" unique_id=512817301]
+layout_mode = 2
+text = "Score H:0 A:0"
+vertical_alignment = 1
+
+[node name="PossessionLabel" type="Label" parent="HUDLayer" unique_id=1876753419]
+layout_mode = 2
+text = "Possession: home"
+vertical_alignment = 1
+
+[node name="ZoneLabel" type="Label" parent="HUDLayer" unique_id=2136180461]
+layout_mode = 2
+text = "Zone: 2/7"
+vertical_alignment = 1
+
+[node name="DrivePointsLabel" type="Label" parent="HUDLayer" unique_id=1550221750]
+layout_mode = 2
+text = "Drive Points: 6"
+vertical_alignment = 1
+
+[node name="PhaseLabel" type="Label" parent="HUDLayer" unique_id=1534667255]
+layout_mode = 2
+text = "Phase: play_selection"
+vertical_alignment = 1
+
+[node name="MomentumLabel" type="Label" parent="HUDLayer" unique_id=171919185]
+layout_mode = 2
+text = "Momentum: "
+vertical_alignment = 1
+
+[node name="HandLabel" type="Label" parent="HUDLayer" unique_id=1574796013]
+layout_mode = 2
+text = "Hand: "
+vertical_alignment = 1
+
+[node name="StaffSummaryLabel" type="Label" parent="HUDLayer" unique_id=2076082348]
+layout_mode = 2
+text = "Staff Summary: "
+vertical_alignment = 1
+
+[node name="ResultText" type="RichTextLabel" parent="HUDLayer" unique_id=1248807707]
+layout_mode = 2
+text = "Ready."
+fit_content = true
+
+[node name="PlayButtons" type="HBoxContainer" parent="." unique_id=35939323]
+layout_mode = 0
+offset_right = 400.0
+offset_bottom = 40.0
+scale = Vector2(2, 2)
+
+[node name="RunButton" type="Button" parent="PlayButtons" unique_id=2077301709]
+layout_mode = 2
+text = "Run"
+
+[node name="ShortPassButton" type="Button" parent="PlayButtons" unique_id=1568332844]
+layout_mode = 2
+text = "Short Pass"
+
+[node name="DeepPassButton" type="Button" parent="PlayButtons" unique_id=318575843]
+layout_mode = 2
+text = "Deep Pass"
+
+[node name="FieldGoalButton" type="Button" parent="PlayButtons" unique_id=1504513508]
+layout_mode = 2
+text = "Field Goal"
+
+[node name="PlayCardButton" type="Button" parent="PlayButtons" unique_id=1171292001]
+layout_mode = 2
+text = "Play Card"
+
+[node name="ReadyButton" type="Button" parent="PlayButtons" unique_id=1536603709]
+layout_mode = 2
+text = "Ready"
+
+[node name="GameState" type="Node" parent="." unique_id=599128438]
+script = ExtResource("3_ycayy")
+
+[node name="PlayResolver" type="Node" parent="." unique_id=2090671328]
+script = ExtResource("4_utbpp")
+
+[node name="CardManager" type="Node" parent="." unique_id=1141755344]
+script = ExtResource("5_mw25s")
+
+[node name="EffectManager" type="Node" parent="." unique_id=259823744]
+script = ExtResource("6_tcjrq")
+
+[node name="TargetingManager" type="Node" parent="." unique_id=2019780804]
+script = ExtResource("7_rvs2r")
+
+[node name="PlayerData" type="Node" parent="." unique_id=1060686007]
+script = ExtResource("8_tqxxy")
+
+[node name="CoachData" type="Node" parent="." unique_id=936287308]
+script = ExtResource("9_5ay1a")
+
+[node name="FieldRoot" type="Node" parent="." unique_id=927544046]
+
+[node name="CardsPanel" type="Panel" parent="." unique_id=1282140977]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="CardPanel" type="VBoxContainer" parent="CardsPanel" unique_id=1260077017]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="CardTitle" type="Label" parent="CardsPanel/CardPanel" unique_id=1200829912]
+layout_mode = 2
+
+[node name="TargetingPanel" type="VBoxContainer" parent="." unique_id=1703769190]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="TargetingLabel" type="Label" parent="TargetingPanel" unique_id=892904634]
+layout_mode = 2

@@ -1,0 +1,54 @@
+{
+  "home": {
+	"head_coach": {
+	  "id": "hc_balanced",
+	  "name": "Home HC",
+	  "style": "Balanced",
+	  "bonus": {
+		"field_goal_bonus": 3
+	  }
+	},
+	"off_coord": {
+	  "id": "oc_short",
+	  "name": "Home OC",
+	  "style": "Short Game",
+	  "bonus": {
+		"standard_zone_bonus": 0
+	  }
+	},
+	"def_coord": {
+	  "id": "dc_zone",
+	  "name": "Home DC",
+	  "style": "Zone Specialist",
+	  "bonus": {
+		"defense_mod": 1
+	  }
+	}
+  },
+  "away": {
+	"head_coach": {
+	  "id": "hc_tempo",
+	  "name": "Away HC",
+	  "style": "Tempo",
+	  "bonus": {
+		"field_goal_bonus": 1
+	  }
+	},
+	"off_coord": {
+	  "id": "oc_balanced",
+	  "name": "Away OC",
+	  "style": "Balanced",
+	  "bonus": {
+		"standard_zone_bonus": 0
+	  }
+	},
+	"def_coord": {
+	  "id": "dc_blitz",
+	  "name": "Away DC",
+	  "style": "Blitz Heavy",
+	  "bonus": {
+		"defense_mod": 2
+	  }
+	}
+  }
+}

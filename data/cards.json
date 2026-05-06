@@ -1,0 +1,182 @@
+[
+  {
+	"id": "speed_burst",
+	"name": "Speed Burst",
+	"cost": 2,
+	"type": "instant",
+	"description": "Gain +1 zone bonus this play.",
+	"target_scope": "global",
+	"target_team": "self",
+	"target_type": "global",
+	"max_targets": 0,
+	"duration": 1,
+	"effect_data": {
+	  "zone_bonus": 1
+	}
+  },
+  {
+	"id": "perfect_timing",
+	"name": "Perfect Timing",
+	"cost": 2,
+	"type": "instant",
+	"description": "Reduce defensive pressure this play.",
+	"target_scope": "global",
+	"target_team": "self",
+	"target_type": "global",
+	"max_targets": 0,
+	"duration": 1,
+	"effect_data": {
+	  "defense_penalty": 5
+	}
+  },
+  {
+	"id": "hot_streak",
+	"name": "Hot Streak",
+	"cost": 3,
+	"type": "timed",
+	"description": "Field goal bonus for one play.",
+	"target_scope": "global",
+	"target_team": "self",
+	"target_type": "global",
+	"max_targets": 0,
+	"duration": 1,
+	"effect_data": {
+	  "field_goal_bonus": 8
+	}
+  },
+  {
+	"id": "double_team",
+	"name": "Double Team",
+	"cost": 2,
+	"type": "instant",
+	"description": "Apply defensive penalty to a targeted opponent player for one play.",
+	"target_scope": "single",
+	"target_team": "opponent",
+	"target_type": "opponent_player",
+	"max_targets": 1,
+	"duration": 1,
+	"effect_data": {
+	  "defense_penalty": 6
+	}
+  },
+{
+	"id": "speed_burst",
+	"name": "Speed Burst",
+	"cost": 2,
+	"type": "instant",
+	"description": "Gain +1 zone bonus this play.",
+	"target_scope": "global",
+	"target_team": "self",
+	"target_type": "global",
+	"max_targets": 0,
+	"duration": 1,
+	"effect_data": {
+	  "zone_bonus": 1
+	}
+  },
+  {
+	"id": "perfect_timing",
+	"name": "Perfect Timing",
+	"cost": 2,
+	"type": "instant",
+	"description": "Reduce defensive pressure this play.",
+	"target_scope": "global",
+	"target_team": "self",
+	"target_type": "global",
+	"max_targets": 0,
+	"duration": 1,
+	"effect_data": {
+	  "defense_penalty": 5
+	}
+  },
+  {
+	"id": "hot_streak",
+	"name": "Hot Streak",
+	"cost": 3,
+	"type": "timed",
+	"description": "Field goal bonus for one play.",
+	"target_scope": "global",
+	"target_team": "self",
+	"target_type": "global",
+	"max_targets": 0,
+	"duration": 1,
+	"effect_data": {
+	  "field_goal_bonus": 8
+	}
+  },
+  {
+	"id": "double_team",
+	"name": "Double Team",
+	"cost": 2,
+	"type": "instant",
+	"description": "Apply defensive penalty to a targeted opponent player for one play.",
+	"target_scope": "single",
+	"target_team": "opponent",
+	"target_type": "opponent_player",
+	"max_targets": 1,
+	"duration": 1,
+	"effect_data": {
+	  "defense_penalty": 6
+	}
+  },
+{
+	"id": "speed_burst",
+	"name": "Speed Burst",
+	"cost": 2,
+	"type": "instant",
+	"description": "Gain +1 zone bonus this play.",
+	"target_scope": "global",
+	"target_team": "self",
+	"target_type": "global",
+	"max_targets": 0,
+	"duration": 1,
+	"effect_data": {
+	  "zone_bonus": 1
+	}
+  },
+  {
+	"id": "perfect_timing",
+	"name": "Perfect Timing",
+	"cost": 2,
+	"type": "instant",
+	"description": "Reduce defensive pressure this play.",
+	"target_scope": "global",
+	"target_team": "self",
+	"target_type": "global",
+	"max_targets": 0,
+	"duration": 1,
+	"effect_data": {
+	  "defense_penalty": 5
+	}
+  },
+  {
+	"id": "hot_streak",
+	"name": "Hot Streak",
+	"cost": 3,
+	"type": "timed",
+	"description": "Field goal bonus for one play.",
+	"target_scope": "global",
+	"target_team": "self",
+	"target_type": "global",
+	"max_targets": 0,
+	"duration": 1,
+	"effect_data": {
+	  "field_goal_bonus": 8
+	}
+  },
+  {
+	"id": "double_team",
+	"name": "Double Team",
+	"cost": 2,
+	"type": "instant",
+	"description": "Apply defensive penalty to a targeted opponent player for one play.",
+	"target_scope": "single",
+	"target_team": "opponent",
+	"target_type": "opponent_player",
+	"max_targets": 1,
+	"duration": 1,
+	"effect_data": {
+	  "defense_penalty": 6
+	}
+  }
+]

@@ -1,0 +1,35 @@
+[gd_scene format=3 uid="uid://budwd3i6u1fn3"]
+
+[ext_resource type="Texture2D" uid="uid://d0jxnqli15tnp" path="res://assets/sports_pack/PNG/Blue/characterBlue (8).png" id="1_g2els"]
+[ext_resource type="Script" uid="uid://p0yud3mo6xyk" path="res://scripts/player.gd" id="2_g2els"]
+
+[node name="PlayerToken" type="Control" unique_id=2089160178]
+layout_mode = 3
+anchors_preset = 0
+script = ExtResource("2_g2els")
+
+[node name="Panel" type="Panel" parent="." unique_id=1273745458]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="PlayerSprite" type="Sprite2D" parent="." unique_id=1754011325]
+rotation = 0.006365617
+scale = Vector2(2.5, 2.5)
+texture = ExtResource("1_g2els")
+
+[node name="NameLabel" type="Label" parent="." unique_id=2092375027]
+top_level = true
+layout_mode = 0
+offset_left = -20.0
+offset_top = -60.0
+offset_right = 20.0
+offset_bottom = -35.0
+text = "POS"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="SelectButton" type="Button" parent="." unique_id=127280555]
+layout_mode = 0
+offset_right = 8.0
+offset_bottom = 8.0
