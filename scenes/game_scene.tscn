@@ -9,6 +9,7 @@
 [ext_resource type="Script" uid="uid://b8i413pl54nq6" path="res://scripts/targeting_manager.gd" id="7_rvs2r"]
 [ext_resource type="Script" uid="uid://1358y0xuv5xd" path="res://scripts/player_data.gd" id="8_tqxxy"]
 [ext_resource type="Script" uid="uid://culivsr7t6exs" path="res://scripts/coach_data.gd" id="9_5ay1a"]
+[ext_resource type="Script" uid="uid://ccnxosm2w5n65" path="res://scripts/queue_drop_target.gd" id="10_qdrop"]
 
 [node name="GameScene" type="Control" unique_id=672677923]
 layout_mode = 3
@@ -208,20 +209,15 @@ text = "Call Timeout"
 
 [node name="UserHUD" type="VBoxContainer" parent="." unique_id=1295362970]
 layout_mode = 0
-offset_left = 8.0
-offset_top = 1096.0
-offset_right = 308.0
-offset_bottom = 1235.0
+offset_left = 16.0
+offset_top = 1088.0
+offset_right = 416.0
+offset_bottom = 1534.0
 scale = Vector2(2, 2)
 
 [node name="UserMomentumLabel" type="Label" parent="UserHUD" unique_id=1505117761]
 layout_mode = 2
 text = "Momentum:"
-vertical_alignment = 1
-
-[node name="UserHandLabel" type="Label" parent="UserHUD" unique_id=189760659]
-layout_mode = 2
-text = "Cards in Hand:"
 vertical_alignment = 1
 
 [node name="UserTeamLabel" type="Label" parent="UserHUD" unique_id=1641103785]
@@ -237,6 +233,75 @@ vertical_alignment = 1
 [node name="UserTimeoutButton" type="Button" parent="UserHUD" unique_id=1599738781]
 layout_mode = 2
 text = "Call Timeout"
+
+[node name="UserHandPanel" type="Panel" parent="." unique_id=292743715]
+custom_minimum_size = Vector2(600, 200)
+layout_mode = 0
+offset_left = 16.0
+offset_top = 1320.0
+offset_right = 416.0
+offset_bottom = 1480.0
+
+[node name="UserHandLabel" type="Label" parent="UserHandPanel" unique_id=189760659]
+layout_mode = 0
+offset_left = 8.0
+offset_top = 8.0
+offset_right = 392.0
+offset_bottom = 32.0
+text = "Hand"
+vertical_alignment = 1
+
+[node name="UserHandScroll" type="ScrollContainer" parent="UserHandPanel" unique_id=189760660]
+custom_minimum_size = Vector2(0, 128)
+layout_mode = 0
+offset_left = 8.0
+offset_top = 36.0
+offset_right = 392.0
+offset_bottom = 156.0
+horizontal_scroll_mode = 2
+vertical_scroll_mode = 0
+
+[node name="UserHandCards" type="HBoxContainer" parent="UserHandPanel/UserHandScroll" unique_id=189760661]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="UserQueuedPanel" type="Panel" parent="." unique_id=1542523316]
+clip_contents = true
+custom_minimum_size = Vector2(200, 200)
+layout_mode = 0
+offset_left = 648.0
+offset_top = 1312.0
+offset_right = 1048.0
+offset_bottom = 1512.0
+
+[node name="UserQueuedLabel" type="Label" parent="UserQueuedPanel" unique_id=189760662]
+layout_mode = 0
+offset_left = 8.0
+offset_top = 8.0
+offset_right = 392.0
+offset_bottom = 32.0
+text = "Queued"
+vertical_alignment = 1
+
+[node name="UserQueuedScroll" type="ScrollContainer" parent="UserQueuedPanel" unique_id=189760663]
+custom_minimum_size = Vector2(0, 128)
+layout_mode = 0
+offset_left = 8.0
+offset_top = 36.0
+offset_right = 392.0
+offset_bottom = 156.0
+horizontal_scroll_mode = 2
+vertical_scroll_mode = 0
+
+[node name="QueueDropArea" type="Control" parent="UserQueuedPanel/UserQueuedScroll" unique_id=189760665]
+layout_mode = 2
+script = ExtResource("10_qdrop")
+
+[node name="UserQueuedCards" type="HBoxContainer" parent="UserQueuedPanel/UserQueuedScroll" unique_id=189760664]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
 
 [node name="OpponentPlayButtons" type="HBoxContainer" parent="." unique_id=35939323]
 layout_mode = 0
@@ -320,10 +385,10 @@ text = "2-Point"
 [node name="SimButtons" type="BoxContainer" parent="." unique_id=443397089]
 layout_direction = 2
 layout_mode = 0
-offset_left = 728.0
-offset_top = 1200.0
-offset_right = 967.0
-offset_bottom = 1240.0
+offset_left = 256.0
+offset_top = 24.0
+offset_right = 495.0
+offset_bottom = 64.0
 scale = Vector2(2, 2)
 alignment = 2
 
@@ -341,10 +406,10 @@ text = "Restart"
 
 [node name="SpeedPanel" type="HBoxContainer" parent="." unique_id=1238859256]
 layout_mode = 0
-offset_left = 992.0
-offset_top = 1296.0
-offset_right = 1099.0
-offset_bottom = 1336.0
+offset_left = 24.0
+offset_top = 24.0
+offset_right = 131.0
+offset_bottom = 64.0
 scale = Vector2(2, 2)
 alignment = 2
 

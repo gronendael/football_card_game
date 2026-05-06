@@ -19,6 +19,8 @@ const DEF_MAN := "man_to_man"
 const DEF_ZONE := "zone"
 const DEF_FG := "fg_def"
 
+const CARD_TILE_SCENE := preload("res://scenes/card_tile.tscn")
+
 @onready var game_state: GameState = $GameManagers/GameState
 @onready var play_resolver: PlayResolver = $GameManagers/PlayResolver
 @onready var card_manager: CardManager = $GameManagers/CardManager
@@ -42,7 +44,10 @@ const DEF_FG := "fg_def"
 @onready var opponent_timeout_button: Button = get_node_or_null("OpponentHUD/OpponentTimeoutButton") as Button
 @onready var opponent_hud: Control = get_node_or_null("OpponentHUD") as Control
 @onready var user_momentum_label: Label = $UserHUD/UserMomentumLabel
-@onready var user_hand_label: Label = $UserHUD/UserHandLabel
+@onready var user_hand_label: Label = $UserHandPanel/UserHandLabel
+@onready var user_hand_cards: HBoxContainer = get_node_or_null("UserHandPanel/UserHandScroll/UserHandCards") as HBoxContainer
+@onready var user_queued_label: Label = get_node_or_null("UserQueuedPanel/UserQueuedLabel") as Label
+@onready var user_queued_cards: HBoxContainer = get_node_or_null("UserQueuedPanel/UserQueuedScroll/UserQueuedCards") as HBoxContainer
 @onready var user_team_info_label: Label = $UserHUD/UserTeamLabel
 @onready var user_timeouts_label: Label = get_node_or_null("UserHUD/UserTimeoutsLabel") as Label
 @onready var user_timeout_button: Button = get_node_or_null("UserHUD/UserTimeoutButton") as Button
@@ -135,6 +140,8 @@ var _game_fg_makes: int = 0
 var _stats_recorded_for_current_game: bool = false
 var _user_team: String = "home"
 var _ai_think_lock: bool = false
+var _cached_user_hand_sig: String = ""
+var _cached_user_queue_sig: String = ""
 const USER_TEAM_NAME := "Bees"
 const OPPONENT_TEAM_NAME := "Cavs"
 
@@ -240,6 +247,7 @@ func _play_buttons_for_team(team: String) -> Dictionary:
 	}
 
 func _ready() -> void:
+	add_to_group("game_scene")
 	randomize()
 	if sim_timer == null:
 		sim_timer = Timer.new()
@@ -1034,14 +1042,14 @@ func _on_play_non_targeted_card(team: String = "") -> void:
 			result_text.text = "No cards available for %s." % queue_team
 			_append_event_log("No cards available for %s." % queue_team)
 			return
-		var queued_card: Dictionary = queue_hand[0]
-		if not _queue_card_for_team(queue_team, queued_card):
-			result_text.text = "Not enough Momentum to queue card."
-			_append_event_log("Not enough Momentum to queue card.")
+		if not _queue_first_affordable_hand_card(queue_team):
+			result_text.text = "Not enough Momentum to queue a card."
+			_append_event_log("Not enough Momentum to queue a card.")
 			return
-		result_text.text = "Queued card (%s): %s" % [queue_team, str(queued_card.get("name", "Card"))]
-		_append_event_log("Queued card (%s): %s" % [queue_team, str(queued_card.get("name", "Card"))])
-		_update_ui()
+		var last_q: Dictionary = game_state.queued_cards_home[-1] if queue_team == "home" else game_state.queued_cards_away[-1]
+		var qcard: Dictionary = last_q.get("card", {})
+		result_text.text = "Queued card (%s): %s" % [queue_team, str(qcard.get("name", "Card"))]
+		_append_event_log("Queued card (%s): %s" % [queue_team, str(qcard.get("name", "Card"))])
 		return
 
 	if _active_hand().is_empty():
@@ -1107,16 +1115,16 @@ func _update_ui() -> void:
 		opponent_timeout_button.disabled = (game_state.timeouts_away if opponent_team == "away" else game_state.timeouts_home) <= 0
 	if user_timeout_button:
 		user_timeout_button.disabled = (game_state.timeouts_home if user_team == "home" else game_state.timeouts_away) <= 0
-	opponent_hand_label.text = "Cards in Hand (%d): %s\nQueued Cards: %s" % [
-		(game_state.hand_away.size() if opponent_team == "away" else game_state.hand_home.size()),
-		(_format_hand_names(game_state.hand_away) if opponent_team == "away" else _format_hand_names(game_state.hand_home)),
-		(_format_queued_card_names(game_state.queued_cards_away) if opponent_team == "away" else _format_queued_card_names(game_state.queued_cards_home))
-	]
-	user_hand_label.text = "Cards in Hand (%d): %s\nQueued Cards: %s" % [
-		(game_state.hand_home.size() if user_team == "home" else game_state.hand_away.size()),
-		(_format_hand_names(game_state.hand_home) if user_team == "home" else _format_hand_names(game_state.hand_away)),
-		(_format_queued_card_names(game_state.queued_cards_home) if user_team == "home" else _format_queued_card_names(game_state.queued_cards_away))
-	]
+	var opp_hand_n := game_state.hand_away.size() if opponent_team == "away" else game_state.hand_home.size()
+	var opp_queue_n := game_state.queued_cards_away.size() if opponent_team == "away" else game_state.queued_cards_home.size()
+	opponent_hand_label.text = "Hand (%d)\nQueued (%d)" % [opp_hand_n, opp_queue_n]
+
+	var user_hand_n := game_state.hand_home.size() if user_team == "home" else game_state.hand_away.size()
+	var user_queue_n := game_state.queued_cards_home.size() if user_team == "home" else game_state.queued_cards_away.size()
+	user_hand_label.text = "Hand (%d)" % user_hand_n
+	if user_queued_label:
+		user_queued_label.text = "Queued (%d)" % user_queue_n
+	_rebuild_user_card_tiles()
 	if game_state.phase == PHASE_CARD_QUEUE:
 		phase_label.text = "Phase: %s (simultaneous queue)" % game_state.phase
 
@@ -1166,7 +1174,12 @@ func _update_ui() -> void:
 		var row_is_ready: bool = game_state.home_ready if team == "home" else game_state.away_ready
 		var can_queue_for_row: bool = game_state.phase == PHASE_CARD_QUEUE and not row_is_ready
 		if row_card:
-			row_card.disabled = not (current_phase_level >= 3 and can_queue_for_row and not _hand_for_team(team).is_empty())
+			var hide_play_card_btn: bool = team == _user_team and game_state.phase == PHASE_CARD_QUEUE and not _sim_running
+			row_card.visible = not hide_play_card_btn
+			if hide_play_card_btn:
+				row_card.disabled = true
+			else:
+				row_card.disabled = not (current_phase_level >= 3 and can_queue_for_row and not _hand_for_team(team).is_empty())
 		if row_ready:
 			if game_state.phase == PHASE_CARD_QUEUE:
 				row_ready.text = "Ready" if row_is_ready else "Ready"
@@ -1407,6 +1420,8 @@ func _on_restart_pressed() -> void:
 	_play_ready_home = false
 	_play_ready_away = false
 	_defense_selected_explicit = false
+	_cached_user_hand_sig = ""
+	_cached_user_queue_sig = ""
 	if sim_timer:
 		sim_timer.stop()
 	game_state.start_game()
@@ -1496,8 +1511,7 @@ func _auto_queue_for_team(team: String, max_cards: int) -> void:
 		var hand: Array = _hand_for_team(team)
 		if hand.is_empty():
 			return
-		var card: Dictionary = hand[0]
-		if not _queue_card_for_team(team, card):
+		if not _queue_card_for_team(team, {}, {}, 0):
 			return
 		queued += 1
 
@@ -1683,8 +1697,36 @@ func _start_card_queue_phase() -> void:
 	_update_ui()
 
 
-func _queue_card_for_team(team: String, card: Dictionary, target := {}) -> bool:
-	var cost: int = int(card.get("cost", 0))
+func _queue_first_affordable_hand_card(team: String) -> bool:
+	var hand := _hand_for_team(team)
+	var momentum: int = game_state.momentum_home if team == "home" else game_state.momentum_away
+	var queued_spent: int = game_state.queued_momentum_spent_home if team == "home" else game_state.queued_momentum_spent_away
+	var remaining: int = momentum - queued_spent
+	for i in range(hand.size()):
+		var c = hand[i]
+		if typeof(c) != TYPE_DICTIONARY:
+			continue
+		if int((c as Dictionary).get("cost", 0)) <= remaining:
+			return _queue_card_for_team(team, {}, {}, i)
+	return false
+
+
+func _queue_card_for_team(team: String, card: Dictionary = {}, target := {}, hand_index: int = -1) -> bool:
+	var hand: Array = game_state.hand_home if team == "home" else game_state.hand_away
+	var card_to_queue: Dictionary = {}
+	if hand_index >= 0:
+		if hand_index >= hand.size():
+			return false
+		var hc = hand[hand_index]
+		if typeof(hc) != TYPE_DICTIONARY:
+			return false
+		card_to_queue = hc
+	else:
+		card_to_queue = card
+	if card_to_queue.is_empty():
+		return false
+
+	var cost: int = int(card_to_queue.get("cost", 0))
 
 	var momentum: int = game_state.momentum_home if team == "home" else game_state.momentum_away
 	var queued_spent: int = game_state.queued_momentum_spent_home if team == "home" else game_state.queued_momentum_spent_away
@@ -1695,7 +1737,7 @@ func _queue_card_for_team(team: String, card: Dictionary, target := {}) -> bool:
 
 	var entry: Dictionary = {
 		"team": team,
-		"card": card,
+		"card": card_to_queue,
 		"target": target,
 		"cost": cost
 	}
@@ -1703,14 +1745,77 @@ func _queue_card_for_team(team: String, card: Dictionary, target := {}) -> bool:
 	if team == "home":
 		game_state.queued_cards_home.append(entry)
 		game_state.queued_momentum_spent_home += cost
-		_remove_card_from_team_hand_by_id("home", str(card.get("id", "")))
 	else:
 		game_state.queued_cards_away.append(entry)
 		game_state.queued_momentum_spent_away += cost
-		_remove_card_from_team_hand_by_id("away", str(card.get("id", "")))
+
+	if hand_index >= 0:
+		hand.remove_at(hand_index)
+	else:
+		_remove_card_from_team_hand_by_id(team, str(card_to_queue.get("id", "")))
 
 	_update_ui()
 	return true
+
+
+func try_queue_hand_card_from_drag_data(data: Variant) -> void:
+	if typeof(data) != TYPE_DICTIONARY:
+		return
+	var team := str(data.get("team", ""))
+	var idx := int(data.get("index", -1))
+	_try_queue_hand_card_at_index(team, idx, false)
+
+
+func _on_queued_card_tile_unqueue_requested(team: String, queue_index: int) -> void:
+	_unqueue_card_at_index(team, queue_index)
+
+
+func _unqueue_card_at_index(team: String, queue_index: int) -> void:
+	if game_state.phase != PHASE_CARD_QUEUE:
+		return
+	if _is_ai_controlled_team(team, false):
+		return
+	if (team == "home" and game_state.home_ready) or (team == "away" and game_state.away_ready):
+		return
+	var q: Array = game_state.queued_cards_home if team == "home" else game_state.queued_cards_away
+	if queue_index < 0 or queue_index >= q.size():
+		return
+	var entry: Dictionary = q[queue_index]
+	var cost := int(entry.get("cost", 0))
+	var card: Dictionary = entry.get("card", {})
+	q.remove_at(queue_index)
+	if team == "home":
+		game_state.queued_momentum_spent_home = maxi(0, game_state.queued_momentum_spent_home - cost)
+		game_state.hand_home.insert(0, card.duplicate(true))
+	else:
+		game_state.queued_momentum_spent_away = maxi(0, game_state.queued_momentum_spent_away - cost)
+		game_state.hand_away.insert(0, card.duplicate(true))
+	result_text.text = "Returned %s to hand." % str(card.get("name", "Card"))
+	_append_event_log("Returned %s to hand." % str(card.get("name", "Card")))
+	_update_ui()
+
+
+func _on_hand_card_tile_queue_requested(team: String, hand_index: int) -> void:
+	_try_queue_hand_card_at_index(team, hand_index, false)
+
+
+func _try_queue_hand_card_at_index(team: String, hand_index: int, allow_ai: bool = false) -> void:
+	if not allow_ai and _is_ai_controlled_team(team, false):
+		return
+	if game_state.phase != PHASE_CARD_QUEUE:
+		return
+	if (team == "home" and game_state.home_ready) or (team == "away" and game_state.away_ready):
+		return
+	var hand := _hand_for_team(team)
+	if hand_index < 0 or hand_index >= hand.size():
+		return
+	if not _queue_card_for_team(team, {}, {}, hand_index):
+		result_text.text = "Not enough Momentum to queue that card."
+		_append_event_log("Not enough Momentum to queue that card.")
+		return
+	var qc: Dictionary = (game_state.queued_cards_home[-1] if team == "home" else game_state.queued_cards_away[-1]).get("card", {})
+	result_text.text = "Queued card (%s): %s" % [team, str(qc.get("name", "Card"))]
+	_append_event_log("Queued card (%s): %s" % [team, str(qc.get("name", "Card"))])
 
 
 func _set_team_ready(team: String, ready: bool) -> void:
@@ -1804,6 +1909,97 @@ func _remove_card_from_team_hand_by_id(team: String, card_id: String) -> bool:
 
 func _hand_for_team(team: String) -> Array:
 	return game_state.hand_home if team == "home" else game_state.hand_away
+
+
+func _clear_card_strip_children(container: Node) -> void:
+	for c in container.get_children():
+		c.queue_free()
+
+
+func _hand_visual_signature(hand: Array) -> String:
+	var parts: Array[String] = []
+	for item in hand:
+		if typeof(item) != TYPE_DICTIONARY:
+			continue
+		var d := item as Dictionary
+		parts.append("%s:%d" % [str(d.get("id", "")), int(d.get("cost", 0))])
+	return "|".join(parts)
+
+
+func _queue_visual_signature(entries: Array) -> String:
+	var parts: Array[String] = []
+	for item in entries:
+		if typeof(item) != TYPE_DICTIONARY:
+			continue
+		var cd: Dictionary = (item as Dictionary).get("card", {})
+		parts.append("%s:%d" % [str(cd.get("id", "")), int(cd.get("cost", 0))])
+	return "|".join(parts)
+
+
+func _rebuild_user_card_tiles() -> void:
+	var show_strips := current_phase_level >= 3
+
+	if user_hand_cards:
+		var hand_scroll := user_hand_cards.get_parent()
+		if hand_scroll:
+			hand_scroll.visible = show_strips
+	if user_queued_cards:
+		var queued_scroll := user_queued_cards.get_parent()
+		if queued_scroll:
+			queued_scroll.visible = show_strips
+	if user_queued_label:
+		user_queued_label.visible = show_strips
+
+	if not show_strips:
+		return
+
+	var hand: Array = _hand_for_team(_user_team)
+	var queue: Array = game_state.queued_cards_home if _user_team == "home" else game_state.queued_cards_away
+	var hs := _hand_visual_signature(hand)
+	var qs := _queue_visual_signature(queue)
+	if hs == _cached_user_hand_sig and qs == _cached_user_queue_sig:
+		return
+	_cached_user_hand_sig = hs
+	_cached_user_queue_sig = qs
+
+	if user_hand_cards:
+		_clear_card_strip_children(user_hand_cards)
+	if user_queued_cards:
+		_clear_card_strip_children(user_queued_cards)
+		user_queued_cards.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	if user_hand_cards:
+		for i in range(hand.size()):
+			var card = hand[i]
+			if typeof(card) != TYPE_DICTIONARY:
+				continue
+			var tile := CARD_TILE_SCENE.instantiate()
+			user_hand_cards.add_child(tile)
+			if tile.has_method("setup"):
+				tile.setup(card as Dictionary)
+			if tile.has_signal("queue_requested"):
+				tile.configure_hand_interaction(true, _user_team, i)
+				tile.queue_requested.connect(_on_hand_card_tile_queue_requested)
+
+	if user_queued_cards:
+		var user_ready := game_state.home_ready if _user_team == "home" else game_state.away_ready
+		var allow_unqueue: bool = game_state.phase == PHASE_CARD_QUEUE and not _sim_running and not user_ready
+		for qi in range(queue.size()):
+			var entry = queue[qi]
+			if typeof(entry) != TYPE_DICTIONARY:
+				continue
+			var cd: Dictionary = (entry as Dictionary).get("card", {})
+			if cd.is_empty():
+				continue
+			var qtile := CARD_TILE_SCENE.instantiate()
+			user_queued_cards.add_child(qtile)
+			if qtile.has_method("setup"):
+				qtile.setup(cd)
+			if qtile.has_method("configure_queued_interaction"):
+				qtile.configure_queued_interaction(allow_unqueue, _user_team, qi)
+			if allow_unqueue and qtile.has_signal("unqueue_requested"):
+				qtile.unqueue_requested.connect(_on_queued_card_tile_unqueue_requested)
+
 
 func _format_hand_names(hand: Array) -> String:
 	if hand.is_empty():
