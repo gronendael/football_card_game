@@ -63,6 +63,12 @@ Keep a modular gameplay setup:
   - Any team timeout (3 per team for the entire game)
   - Future: player injury, penalty
 - Clock resumes when both teams hit Ready on the next play
+- Ready-wait behavior in card queue:
+  - If offense presses `Ready` while defense is not ready and the clock is running, pause the clock while waiting
+  - When defense presses `Ready`, resume only if the clock was running before that pause
+- Game-start clock gate:
+  - Clock remains stopped at game start
+  - Clock starts only after both teams are Ready on the first turn, or when the 15s Play Clock auto-readies non-ready team(s)
 - First-half boundary behavior:
   - Halftime triggers at 2:30 regardless of drive completion
   - If a final pre-halftime play scores (TD / FG), that score must count
@@ -175,7 +181,9 @@ Allowed `ended_by` values:
 - Both teams progress each play (not only team in possession)
 - Card draw cadence:
   - At game start, each team draws 2 cards
-  - Before each play, each team draws 1 card
+  - At start of turn (before play selection), each team draws 1 card
+  - First turn expectation: each team has 3 cards before first play selection (2 pre-game + 1 start-turn draw)
+  - No additional draw occurs when card queue phase starts
 
 ## Post-Touchdown Conversions
 
@@ -284,6 +292,30 @@ Allowed `ended_by` values:
   - Non-possession team `queue[1]`
   - Continue until both queues exhausted
 - After queue execution, resolve play outcome
+- Manual card input behavior:
+  - In manual mode, user queues cards by dragging/clicking specific hand cards into queue (no required `Play Card` button usage)
+  - Queued cards can be removed back to hand before user presses `Ready`
+- Play Clock:
+  - At the start of each play cycle, both teams get 15 real-world seconds total to select play + queue cards + press `Ready` (wall-clock, not game-clock seconds)
+  - If timer expires, any team not already ready is auto-readied
+  - If offense/defense play was missing at timeout, AI picker fills missing play selections for that team
+  - Teams that time out do not get auto-queued cards for that turn (already queued cards still execute)
+
+### Turn Phase Order (Loop)
+
+- Start turn
+- Resolve start-turn effects
+- Draw 1 card per team
+- Resolve draw-triggered effects
+- Teams select play
+- Resolve play-selection triggers
+- Teams queue cards
+- Resolve queue triggers
+- Teams press `Ready`
+- Resolve ready triggers
+- Resolve play outcome
+- End turn
+- Resolve end-turn effects
 
 ### Queue Runtime State
 
@@ -336,6 +368,14 @@ In `GameState`, maintain:
 - `SimButtons` provide optional autoplay for the user's team:
   - When enabled, user team input is AI-driven too
   - When disabled, user team remains manual while opponent stays AI
+- User controls include a `Forfeit` action:
+  - Forfeit is available only on the visible user-controlled side
+  - Manual forfeit scoring:
+    - If forfeiting team is leading, final score is forced to `7-0` loss for forfeiting team
+    - If forfeiting team is losing, current score becomes final
+- Inactivity forfeit (user-controlled team only):
+  - If user fails to press `Ready` for 3 consecutive turns, user team forfeits automatically
+  - Auto-forfeit logs event and final score outcome
 - This architecture is single-player only; multiplayer can be layered later without changing core game rules/state.
 
 ## Data Files

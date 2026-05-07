@@ -12,19 +12,6 @@
 [ext_resource type="Script" uid="uid://ccnxosm2w5n65" path="res://scripts/queue_drop_target.gd" id="10_qdrop"]
 [ext_resource type="Script" uid="uid://cpmi625jppg7l" path="res://scripts/team_data.gd" id="11_team"]
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_tcjrq"]
-content_margin_left = 4.0
-content_margin_top = 4.0
-content_margin_right = 4.0
-content_margin_bottom = 4.0
-bg_color = Color(1, 0, 0, 0.6)
-border_color = Color(0, 0, 0, 1)
-corner_radius_top_left = 3
-corner_radius_top_right = 3
-corner_radius_bottom_right = 3
-corner_radius_bottom_left = 3
-corner_detail = 5
-
 [node name="GameScene" type="Control" unique_id=672677923]
 layout_mode = 3
 anchors_preset = 0
@@ -356,18 +343,17 @@ scroll_following = true
 layout_mode = 3
 anchors_preset = 0
 offset_left = 8.0
-offset_top = 696.0
+offset_top = 710.0
 offset_right = 598.0
-offset_bottom = 1196.0
+offset_bottom = 1210.0
 scale = Vector2(2, 2)
 
 [node name="UserMomentumValueLabel" type="Label" parent="UserGroup/UserHUD" unique_id=1505117762]
 layout_mode = 0
 offset_left = 6.0
 offset_top = 1.0
-offset_right = 78.0
-offset_bottom = 73.0
-theme_override_colors/font_color = Color(0, 1, 0, 1)
+offset_right = 102.0
+offset_bottom = 97.0
 theme_override_font_sizes/font_size = 52
 text = "0"
 horizontal_alignment = 1
@@ -377,46 +363,29 @@ vertical_alignment = 1
 layout_mode = 0
 offset_left = 100.0
 offset_right = 300.0
-offset_bottom = 72.0
+offset_bottom = 96.0
 theme_override_font_sizes/font_size = 52
 text = "Bees"
 vertical_alignment = 1
 
-[node name="UserTimeoutsPanel" type="Control" parent="UserGroup/UserHUD" unique_id=1672479242]
-anchors_preset = 0
-offset_left = 388.0
-offset_top = -59.0
-offset_right = 428.0
-offset_bottom = -19.0
-
-[node name="UserTOsLabel" type="Label" parent="UserGroup/UserHUD/UserTimeoutsPanel" unique_id=202608609]
-layout_mode = 0
-offset_left = 112.0
-offset_top = -72.0
-offset_right = 152.0
-offset_bottom = -49.0
-theme_override_colors/font_color = Color(1, 0.47843137, 0, 1)
-theme_override_font_sizes/font_size = 32
-text = "TOs"
-
-[node name="UserTOsPanel" type="Button" parent="UserGroup/UserHUD/UserTimeoutsPanel" unique_id=1343374615]
+[node name="UserTOsPanel" type="Button" parent="UserGroup/UserHUD" unique_id=1343374615]
 custom_minimum_size = Vector2(96, 96)
 layout_mode = 0
-offset_left = 92.0
-offset_top = -29.0
-offset_right = 188.0
-offset_bottom = 67.0
+offset_left = 408.0
+offset_top = -5.0
+offset_right = 600.0
+offset_bottom = 91.0
 tooltip_text = "Call Timeout"
-theme_override_colors/font_color = Color(1, 0.47843137, 0, 1)
-theme_override_font_sizes/font_size = 52
-text = "3"
+theme_override_font_sizes/font_size = 28
+text = "TOs
+3"
 
 [node name="UserPlayButtons" type="HBoxContainer" parent="UserGroup/UserHUD" unique_id=1602781797]
 layout_mode = 0
-offset_left = 8.0
-offset_top = 72.999985
+offset_left = 7.9999847
+offset_top = 88.999985
 offset_right = 629.0
-offset_bottom = 112.999985
+offset_bottom = 128.99998
 
 [node name="UserRunButton" type="Button" parent="UserGroup/UserHUD/UserPlayButtons" unique_id=278693041]
 layout_mode = 2
@@ -434,6 +403,10 @@ text = "Deep Pass"
 layout_mode = 2
 text = "Field Goal"
 
+[node name="UserPlayCardButton" type="Button" parent="UserGroup/UserHUD/UserPlayButtons" unique_id=1423532865]
+layout_mode = 2
+text = "Play Card"
+
 [node name="UserReadyButton" type="Button" parent="UserGroup/UserHUD/UserPlayButtons" unique_id=404468002]
 layout_mode = 2
 text = "Ready"
@@ -449,10 +422,10 @@ text = "2-Point"
 [node name="UserHandPanel" type="Panel" parent="UserGroup/UserHUD" unique_id=292743715]
 custom_minimum_size = Vector2(200, 100)
 layout_mode = 0
-offset_left = 8.0
-offset_top = 116.0
-offset_right = 358.0
-offset_bottom = 316.0
+offset_left = 6.0
+offset_top = 129.0
+offset_right = 306.0
+offset_bottom = 354.0
 
 [node name="UserHandLabel" type="Label" parent="UserGroup/UserHUD/UserHandPanel" unique_id=189760659]
 layout_mode = 0
@@ -481,10 +454,10 @@ theme_override_constants/separation = 8
 clip_contents = true
 custom_minimum_size = Vector2(200, 100)
 layout_mode = 0
-offset_left = 368.0
-offset_top = 116.0
-offset_right = 593.0
-offset_bottom = 316.0
+offset_left = 316.0
+offset_top = 125.0
+offset_right = 591.0
+offset_bottom = 350.0
 
 [node name="UserQueuedLabel" type="Label" parent="UserGroup/UserHUD/UserQueuedPanel" unique_id=189760662]
 layout_mode = 0
@@ -517,36 +490,36 @@ theme_override_constants/separation = 8
 [node name="UserForfeitButton" type="Button" parent="UserGroup/UserHUD" unique_id=1599738782]
 custom_minimum_size = Vector2(192, 56)
 layout_mode = 0
-offset_left = 6.0
-offset_top = 328.0
-offset_right = 198.0
-offset_bottom = 384.0
-theme_override_font_sizes/font_size = 32
-theme_override_styles/normal = SubResource("StyleBoxFlat_tcjrq")
+offset_left = 4.0
+offset_top = 365.0
+offset_right = 196.0
+offset_bottom = 421.0
+theme_override_font_sizes/font_size = 28
 text = "Forfeit"
 
-[node name="UserPlayersContainer" type="GridContainer" parent="UserGroup" unique_id=1912429368]
-offset_left = 928.0
-offset_top = 294.0
-offset_right = 1128.0
-offset_bottom = 494.0
+[node name="UserPlayersContainer" type="GridContainer" parent="UserGroup/UserHUD" unique_id=1912429368]
+layout_mode = 0
+offset_left = 460.0
+offset_top = -208.0
+offset_right = 660.0
+offset_bottom = -8.0
 theme_override_constants/h_separation = 16
 theme_override_constants/v_separation = 16
 columns = 4
 
-[node name="UserPlayer1" parent="UserGroup/UserPlayersContainer" unique_id=2089160178 instance=ExtResource("1_onqr8")]
+[node name="UserPlayer1" parent="UserGroup/UserHUD/UserPlayersContainer" unique_id=2089160178 instance=ExtResource("1_onqr8")]
 layout_mode = 2
 
-[node name="UserPlayer2" parent="UserGroup/UserPlayersContainer" unique_id=900997149 instance=ExtResource("1_onqr8")]
+[node name="UserPlayer2" parent="UserGroup/UserHUD/UserPlayersContainer" unique_id=900997149 instance=ExtResource("1_onqr8")]
 layout_mode = 2
 
 [node name="OpponentGroup" type="Node" parent="." unique_id=756280709]
 
 [node name="OpponentHUD" type="VBoxContainer" parent="OpponentGroup" unique_id=1850213906]
-offset_left = -1256.0
+offset_left = -832.0
 offset_top = 222.0
-offset_right = -635.0
-offset_bottom = 596.0
+offset_right = -432.0
+offset_bottom = 361.0
 scale = Vector2(2, 2)
 theme_override_constants/separation = 8
 
@@ -561,37 +534,6 @@ theme_override_font_sizes/font_size = 52
 text = "0"
 horizontal_alignment = 1
 vertical_alignment = 1
-
-[node name="OpponentPlayButtons" type="HBoxContainer" parent="OpponentGroup/OpponentHUD" unique_id=35939323]
-layout_mode = 2
-
-[node name="OpponentRunButton" type="Button" parent="OpponentGroup/OpponentHUD/OpponentPlayButtons" unique_id=2077301709]
-layout_mode = 2
-text = "Run"
-
-[node name="OpponentShortPassButton" type="Button" parent="OpponentGroup/OpponentHUD/OpponentPlayButtons" unique_id=1568332844]
-layout_mode = 2
-text = "Short Pass"
-
-[node name="OpponentDeepPassButton" type="Button" parent="OpponentGroup/OpponentHUD/OpponentPlayButtons" unique_id=318575843]
-layout_mode = 2
-text = "Deep Pass"
-
-[node name="OpponentFieldGoalButton" type="Button" parent="OpponentGroup/OpponentHUD/OpponentPlayButtons" unique_id=1504513508]
-layout_mode = 2
-text = "Field Goal"
-
-[node name="OpponentReadyButton" type="Button" parent="OpponentGroup/OpponentHUD/OpponentPlayButtons" unique_id=1536603709]
-layout_mode = 2
-text = "Ready"
-
-[node name="OpponentExtraPointButton" type="Button" parent="OpponentGroup/OpponentHUD/OpponentPlayButtons" unique_id=1732787514]
-layout_mode = 2
-text = "Extra Point"
-
-[node name="OpponentTwoPointButton" type="Button" parent="OpponentGroup/OpponentHUD/OpponentPlayButtons" unique_id=1344702792]
-layout_mode = 2
-text = "2-Point"
 
 [node name="OpponentHandLabel" type="Label" parent="OpponentGroup/OpponentHUD" unique_id=1574796013]
 layout_mode = 2
@@ -616,6 +558,45 @@ theme_override_font_sizes/font_size = 28
 disabled = true
 text = "TOs
 3"
+
+[node name="OpponentPlayButtons" type="HBoxContainer" parent="OpponentGroup" unique_id=35939323]
+offset_left = -2520.0
+offset_top = 512.0
+offset_right = -1274.0
+offset_bottom = 552.0
+scale = Vector2(2, 2)
+
+[node name="OpponentRunButton" type="Button" parent="OpponentGroup/OpponentPlayButtons" unique_id=2077301709]
+layout_mode = 2
+text = "Run"
+
+[node name="OpponentShortPassButton" type="Button" parent="OpponentGroup/OpponentPlayButtons" unique_id=1568332844]
+layout_mode = 2
+text = "Short Pass"
+
+[node name="OpponentDeepPassButton" type="Button" parent="OpponentGroup/OpponentPlayButtons" unique_id=318575843]
+layout_mode = 2
+text = "Deep Pass"
+
+[node name="OpponentFieldGoalButton" type="Button" parent="OpponentGroup/OpponentPlayButtons" unique_id=1504513508]
+layout_mode = 2
+text = "Field Goal"
+
+[node name="OpponentPlayCardButton" type="Button" parent="OpponentGroup/OpponentPlayButtons" unique_id=1171292001]
+layout_mode = 2
+text = "Play Card"
+
+[node name="OpponentReadyButton" type="Button" parent="OpponentGroup/OpponentPlayButtons" unique_id=1536603709]
+layout_mode = 2
+text = "Ready"
+
+[node name="OpponentExtraPointButton" type="Button" parent="OpponentGroup/OpponentPlayButtons" unique_id=1732787514]
+layout_mode = 2
+text = "Extra Point"
+
+[node name="OpponentTwoPointButton" type="Button" parent="OpponentGroup/OpponentPlayButtons" unique_id=1344702792]
+layout_mode = 2
+text = "2-Point"
 
 [node name="OpponentPlayersContainer" type="GridContainer" parent="OpponentGroup" unique_id=1438431258]
 offset_left = 928.0
