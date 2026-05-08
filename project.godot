@@ -18,9 +18,11 @@ config/icon="res://icon.svg"
 [display]
 
 window/size/viewport_width=2000
-window/size/viewport_height=1500
+window/size/viewport_height=960
 window/size/mode=3
+window/size/resizable=false
 window/stretch/mode="viewport"
+window/handheld/orientation=1
 
 [physics]
 

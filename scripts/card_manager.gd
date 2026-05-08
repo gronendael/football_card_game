@@ -2,6 +2,7 @@ extends Node
 class_name CardManager
 
 var cards_db: Array[Dictionary] = []
+var _next_instance_serial: int = 1
 
 func setup(cards: Array[Dictionary]) -> void:
 	cards_db = cards.duplicate(true)
@@ -24,7 +25,14 @@ func draw(hand: Array, deck: Array, discard: Array, count: int, hand_max: int = 
 			deck.shuffle()
 		if deck.is_empty():
 			return
-		hand.append(deck.pop_back())
+		var drawn_raw: Variant = deck.pop_back()
+		if typeof(drawn_raw) != TYPE_DICTIONARY:
+			continue
+		var drawn := drawn_raw as Dictionary
+		if str(drawn.get("instance_id", "")).is_empty():
+			drawn["instance_id"] = "%s#%d" % [str(drawn.get("id", "card")), _next_instance_serial]
+			_next_instance_serial += 1
+		hand.append(drawn)
 
 func can_afford(card: Dictionary, momentum: int) -> bool:
 	return momentum >= int(card.get("cost", 0))

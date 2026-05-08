@@ -1,0 +1,94 @@
+[gd_scene format=3 uid="uid://dnhyqxmvkb71"]
+
+[node name="Field" type="Node2D"]
+position = Vector2(45, 110)
+
+[node name="FieldBackground" type="ColorRect" parent="."]
+offset_right = 450.0
+offset_bottom = 560.0
+color = Color(0, 0.22352941, 0, 1)
+
+[node name="EndZone" type="ColorRect" parent="."]
+offset_right = 450.0
+offset_bottom = 80.0
+color = Color(0, 0.95686275, 0, 1)
+
+[node name="RedZone" type="ColorRect" parent="."]
+offset_top = 80.0
+offset_right = 450.0
+offset_bottom = 160.0
+color = Color(0, 0.56078434, 0, 1)
+
+[node name="AttackZone" type="ColorRect" parent="."]
+offset_top = 160.0
+offset_right = 450.0
+offset_bottom = 240.0
+color = Color(0, 0.56078434, 0, 1)
+
+[node name="MidfieldZone" type="ColorRect" parent="."]
+offset_top = 240.0
+offset_right = 450.0
+offset_bottom = 320.0
+color = Color(0, 0.56078434, 0, 1)
+
+[node name="BuildZone" type="ColorRect" parent="."]
+offset_top = 320.0
+offset_right = 450.0
+offset_bottom = 400.0
+color = Color(0, 0.56078434, 0, 1)
+
+[node name="StartZone" type="ColorRect" parent="."]
+offset_top = 400.0
+offset_right = 450.0
+offset_bottom = 480.0
+color = Color(0, 0.56078434, 0, 1)
+
+[node name="MyEndZone" type="ColorRect" parent="."]
+offset_top = 480.0
+offset_right = 450.0
+offset_bottom = 560.0
+color = Color(0, 1, 0, 1)
+
+[node name="YardLine" type="ColorRect" parent="."]
+offset_top = 77.0
+offset_right = 450.0
+offset_bottom = 83.0
+
+[node name="YardLine2" type="ColorRect" parent="."]
+offset_top = 157.0
+offset_right = 450.0
+offset_bottom = 163.0
+
+[node name="YardLine3" type="ColorRect" parent="."]
+offset_top = 237.0
+offset_right = 450.0
+offset_bottom = 243.0
+
+[node name="YardLine4" type="ColorRect" parent="."]
+offset_top = 317.0
+offset_right = 450.0
+offset_bottom = 323.0
+
+[node name="YardLine5" type="ColorRect" parent="."]
+offset_top = 397.0
+offset_right = 450.0
+offset_bottom = 403.0
+
+[node name="YardLine6" type="ColorRect" parent="."]
+offset_top = 477.0
+offset_right = 450.0
+offset_bottom = 483.0
+
+[node name="BallMarker" type="ColorRect" parent="."]
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="PossessionArrow" type="Label" parent="."]
+offset_right = 40.0
+offset_bottom = 23.0
+scale = Vector2(2, 2)
+
+[node name="PossessionOnFieldLabel" type="Label" parent="."]
+offset_right = 40.0
+offset_bottom = 23.0
+scale = Vector2(2.5, 2.5)

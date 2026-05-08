@@ -30,28 +30,30 @@ const CARD_TILE_SCENE := preload("res://scenes/card_tile.tscn")
 @onready var coach_data: CoachData = $GameManagers/CoachData
 @onready var team_data: TeamData = $GameManagers/TeamData
 
-@onready var game_clock_value_label: Label = get_node_or_null("HUDGroup/ClockPanel/GameClockValueLabel") as Label
-@onready var play_clock_value_label: Label = get_node_or_null("HUDGroup/ClockPanel/PlayClockValueLabel") as Label
+@onready var game_clock_value_label: Label = get_node_or_null("UserGroup/UserHUD/UserTeamsScoresPanel/ClockPanel/GameClockValueLabel") as Label
+@onready var play_clock_value_label: Label = get_node_or_null("UserGroup/UserHUD/UserTeamsScoresPanel/ClockPanel/PlayClockValueLabel") as Label
 @onready var half_label: Label = $HUDGroup/GlobalHUD/HalfLabel
-@onready var score_label: Label = $HUDGroup/GlobalHUD/ScoreLabel
-@onready var possession_label: Label = $HUDGroup/GlobalHUD/PossessionLabel
 @onready var zone_label: Label = $HUDGroup/GlobalHUD/ZoneLabel
 @onready var drive_points_label: Label = $HUDGroup/GlobalHUD/DrivePointsLabel
 @onready var phase_label: Label = $HUDGroup/GlobalHUD/PhaseLabel
 @onready var result_text: RichTextLabel = $HUDGroup/PlayInfoHUD/ResultText
-@onready var opponent_momentum_value_label: Label = get_node_or_null("OpponentGroup/OpponentHUD/OpponentMomentumPanel/OpponentMomentumValueLabel") as Label
-@onready var opponent_hand_label: Label = $OpponentGroup/OpponentHUD/OpponentHandLabel
-@onready var opponent_team_name_value_label: Label = get_node_or_null("OpponentGroup/OpponentHUD/OpponentTeamNamePanel/OpponentTeamNameValueLabel") as Label
-@onready var opponent_tos_button: Button = get_node_or_null("OpponentGroup/OpponentHUD/OpponentTOsPanel") as Button
+@onready var opponent_momentum_value_label: Label = get_node_or_null("OpponentGroup/OpponentHUD/OpponentMomentumValueLabel") as Label
+@onready var opponent_hand_label: Label = $OpponentGroup/OpponentHUD/OpponentHandPanel/OpponentHandLabel
+@onready var opponent_team_name_value_label: Label = get_node_or_null("UserGroup/UserHUD/UserTeamsScoresPanel/OpponentTeam/OpponentTeamNameValueLabel") as Label
+@onready var opponent_possession_icon_label: Label = get_node_or_null("UserGroup/UserHUD/UserTeamsScoresPanel/OpponentTeam/OpponentPossessionIcon") as Label
+@onready var opponent_score_value_label: Label = get_node_or_null("UserGroup/UserHUD/UserTeamsScoresPanel/OpponentTeam/OpponentScoreValueLabel") as Label
+@onready var opponent_tos_button: Button = get_node_or_null("OpponentGroup/OpponentHUD/OpponentTimeoutsPanel/OpponentTOsPanel") as Button
 @onready var opponent_hud: Control = get_node_or_null("OpponentGroup/OpponentHUD") as Control
-@onready var user_momentum_value_label: Label = get_node_or_null("UserGroup/UserHUD/UserMomentumValueLabel") as Label
+@onready var user_momentum_value_label: Label = get_node_or_null("UserGroup/UserHUD/UserBottomUIPanel/UserMomentumValueLabel") as Label
 @onready var user_hand_label: Label = $UserGroup/UserHUD/UserHandPanel/UserHandLabel
 @onready var user_hand_cards: HBoxContainer = get_node_or_null("UserGroup/UserHUD/UserHandPanel/UserHandScroll/UserHandCards") as HBoxContainer
 @onready var user_queued_label: Label = get_node_or_null("UserGroup/UserHUD/UserQueuedPanel/UserQueuedLabel") as Label
 @onready var user_queued_cards: HBoxContainer = get_node_or_null("UserGroup/UserHUD/UserQueuedPanel/UserQueuedScroll/UserQueuedCards") as HBoxContainer
-@onready var user_team_name_value_label: Label = get_node_or_null("UserGroup/UserHUD/UserTeamNameValueLabel") as Label
+@onready var user_team_name_value_label: Label = get_node_or_null("UserGroup/UserHUD/UserTeamsScoresPanel/UserTeam/UserTeamNameValueLabel") as Label
+@onready var user_possession_icon_label: Label = get_node_or_null("UserGroup/UserHUD/UserTeamsScoresPanel/UserTeam/UserPossessionIcon") as Label
+@onready var user_score_value_label: Label = get_node_or_null("UserGroup/UserHUD/UserTeamsScoresPanel/UserTeam/UserScoreValueLabel") as Label
 @onready var user_tos_button: Button = get_node_or_null("UserGroup/UserHUD/UserTimeoutsPanel/UserTOsPanel") as Button
-@onready var user_forfeit_button: Button = get_node_or_null("UserGroup/UserHUD/UserForfeitButton") as Button
+@onready var user_forfeit_button: Button = get_node_or_null("UserGroup/UserHUD/UserBottomUIPanel/UserForfeitButton") as Button
 @onready var user_hud: Control = get_node_or_null("UserGroup/UserHUD") as Control
 @onready var field_background: ColorRect = $Field/FieldBackground
 @onready var ball_marker: ColorRect = $Field/BallMarker
@@ -64,24 +66,24 @@ const CARD_TILE_SCENE := preload("res://scenes/card_tile.tscn")
 @onready var sim_status_label: Label = get_node_or_null("HUDGroup/GlobalHUD/SimStatusLabel") as Label
 @onready var sim_stats_label: Label = get_node_or_null("HUDGroup/GlobalHUD/SimStatsLabel") as Label
 @onready var user_team_label: Label = get_node_or_null("HUDGroup/GlobalHUD/UserTeamLabel") as Label
-@onready var quit_button: Button = get_node_or_null("HUDGroup/GlobalHUD/QuitButton") as Button
+@onready var quit_button: Button = (get_node_or_null("QuitButton") as Button) if get_node_or_null("QuitButton") != null else (get_node_or_null("HUDGroup/GlobalHUD/QuitButton") as Button)
 @onready var speed_label: Label = (get_node_or_null("HUDGroup/SpeedPanel/SpeedLabel") as Label) if get_node_or_null("HUDGroup/SpeedPanel/SpeedLabel") != null else (get_node_or_null("HUDGroup/SimButtons/SpeedLabel") as Label)
 
-@onready var opponent_play_buttons: Control = get_node_or_null("OpponentGroup/OpponentPlayButtons") as Control
-@onready var opponent_run_button: Button = get_node_or_null("OpponentGroup/OpponentPlayButtons/OpponentRunButton") as Button
-@onready var opponent_short_pass_button: Button = get_node_or_null("OpponentGroup/OpponentPlayButtons/OpponentShortPassButton") as Button
-@onready var opponent_deep_pass_button: Button = get_node_or_null("OpponentGroup/OpponentPlayButtons/OpponentDeepPassButton") as Button
-@onready var opponent_field_goal_button: Button = get_node_or_null("OpponentGroup/OpponentPlayButtons/OpponentFieldGoalButton") as Button
-@onready var opponent_ready_button: Button = get_node_or_null("OpponentGroup/OpponentPlayButtons/OpponentReadyButton") as Button
-@onready var opponent_extra_point_button: Button = get_node_or_null("OpponentGroup/OpponentPlayButtons/OpponentExtraPointButton") as Button
-@onready var opponent_two_point_button: Button = get_node_or_null("OpponentGroup/OpponentPlayButtons/OpponentTwoPointButton") as Button
+@onready var opponent_play_buttons: Control = get_node_or_null("OpponentGroup/OpponentHUD/OpponentPlayButtons") as Control
+@onready var opponent_run_button: Button = get_node_or_null("OpponentGroup/OpponentHUD/OpponentPlayButtons/OpponentRunButton") as Button
+@onready var opponent_short_pass_button: Button = get_node_or_null("OpponentGroup/OpponentHUD/OpponentPlayButtons/OpponentShortPassButton") as Button
+@onready var opponent_deep_pass_button: Button = get_node_or_null("OpponentGroup/OpponentHUD/OpponentPlayButtons/OpponentDeepPassButton") as Button
+@onready var opponent_field_goal_button: Button = get_node_or_null("OpponentGroup/OpponentHUD/OpponentPlayButtons/OpponentFieldGoalButton") as Button
+@onready var opponent_ready_button: Button = get_node_or_null("OpponentGroup/OpponentHUD/OpponentPlayButtons/OpponentReadyButton") as Button
+@onready var opponent_extra_point_button: Button = get_node_or_null("OpponentGroup/OpponentHUD/OpponentPlayButtons/OpponentExtraPointButton") as Button
+@onready var opponent_two_point_button: Button = get_node_or_null("OpponentGroup/OpponentHUD/OpponentPlayButtons/OpponentTwoPointButton") as Button
 
 @onready var user_play_buttons: Control = get_node_or_null("UserGroup/UserHUD/UserPlayButtons") as Control
 @onready var user_run_button: Button = get_node_or_null("UserGroup/UserHUD/UserPlayButtons/UserRunButton") as Button
 @onready var user_short_pass_button: Button = get_node_or_null("UserGroup/UserHUD/UserPlayButtons/UserShortPassButton") as Button
 @onready var user_deep_pass_button: Button = get_node_or_null("UserGroup/UserHUD/UserPlayButtons/UserDeepPassButton") as Button
 @onready var user_field_goal_button: Button = get_node_or_null("UserGroup/UserHUD/UserPlayButtons/UserFieldGoalButton") as Button
-@onready var user_ready_button: Button = get_node_or_null("UserGroup/UserHUD/UserPlayButtons/UserReadyButton") as Button
+@onready var user_ready_button: Button = get_node_or_null("UserGroup/UserHUD/UserBottomUIPanel/UserReadyButton") as Button
 @onready var user_extra_point_button: Button = get_node_or_null("UserGroup/UserHUD/UserPlayButtons/UserExtraPointButton") as Button
 @onready var user_two_point_button: Button = get_node_or_null("UserGroup/UserHUD/UserPlayButtons/UserTwoPointButton") as Button
 
@@ -94,7 +96,9 @@ const CARD_TILE_SCENE := preload("res://scenes/card_tile.tscn")
 
 @onready var opponent_players_container: GridContainer = get_node_or_null("OpponentGroup/OpponentPlayersContainer") as GridContainer
 @onready var user_players_container: GridContainer = get_node_or_null("UserGroup/UserHUD/UserPlayersContainer") as GridContainer
+@onready var cards_panel: Panel = get_node_or_null("CardsPanel") as Panel
 @onready var card_panel: VBoxContainer = $CardsPanel/CardPanel
+@onready var card_title_label: Label = get_node_or_null("CardsPanel/CardPanel/CardTitle") as Label
 @onready var targeting_panel: VBoxContainer = $TargetingPanel
 
 var _player_tokens: Dictionary = {}
@@ -122,6 +126,8 @@ var _selected_defense_play: String = DEF_ZONE
 var _play_ready_home: bool = false
 var _play_ready_away: bool = false
 var _defense_selected_explicit: bool = false
+var _selected_cards_home: Array[String] = []
+var _selected_cards_away: Array[String] = []
 
 var _stats_games: int = 0
 var _stats_home_wins: int = 0
@@ -163,7 +169,14 @@ var _ready_miss_streak_away: int = 0
 var _clock_paused_for_ready_wait: bool = false
 var _clock_running_before_ready_wait: bool = false
 var _abandoned_game: bool = false
+var _sim_presnap_runoff_applied: bool = false
 const TURN_ACTION_LIMIT_SECONDS := 40.0
+const SIM_RUNOFF_MIN_SECONDS := 18
+const SIM_RUNOFF_MAX_SECONDS := 28
+const SIM_RUNOFF_HURRY_MIN_SECONDS := 8
+const SIM_RUNOFF_HURRY_MAX_SECONDS := 14
+const SIM_RUNOFF_TWO_MIN_MIN_SECONDS := 6
+const SIM_RUNOFF_TWO_MIN_MAX_SECONDS := 12
 const USER_READY_MISS_FORFEIT_TURNS := 3
 const DEFAULT_USER_TEAM_ID := "bees"
 const DEFAULT_OPPONENT_TEAM_ID := "cavs"
@@ -261,13 +274,18 @@ func _maybe_run_ai_inputs(include_user_autoplay: bool = false) -> void:
 			return
 
 	if game_state.phase == PHASE_CARD_QUEUE:
-		if _is_ai_controlled_team("home", include_user_autoplay) and not game_state.home_ready:
+		var home_ai := _is_ai_controlled_team("home", include_user_autoplay)
+		var away_ai := _is_ai_controlled_team("away", include_user_autoplay)
+		if home_ai and away_ai and not _sim_presnap_runoff_applied:
+			_apply_sim_presnap_runoff()
+			_sim_presnap_runoff_applied = true
+		if home_ai and not game_state.home_ready:
 			if not _did_team_timeout_this_turn("home"):
-				_auto_queue_for_team("home", -1)
+				_auto_select_for_team("home", -1)
 			_set_team_ready("home", true)
-		if _is_ai_controlled_team("away", include_user_autoplay) and not game_state.away_ready:
+		if away_ai and not game_state.away_ready:
 			if not _did_team_timeout_this_turn("away"):
-				_auto_queue_for_team("away", -1)
+				_auto_select_for_team("away", -1)
 			_set_team_ready("away", true)
 		_ai_think_lock = false
 		return
@@ -275,13 +293,18 @@ func _maybe_run_ai_inputs(include_user_autoplay: bool = false) -> void:
 	if _is_phase_allowed_for_play():
 		var offense := game_state.possession_team
 		var defense := "away" if offense == "home" else "home"
+		var offense_ai := _is_ai_controlled_team(offense, include_user_autoplay)
+		var defense_ai := _is_ai_controlled_team(defense, include_user_autoplay)
 		if _is_ai_controlled_team(offense, include_user_autoplay) and game_state.pending_play_type == PLAY_NONE():
 			_on_select_play_for_team(offense, _pick_sim_play_type(), true)
 		if _is_ai_controlled_team(defense, include_user_autoplay) and not _defense_selected_explicit:
 			_on_select_play_for_team(defense, _pick_sim_defense_play_for_offense(game_state.pending_play_type), true)
-		if _is_ai_controlled_team(offense, include_user_autoplay):
+		if offense_ai and defense_ai and not _sim_presnap_runoff_applied:
+			_apply_sim_presnap_runoff()
+			_sim_presnap_runoff_applied = true
+		if offense_ai:
 			_on_ready_pressed_for_team(offense, true)
-		if _is_ai_controlled_team(defense, include_user_autoplay):
+		if defense_ai:
 			_on_ready_pressed_for_team(defense, true)
 
 	_ai_think_lock = false
@@ -351,6 +374,7 @@ func _ready() -> void:
 	_update_player_details("")
 	if player_details_panel:
 		player_details_panel.visible = false
+	_hide_card_info_panel()
 
 func _process(delta: float) -> void:
 	_tick_turn_action_timer(delta)
@@ -391,6 +415,7 @@ func _start_turn_action_timer() -> void:
 	_turn_action_time_remaining = TURN_ACTION_LIMIT_SECONDS
 	_last_play_clock_display_seconds = int(ceili(TURN_ACTION_LIMIT_SECONDS))
 	_turn_action_timeout_handled = false
+	_sim_presnap_runoff_applied = false
 	_turn_timed_out_home = false
 	_turn_timed_out_away = false
 	_manual_ready_pressed_home = false
@@ -434,11 +459,31 @@ func _handle_turn_action_timeout() -> void:
 		_set_team_ready(team, true)
 
 func _input(event: InputEvent) -> void:
-	if not (event is InputEventMouseButton):
-		return
+	var mb_release := event as InputEventMouseButton
+	if mb_release and not mb_release.pressed and mb_release.button_index == MOUSE_BUTTON_LEFT:
+		if cards_panel and cards_panel.visible:
+			_hide_card_info_panel()
+	var st_release := event as InputEventScreenTouch
+	if st_release and not st_release.pressed:
+		if cards_panel and cards_panel.visible:
+			_hide_card_info_panel()
+
+	var is_press := false
+	var press_pos := Vector2.ZERO
 	var mb := event as InputEventMouseButton
-	if mb == null or not mb.pressed or mb.button_index != MOUSE_BUTTON_LEFT:
+	if mb and mb.pressed and mb.button_index == MOUSE_BUTTON_LEFT:
+		is_press = true
+		press_pos = mb.position
+	var st := event as InputEventScreenTouch
+	if st and st.pressed:
+		is_press = true
+		press_pos = st.position
+	if not is_press:
 		return
+	if cards_panel and cards_panel.visible:
+		var panel_rect := Rect2(cards_panel.global_position, cards_panel.size)
+		if not panel_rect.has_point(press_pos):
+			_hide_card_info_panel()
 	var hovered := get_viewport().gui_get_hovered_control()
 	if opponent_players_container == null or user_players_container == null:
 		_clear_selected_player()
@@ -456,6 +501,31 @@ func _clear_selected_player() -> void:
 	_update_player_details("")
 	if player_details_panel:
 		player_details_panel.visible = false
+
+func _show_card_info_panel(card: Dictionary) -> void:
+	if not cards_panel or not card_title_label:
+		return
+	cards_panel.top_level = true
+	cards_panel.z_index = 100
+	card_title_label.text = "Name: %s\nCost: %d\nType: %s\nTarget: %s\n\n%s" % [
+		str(card.get("name", "Card")),
+		int(card.get("cost", 0)),
+		str(card.get("type", "")),
+		str(card.get("target_type", "")),
+		str(card.get("description", ""))
+	]
+	if card_panel:
+		card_panel.visible = true
+	cards_panel.visible = true
+
+func _hide_card_info_panel() -> void:
+	if card_panel:
+		card_panel.visible = false
+	if cards_panel:
+		cards_panel.visible = false
+
+func _on_card_tile_info_requested(card: Dictionary) -> void:
+	_show_card_info_panel(card)
 
 func _tick_game_clock_one_second() -> void:
 	if game_state.half == 1:
@@ -980,7 +1050,7 @@ func _apply_play_result(result: Dictionary) -> void:
 	var defense_play_for_summary := _selected_defense_play
 	var zone_delta_for_summary := int(result.get("zone_delta", 0))
 	var summary_result_text := str(result.get("result_text", ""))
-	var is_two_point_attempt := game_state.phase == PHASE_CONVERSION and game_state.conversion_type == CONVERSION_2PT
+	var is_two_point_attempt := game_state.conversion_pending and game_state.conversion_type == CONVERSION_2PT
 	_game_plays += 1
 	if game_state.pending_play_type == PLAY_FIELD_GOAL:
 		_game_fg_attempts += 1
@@ -1026,7 +1096,6 @@ func _apply_play_result(result: Dictionary) -> void:
 			game_state.add_score(scoring_team, 6)
 			game_state.conversion_pending = true
 			game_state.conversion_team = scoring_team
-			_append_event_log("[b]Defensive Touchdown (%s)![/b]" % scoring_team.capitalize())
 			result_text.text = "[center][color=#ff4444][b]TURNOVER + DEFENSIVE TD![/b][/color][/center]\n%s%s" % [turnover_text, proc_line]
 			summary_result_text = "TURNOVER + DEFENSIVE TD"
 			_begin_post_td_conversion(scoring_team)
@@ -1086,7 +1155,7 @@ func _apply_play_result(result: Dictionary) -> void:
 			game_state.conversion_team = scoring_team
 			result_text.text = "[center][color=#ff4444][b]TURNOVER ON DOWNS + DEFENSIVE TD![/b][/color][/center]"
 			summary_result_text = "TURNOVER ON DOWNS + DEFENSIVE TD"
-			_append_event_log("[color=#ff6666][b]TURNOVER ON DOWNS[/b][/color] Defensive TD for %s." % scoring_team.capitalize())
+			_append_event_log("[color=#ff6666][b]TURNOVER ON DOWNS[/b][/color]")
 			_begin_post_td_conversion(scoring_team)
 			_render_last_play_info(offense_team_for_summary, offense_play_for_summary, defense_play_for_summary, summary_result_text, zone_delta_for_summary)
 			game_state.pending_play_type = GameState.PENDING_NONE
@@ -1326,14 +1395,20 @@ func _on_play_non_targeted_card(team: String = "") -> void:
 			result_text.text = "No cards available for %s." % queue_team
 			_append_event_log("No cards available for %s." % queue_team)
 			return
-		if not _queue_first_affordable_hand_card(queue_team):
-			result_text.text = "Not enough Momentum to queue a card."
-			_append_event_log("Not enough Momentum to queue a card.")
+		var picked := false
+		for card in queue_hand:
+			if typeof(card) != TYPE_DICTIONARY:
+				continue
+			var cd := card as Dictionary
+			if _toggle_selected_card_for_team(queue_team, str(cd.get("instance_id", cd.get("id", "")))):
+				result_text.text = "Selected card (%s): %s" % [queue_team, str(cd.get("name", "Card"))]
+				_append_event_log("Selected card (%s): %s" % [queue_team, str(cd.get("name", "Card"))])
+				picked = true
+				break
+		if not picked:
+			result_text.text = "Not enough Momentum to select a card."
+			_append_event_log("Not enough Momentum to select a card.")
 			return
-		var last_q: Dictionary = game_state.queued_cards_home[-1] if queue_team == "home" else game_state.queued_cards_away[-1]
-		var qcard: Dictionary = last_q.get("card", {})
-		result_text.text = "Queued card (%s): %s" % [queue_team, str(qcard.get("name", "Card"))]
-		_append_event_log("Queued card (%s): %s" % [queue_team, str(qcard.get("name", "Card"))])
 		return
 
 	if _active_hand().is_empty():
@@ -1367,20 +1442,18 @@ func _on_play_non_targeted_card(team: String = "") -> void:
 func _update_ui() -> void:
 	_maybe_finalize_game_stats()
 	if game_clock_value_label:
-		game_clock_value_label.text = "Game Clock: " + _format_time(game_state.game_time_remaining)
+		game_clock_value_label.text = _format_time(game_state.game_time_remaining)
 	half_label.text = "Half: %d" % game_state.half
-	score_label.text = "Score %s:%d %s:%d" % [_team_display_name("home"), game_state.score_home, _team_display_name("away"), game_state.score_away]
 	if user_team_label:
 		user_team_label.text = "You are: %s (%s)" % [_team_display_name(_user_team), _user_team.capitalize()]
 	if user_hud:
 		user_hud.visible = true
 	if opponent_hud:
-		opponent_hud.visible = false
+		opponent_hud.visible = true
 	if user_play_buttons:
 		user_play_buttons.visible = true
 	if opponent_play_buttons:
-		opponent_play_buttons.visible = false
-	possession_label.text = "Possession: %s Ball (H:%d A:%d)" % [_team_display_name(game_state.possession_team), game_state.home_possessions, game_state.away_possessions]
+		opponent_play_buttons.visible = true
 	var display_zone := game_state.current_zone
 	if game_state.conversion_pending and game_state.phase == PHASE_CONVERSION:
 		display_zone = GameState.ZONE_END
@@ -1389,17 +1462,33 @@ func _update_ui() -> void:
 	phase_label.text = "Phase: %s (P%d)" % [game_state.phase, current_phase_level]
 	var play_clock_visible := _turn_action_timer_active
 	if play_clock_value_label:
-		play_clock_value_label.text = "Play Clock: " + "%d" % int(ceili(_turn_action_time_remaining)) if play_clock_visible else "-"
+		play_clock_value_label.text = "%d" % int(ceili(_turn_action_time_remaining)) if play_clock_visible else "-"
 
 	var user_team := _user_team
 	var opponent_team := "away" if user_team == "home" else "home"
+	if user_possession_icon_label:
+		user_possession_icon_label.visible = game_state.possession_team == user_team
+	if opponent_possession_icon_label:
+		opponent_possession_icon_label.visible = game_state.possession_team == opponent_team
+	_sync_selected_cards_with_hand("home")
+	_sync_selected_cards_with_hand("away")
+	if user_score_value_label:
+		user_score_value_label.text = "%d" % (game_state.score_home if user_team == "home" else game_state.score_away)
+	if opponent_score_value_label:
+		opponent_score_value_label.text = "%d" % (game_state.score_home if opponent_team == "home" else game_state.score_away)
 	if opponent_momentum_value_label:
-		opponent_momentum_value_label.text = "%d" % (game_state.momentum_away if opponent_team == "away" else game_state.momentum_home)
+		var opp_momentum := game_state.momentum_away if opponent_team == "away" else game_state.momentum_home
+		if game_state.phase == PHASE_CARD_QUEUE:
+			opp_momentum = _remaining_momentum_for_team(opponent_team)
+		opponent_momentum_value_label.text = "%d" % opp_momentum
 	if user_momentum_value_label:
-		user_momentum_value_label.text = "%d" % (game_state.momentum_home if user_team == "home" else game_state.momentum_away)
+		var user_momentum := game_state.momentum_home if user_team == "home" else game_state.momentum_away
+		if game_state.phase == PHASE_CARD_QUEUE:
+			user_momentum = _remaining_momentum_for_team(user_team)
+		user_momentum_value_label.text = "%d" % user_momentum
 	if opponent_tos_button:
 		var opp_tos := game_state.timeouts_away if opponent_team == "away" else game_state.timeouts_home
-		opponent_tos_button.text = "TOs\n%d" % opp_tos
+		opponent_tos_button.text = "%d" % opp_tos
 		opponent_tos_button.disabled = true
 	if user_tos_button:
 		var user_tos := game_state.timeouts_home if user_team == "home" else game_state.timeouts_away
@@ -1408,14 +1497,14 @@ func _update_ui() -> void:
 	if user_forfeit_button:
 		user_forfeit_button.disabled = game_state.phase == GameState.PHASE_GAME_OVER
 	var opp_hand_n := game_state.hand_away.size() if opponent_team == "away" else game_state.hand_home.size()
-	var opp_queue_n := game_state.queued_cards_away.size() if opponent_team == "away" else game_state.queued_cards_home.size()
-	opponent_hand_label.text = "Hand (%d)\nQueued (%d)" % [opp_hand_n, opp_queue_n]
+	var opp_selected_n := (_selected_cards_away.size() if opponent_team == "away" else _selected_cards_home.size()) if game_state.phase == PHASE_CARD_QUEUE else 0
+	opponent_hand_label.text = "Hand (%d)\nSelected (%d)" % [opp_hand_n, opp_selected_n]
 
 	var user_hand_n := game_state.hand_home.size() if user_team == "home" else game_state.hand_away.size()
-	var user_queue_n := game_state.queued_cards_home.size() if user_team == "home" else game_state.queued_cards_away.size()
+	var user_selected_n := (_selected_cards_home.size() if user_team == "home" else _selected_cards_away.size()) if game_state.phase == PHASE_CARD_QUEUE else 0
 	user_hand_label.text = "Hand (%d)" % user_hand_n
 	if user_queued_label:
-		user_queued_label.text = "Queued (%d)" % user_queue_n
+		user_queued_label.text = "Selected (%d)" % user_selected_n
 	_rebuild_user_card_tiles()
 	if game_state.phase == PHASE_CARD_QUEUE:
 		phase_label.text = "Phase: %s (simultaneous queue)" % game_state.phase
@@ -1440,7 +1529,8 @@ func _update_ui() -> void:
 		var is_defense_row: bool = team == defense_team
 		var ai_controls_now: bool = _is_ai_controlled_team(team, true)
 		var in_play_selection: bool = game_state.phase == PHASE_PLAY_SELECTION
-		var can_choose_play: bool = in_play_selection and (is_offense_row or is_defense_row)
+		var in_two_point_play_pick: bool = game_state.phase == PHASE_CONVERSION and game_state.conversion_type == CONVERSION_2PT
+		var can_choose_play: bool = (in_play_selection and (is_offense_row or is_defense_row)) or (in_two_point_play_pick and is_offense_row)
 
 		if row_run:
 			row_run.text = "Run Def" if is_defense_row else "Run"
@@ -1473,8 +1563,10 @@ func _update_ui() -> void:
 				row_ready.disabled = true
 		if row_xp:
 			row_xp.visible = game_state.phase == PHASE_CONVERSION and game_state.conversion_type.is_empty() and team == game_state.conversion_team
+			row_xp.disabled = not row_xp.visible
 		if row_two:
 			row_two.visible = game_state.phase == PHASE_CONVERSION and game_state.conversion_type.is_empty() and team == game_state.conversion_team
+			row_two.disabled = not row_two.visible
 		if ai_controls_now:
 			if row_run:
 				row_run.disabled = true
@@ -1491,7 +1583,8 @@ func _update_ui() -> void:
 			if row_two:
 				row_two.disabled = true
 	targeting_panel.visible = current_phase_level >= 4
-	card_panel.visible = current_phase_level >= 3
+	if cards_panel and not cards_panel.visible:
+		card_panel.visible = false
 	_update_staff_ui()
 	_update_field_ball_marker()
 	_update_token_visuals()
@@ -1626,9 +1719,9 @@ func _phase_context_snapshot() -> String:
 	var def_play := str(_selected_defense_play)
 	if def_play.is_empty():
 		def_play = "-"
-	var user_queue_n := game_state.queued_cards_home.size() if _user_team == "home" else game_state.queued_cards_away.size()
-	var opp_queue_n := game_state.queued_cards_away.size() if _user_team == "home" else game_state.queued_cards_home.size()
-	return "poss=%s | zone=%s | game=%s | play=%ss | off=%s | def=%s | q(U/O)=%d/%d" % [poss, zone, gclock, pclock, off_play, def_play, user_queue_n, opp_queue_n]
+	var user_sel_n := _selected_cards_home.size() if _user_team == "home" else _selected_cards_away.size()
+	var opp_sel_n := _selected_cards_away.size() if _user_team == "home" else _selected_cards_home.size()
+	return "poss=%s | zone=%s | game=%s | play=%ss | off=%s | def=%s | sel(U/O)=%d/%d" % [poss, zone, gclock, pclock, off_play, def_play, user_sel_n, opp_sel_n]
 
 func _append_phase_subphase(name: String, details: String = "") -> void:
 	var ctx := _phase_context_snapshot()
@@ -1881,15 +1974,76 @@ func _pick_sim_play_type() -> String:
 		return PLAY_SHORT_PASS
 	return PLAY_DEEP_PASS
 
-func _auto_queue_for_team(team: String, max_cards: int) -> void:
-	var queued := 0
-	while max_cards < 0 or queued < max_cards:
-		var hand: Array = _hand_for_team(team)
-		if hand.is_empty():
-			return
-		if not _queue_card_for_team(team, {}, {}, 0):
-			return
-		queued += 1
+
+func _sim_should_hurry_up(team: String) -> bool:
+	var opp := "away" if team == "home" else "home"
+	var team_score := game_state.score_home if team == "home" else game_state.score_away
+	var opp_score := game_state.score_home if opp == "home" else game_state.score_away
+	var trailing := team_score < opp_score
+	if not trailing:
+		return false
+	if game_state.half == 1:
+		return game_state.game_time_remaining <= (GameState.HALF_SECONDS + 90)
+	return game_state.game_time_remaining <= 120
+
+
+func _roll_sim_presnap_runoff_seconds() -> int:
+	var scale := clampf(float(GameState.MAX_CLOCK_SECONDS) / 900.0, 0.20, 1.0)
+	var min_s := maxi(1, int(round(float(SIM_RUNOFF_MIN_SECONDS) * scale)))
+	var max_s := maxi(min_s, int(round(float(SIM_RUNOFF_MAX_SECONDS) * scale)))
+	var under_two := (game_state.half == 1 and game_state.game_time_remaining <= (GameState.HALF_SECONDS + 120)) or (game_state.half == 2 and game_state.game_time_remaining <= 120)
+	if under_two:
+		min_s = maxi(1, int(round(float(SIM_RUNOFF_TWO_MIN_MIN_SECONDS) * scale)))
+		max_s = maxi(min_s, int(round(float(SIM_RUNOFF_TWO_MIN_MAX_SECONDS) * scale)))
+	var poss := game_state.possession_team
+	if _sim_should_hurry_up(poss):
+		min_s = maxi(1, int(round(float(SIM_RUNOFF_HURRY_MIN_SECONDS) * scale)))
+		max_s = maxi(min_s, int(round(float(SIM_RUNOFF_HURRY_MAX_SECONDS) * scale)))
+	return randi_range(min_s, max_s)
+
+
+func _apply_sim_presnap_runoff() -> void:
+	if game_state.phase != PHASE_CARD_QUEUE:
+		return
+	if game_state.phase == GameState.PHASE_GAME_OVER or game_state.phase == GameState.PHASE_HALFTIME:
+		return
+	var runoff := _roll_sim_presnap_runoff_seconds()
+	if runoff <= 0:
+		return
+	game_state.game_time_remaining = max(game_state.game_time_remaining - runoff, 0)
+	if _turn_action_timer_active and (game_state.phase == PHASE_PLAY_SELECTION or game_state.phase == PHASE_CARD_QUEUE):
+		_turn_action_time_remaining = maxf(0.0, _turn_action_time_remaining - float(runoff))
+		_last_play_clock_display_seconds = int(ceili(_turn_action_time_remaining))
+	if game_state.half == 1 and game_state.game_time_remaining <= GameState.HALF_SECONDS and game_state.phase != GameState.PHASE_HALFTIME:
+		game_state.force_halftime_now()
+	if game_state.game_time_remaining <= 0:
+		game_state.game_time_remaining = 0
+		game_state.end_game_if_time_up()
+		if game_state.phase == GameState.PHASE_GAME_OVER:
+			_clock_running = false
+			if sim_timer:
+				sim_timer.stop()
+	_update_ui()
+
+func _auto_select_for_team(team: String, max_cards: int) -> void:
+	var picks := 0
+	var hand: Array = _hand_for_team(team)
+	for card in hand:
+		if max_cards >= 0 and picks >= max_cards:
+			break
+		if typeof(card) != TYPE_DICTIONARY:
+			continue
+		var cd := card as Dictionary
+		var cid := str(cd.get("instance_id", cd.get("id", "")))
+		if cid.is_empty():
+			continue
+		if _is_card_selected(team, cid):
+			continue
+		var card_cost := int(cd.get("cost", 0))
+		if card_cost > _remaining_momentum_for_team(team):
+			continue
+		if _toggle_selected_card_for_team(team, cid):
+			picks += 1
 
 func _sim_pick_conversion() -> String:
 	var team := game_state.conversion_team
@@ -1902,13 +2056,16 @@ func _begin_post_td_conversion(team: String) -> void:
 	game_state.phase = PHASE_CONVERSION
 	game_state.conversion_type = ""
 	game_state.possession_team = team
+	_append_event_log("[color=#66ff66][b]Touchdown![/b][/color] %s +6." % _team_display_name(team))
 	_append_phase_subphase("conversion_choice")
 	_stop_clock("conversion")
 	if _sim_running:
 		_choose_conversion(_sim_pick_conversion())
+	elif _is_ai_controlled_team(team, false):
+		_choose_conversion(_sim_pick_conversion())
 	else:
 		result_text.text = "[b]Touchdown![/b]\nChoose conversion: Extra Point or 2-Point."
-		_append_event_log("Touchdown scored. Awaiting conversion choice.")
+		_append_event_log("Awaiting conversion: Extra Point or 2-point.")
 
 func _choose_conversion(conv_type: String) -> void:
 	if game_state.phase != PHASE_CONVERSION:
@@ -2075,129 +2232,121 @@ func _start_card_queue_phase() -> void:
 	game_state.queued_momentum_spent_away = 0
 	game_state.home_ready = false
 	game_state.away_ready = false
+	_sim_presnap_runoff_applied = false
+	_selected_cards_home.clear()
+	_selected_cards_away.clear()
+	_selected_cards_home.clear()
+	_selected_cards_away.clear()
 
 	_update_ui()
 
 
-func _queue_first_affordable_hand_card(team: String) -> bool:
+func _selected_cards_for_team(team: String) -> Array[String]:
+	return _selected_cards_home if team == "home" else _selected_cards_away
+
+
+func _selected_spent_for_team(team: String) -> int:
+	var spent := 0
 	var hand := _hand_for_team(team)
-	var momentum: int = game_state.momentum_home if team == "home" else game_state.momentum_away
-	var queued_spent: int = game_state.queued_momentum_spent_home if team == "home" else game_state.queued_momentum_spent_away
-	var remaining: int = momentum - queued_spent
-	for i in range(hand.size()):
-		var c = hand[i]
-		if typeof(c) != TYPE_DICTIONARY:
+	var selected := _selected_cards_for_team(team)
+	for card in hand:
+		if typeof(card) != TYPE_DICTIONARY:
 			continue
-		if int((c as Dictionary).get("cost", 0)) <= remaining:
-			return _queue_card_for_team(team, {}, {}, i)
-	return false
+		var cd := card as Dictionary
+		if selected.has(str(cd.get("instance_id", cd.get("id", "")))):
+			spent += int(cd.get("cost", 0))
+	return spent
 
 
-func _queue_card_for_team(team: String, card: Dictionary = {}, target := {}, hand_index: int = -1) -> bool:
-	var hand: Array = game_state.hand_home if team == "home" else game_state.hand_away
-	var card_to_queue: Dictionary = {}
-	if hand_index >= 0:
-		if hand_index >= hand.size():
-			return false
-		var hc = hand[hand_index]
-		if typeof(hc) != TYPE_DICTIONARY:
-			return false
-		card_to_queue = hc
-	else:
-		card_to_queue = card
-	if card_to_queue.is_empty():
-		return false
-
-	var cost: int = int(card_to_queue.get("cost", 0))
-
+func _remaining_momentum_for_team(team: String) -> int:
 	var momentum: int = game_state.momentum_home if team == "home" else game_state.momentum_away
-	var queued_spent: int = game_state.queued_momentum_spent_home if team == "home" else game_state.queued_momentum_spent_away
-	var remaining: int = momentum - queued_spent
+	return max(momentum - _selected_spent_for_team(team), 0)
 
-	if cost > remaining:
+
+func _is_card_selected(team: String, card_id: String) -> bool:
+	if card_id.is_empty():
 		return false
+	return _selected_cards_for_team(team).has(card_id)
 
-	var entry: Dictionary = {
-		"team": team,
-		"card": card_to_queue,
-		"target": target,
-		"cost": cost
-	}
 
-	if team == "home":
-		game_state.queued_cards_home.append(entry)
-		game_state.queued_momentum_spent_home += cost
-	else:
-		game_state.queued_cards_away.append(entry)
-		game_state.queued_momentum_spent_away += cost
-
-	if hand_index >= 0:
-		hand.remove_at(hand_index)
-	else:
-		_remove_card_from_team_hand_by_id(team, str(card_to_queue.get("id", "")))
-
+func _toggle_selected_card_for_team(team: String, card_id: String) -> bool:
+	if card_id.is_empty():
+		return false
+	if game_state.phase != PHASE_CARD_QUEUE:
+		return false
+	if (team == "home" and game_state.home_ready) or (team == "away" and game_state.away_ready):
+		return false
+	var selected := _selected_cards_for_team(team)
+	if selected.has(card_id):
+		selected.erase(card_id)
+		_update_ui()
+		return true
+	var hand := _hand_for_team(team)
+	var card_cost := -1
+	var card_name := "Card"
+	for card in hand:
+		if typeof(card) != TYPE_DICTIONARY:
+			continue
+		var cd := card as Dictionary
+		if str(cd.get("instance_id", cd.get("id", ""))) == card_id:
+			card_cost = int(cd.get("cost", 0))
+			card_name = str(cd.get("name", "Card"))
+			break
+	if card_cost < 0:
+		return false
+	if card_cost > _remaining_momentum_for_team(team):
+		result_text.text = "Not enough Momentum to select %s." % card_name
+		_append_event_log("Not enough Momentum to select %s." % card_name)
+		return false
+	selected.append(card_id)
 	_update_ui()
 	return true
 
 
-func try_queue_hand_card_from_drag_data(data: Variant) -> void:
-	if typeof(data) != TYPE_DICTIONARY:
-		return
-	var team := str(data.get("team", ""))
-	var idx := int(data.get("index", -1))
-	_try_queue_hand_card_at_index(team, idx, false)
-
-
-func _on_queued_card_tile_unqueue_requested(team: String, queue_index: int) -> void:
-	_unqueue_card_at_index(team, queue_index)
-
-
-func _unqueue_card_at_index(team: String, queue_index: int) -> void:
-	if game_state.phase != PHASE_CARD_QUEUE:
-		return
-	if _is_ai_controlled_team(team, false):
-		return
-	if (team == "home" and game_state.home_ready) or (team == "away" and game_state.away_ready):
-		return
-	var q: Array = game_state.queued_cards_home if team == "home" else game_state.queued_cards_away
-	if queue_index < 0 or queue_index >= q.size():
-		return
-	var entry: Dictionary = q[queue_index]
-	var cost := int(entry.get("cost", 0))
-	var card: Dictionary = entry.get("card", {})
-	q.remove_at(queue_index)
-	if team == "home":
-		game_state.queued_momentum_spent_home = maxi(0, game_state.queued_momentum_spent_home - cost)
-		game_state.hand_home.insert(0, card.duplicate(true))
-	else:
-		game_state.queued_momentum_spent_away = maxi(0, game_state.queued_momentum_spent_away - cost)
-		game_state.hand_away.insert(0, card.duplicate(true))
-	result_text.text = "Returned %s to hand." % str(card.get("name", "Card"))
-	_append_event_log("Returned %s to hand." % str(card.get("name", "Card")))
-	_update_ui()
-
-
-func _on_hand_card_tile_queue_requested(team: String, hand_index: int) -> void:
-	_try_queue_hand_card_at_index(team, hand_index, false)
-
-
-func _try_queue_hand_card_at_index(team: String, hand_index: int, allow_ai: bool = false) -> void:
-	if not allow_ai and _is_ai_controlled_team(team, false):
-		return
-	if game_state.phase != PHASE_CARD_QUEUE:
-		return
-	if (team == "home" and game_state.home_ready) or (team == "away" and game_state.away_ready):
-		return
+func _sync_selected_cards_with_hand(team: String) -> void:
 	var hand := _hand_for_team(team)
-	if hand_index < 0 or hand_index >= hand.size():
-		return
-	if not _queue_card_for_team(team, {}, {}, hand_index):
-		result_text.text = "Not enough Momentum to queue that card."
-		_append_event_log("Not enough Momentum to queue that card.")
-		return
-	var qc: Dictionary = (game_state.queued_cards_home[-1] if team == "home" else game_state.queued_cards_away[-1]).get("card", {})
-	result_text.text = "Queued card (%s): %s" % [team, str(qc.get("name", "Card"))]
-	_append_event_log("Queued card (%s): %s" % [team, str(qc.get("name", "Card"))])
+	var valid: Dictionary = {}
+	for card in hand:
+		if typeof(card) == TYPE_DICTIONARY:
+			valid[str((card as Dictionary).get("instance_id", (card as Dictionary).get("id", "")))] = true
+	var selected := _selected_cards_for_team(team)
+	for i in range(selected.size() - 1, -1, -1):
+		if not valid.has(selected[i]):
+			selected.remove_at(i)
+
+
+func _build_queued_from_selected(team: String) -> void:
+	var hand := _hand_for_team(team)
+	var selected := _selected_cards_for_team(team)
+	var queue: Array = game_state.queued_cards_home if team == "home" else game_state.queued_cards_away
+	queue.clear()
+	var selected_set: Dictionary = {}
+	for card_id in selected:
+		selected_set[str(card_id)] = true
+	for i in range(hand.size() - 1, -1, -1):
+		var raw: Variant = hand[i]
+		if typeof(raw) != TYPE_DICTIONARY:
+			continue
+		var card := raw as Dictionary
+		var cid := str(card.get("instance_id", card.get("id", "")))
+		if not selected_set.has(cid):
+			continue
+		queue.push_front({
+			"team": team,
+			"card": card.duplicate(true),
+			"target": {},
+			"cost": int(card.get("cost", 0))
+		})
+		hand.remove_at(i)
+	if team == "home":
+		game_state.queued_momentum_spent_home = _selected_spent_for_team(team)
+	else:
+		game_state.queued_momentum_spent_away = _selected_spent_for_team(team)
+	selected.clear()
+
+
+func _on_hand_card_tile_selection_toggled(team: String, card_id: String) -> void:
+	_toggle_selected_card_for_team(team, card_id)
 
 
 func _set_team_ready(team: String, ready: bool) -> void:
@@ -2225,6 +2374,8 @@ func _set_team_ready(team: String, ready: bool) -> void:
 	_update_ui()
 
 	if game_state.home_ready and game_state.away_ready:
+		_build_queued_from_selected("home")
+		_build_queued_from_selected("away")
 		if _clock_paused_for_ready_wait:
 			if _clock_running_before_ready_wait:
 				_clock_running = true
@@ -2313,7 +2464,7 @@ func _remove_card_from_team_hand_by_id(team: String, card_id: String) -> bool:
 	var hand: Array = game_state.hand_home if team == "home" else game_state.hand_away
 	for idx in range(hand.size()):
 		var c: Dictionary = hand[idx]
-		if str(c.get("id", "")) == card_id:
+		if str(c.get("instance_id", c.get("id", ""))) == card_id:
 			hand.remove_at(idx)
 			if team == "home":
 				game_state.hand_home = hand
@@ -2337,7 +2488,7 @@ func _hand_visual_signature(hand: Array) -> String:
 		if typeof(item) != TYPE_DICTIONARY:
 			continue
 		var d := item as Dictionary
-		parts.append("%s:%d" % [str(d.get("id", "")), int(d.get("cost", 0))])
+		parts.append("%s:%d" % [str(d.get("instance_id", d.get("id", ""))), int(d.get("cost", 0))])
 	return "|".join(parts)
 
 
@@ -2347,7 +2498,7 @@ func _queue_visual_signature(entries: Array) -> String:
 		if typeof(item) != TYPE_DICTIONARY:
 			continue
 		var cd: Dictionary = (item as Dictionary).get("card", {})
-		parts.append("%s:%d" % [str(cd.get("id", "")), int(cd.get("cost", 0))])
+		parts.append("%s:%d" % [str(cd.get("instance_id", cd.get("id", ""))), int(cd.get("cost", 0))])
 	return "|".join(parts)
 
 
@@ -2358,20 +2509,15 @@ func _rebuild_user_card_tiles() -> void:
 		var hand_scroll := user_hand_cards.get_parent()
 		if hand_scroll:
 			hand_scroll.visible = show_strips
-	if user_queued_cards:
-		var queued_scroll := user_queued_cards.get_parent()
-		if queued_scroll:
-			queued_scroll.visible = show_strips
-	if user_queued_label:
-		user_queued_label.visible = show_strips
 
 	if not show_strips:
 		return
 
 	var hand: Array = _hand_for_team(_user_team)
-	var queue: Array = game_state.queued_cards_home if _user_team == "home" else game_state.queued_cards_away
 	var hs := _hand_visual_signature(hand)
-	var qs := _queue_visual_signature(queue)
+	var selected_sig := "|".join(_selected_cards_for_team(_user_team))
+	var remaining := _remaining_momentum_for_team(_user_team)
+	var qs := "%s#%d" % [selected_sig, remaining]
 	if hs == _cached_user_hand_sig and qs == _cached_user_queue_sig:
 		return
 	_cached_user_hand_sig = hs
@@ -2379,9 +2525,6 @@ func _rebuild_user_card_tiles() -> void:
 
 	if user_hand_cards:
 		_clear_card_strip_children(user_hand_cards)
-	if user_queued_cards:
-		_clear_card_strip_children(user_queued_cards)
-		user_queued_cards.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 	if user_hand_cards:
 		for i in range(hand.size()):
@@ -2392,28 +2535,21 @@ func _rebuild_user_card_tiles() -> void:
 			user_hand_cards.add_child(tile)
 			if tile.has_method("setup"):
 				tile.setup(card as Dictionary)
-			if tile.has_signal("queue_requested"):
+			if tile.has_method("set_selected_state"):
+				tile.set_selected_state(_is_card_selected(_user_team, str((card as Dictionary).get("instance_id", (card as Dictionary).get("id", "")))))
+			if tile.has_method("set_affordable_state"):
+				var card_cost := int((card as Dictionary).get("cost", 0))
+				var can_afford := true
+				if game_state.phase == PHASE_CARD_QUEUE:
+					can_afford = _is_card_selected(_user_team, str((card as Dictionary).get("instance_id", (card as Dictionary).get("id", "")))) or card_cost <= remaining
+				tile.set_affordable_state(can_afford)
+			if tile.has_signal("selection_toggled"):
 				tile.configure_hand_interaction(true, _user_team, i)
-				tile.queue_requested.connect(_on_hand_card_tile_queue_requested)
-
-	if user_queued_cards:
-		var user_ready := game_state.home_ready if _user_team == "home" else game_state.away_ready
-		var allow_unqueue: bool = game_state.phase == PHASE_CARD_QUEUE and not _sim_running and not user_ready
-		for qi in range(queue.size()):
-			var entry = queue[qi]
-			if typeof(entry) != TYPE_DICTIONARY:
-				continue
-			var cd: Dictionary = (entry as Dictionary).get("card", {})
-			if cd.is_empty():
-				continue
-			var qtile := CARD_TILE_SCENE.instantiate()
-			user_queued_cards.add_child(qtile)
-			if qtile.has_method("setup"):
-				qtile.setup(cd)
-			if qtile.has_method("configure_queued_interaction"):
-				qtile.configure_queued_interaction(allow_unqueue, _user_team, qi)
-			if allow_unqueue and qtile.has_signal("unqueue_requested"):
-				qtile.unqueue_requested.connect(_on_queued_card_tile_unqueue_requested)
+				tile.selection_toggled.connect(_on_hand_card_tile_selection_toggled)
+			if tile.has_signal("info_hold_started"):
+				tile.info_hold_started.connect(_on_card_tile_info_requested)
+			if tile.has_signal("info_hold_ended"):
+				tile.info_hold_ended.connect(_hide_card_info_panel)
 
 func _friendly_play_name(play: String, is_defense: bool = false) -> String:
 	if is_defense:
