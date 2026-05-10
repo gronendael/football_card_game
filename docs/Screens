@@ -1,0 +1,39 @@
+### HEADER BAR FOR ALL SCREENS
+- Currencies available
+- Avatar
+- Inbox
+- Settings
+
+### FOOTER BAR FOR ALL SCREENS
+- Shop button
+- Roster button
+- Play Game button
+- League button
+- Events button
+- Alliance button
+
+### HOME SCREEN
+- Team Logo
+- Team Stadium in background
+- Equip Playbook button
+- Equip Deck button
+- Team Level icon with level number
+
+### SHOP SCREEN
+- Currency tabs
+- List of items available to be purchased for the selected currency
+
+### ROSTER SCREEN
+1. Roster - View/Edit the Players on your team including stats, boost, levels, shards (if I use them), etc.
+2. Coaches - View/Edit the Coaches on your team (HC, OC, DC)
+3. Playbooks - Create/Edit/Delete Playbooks that contain Plays
+4. Decks - Create/Edit/Delete Decks that contain Cards
+5. Training - Traing players to increase stats
+
+### PLAY GAME SCREEN
+
+### LEAGUE SCREEN
+
+### EVENTS SCREEN
+
+### ALLIANCE SCREEN

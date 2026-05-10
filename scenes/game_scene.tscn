@@ -10,7 +10,7 @@
 [ext_resource type="Script" uid="uid://1358y0xuv5xd" path="res://scripts/player_data.gd" id="8_tqxxy"]
 [ext_resource type="Script" uid="uid://culivsr7t6exs" path="res://scripts/coach_data.gd" id="9_5ay1a"]
 [ext_resource type="Script" uid="uid://cpmi625jppg7l" path="res://scripts/team_data.gd" id="11_team"]
-[ext_resource type="PackedScene" uid="uid://dnhyqxmvkb71" path="res://scenes/field.tscn" id="12_field"]
+[ext_resource type="PackedScene" path="res://scenes/field.tscn" id="12_field"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_rvs2r"]
 content_margin_left = 0.0
@@ -125,7 +125,7 @@ theme_override_font_sizes/font_size = 32
 text = "Cards"
 autowrap_mode = 3
 
-[node name="Field" parent="." instance=ExtResource("12_field")]
+[node name="Field" parent="." unique_id=931026381 instance=ExtResource("12_field")]
 
 [node name="UserGroup" type="Node" parent="." unique_id=941376213]
 

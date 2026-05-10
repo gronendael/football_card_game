@@ -190,28 +190,28 @@ Allowed `ended_by` values:
 - After every touchdown, the scoring team gets a single conversion attempt before the kickoff.
 - Two options:
   - Extra Point (XP):
-    - Kick attempt from `AttackZone`
-    - Uses kicking stats (similar to a Field Goal)
-    - Made: +1 point for scoring team
-    - Missed: no additional points
+	- Kick attempt from `AttackZone`
+	- Uses kicking stats (similar to a Field Goal)
+	- Made: +1 point for scoring team
+	- Missed: no additional points
   - 2-Point Conversion (2PT):
-    - One play (Run, Short Pass, or Deep Pass) from `RedZone`
-    - Card queue + ready phase still applies (cards can affect outcome)
-    - Success only if the team advances to `EndZone` on this play -> +2 points
-    - Failure (zero or negative zone change) -> no additional points
+	- One play (Run, Short Pass, or Deep Pass) from `RedZone`
+	- Card queue + ready phase still applies (cards can affect outcome)
+	- Success only if the team advances to `EndZone` on this play -> +2 points
+	- Failure (zero or negative zone change) -> no additional points
 - Extra Point probability:
   - Base 80% chance made
   - Adjusted by kicker baseline stats (and any skills that modify them):
-    - +/- (kick_accuracy - 50) * 0.5
-    - +/- (kick_power - 50) * 0.2
-    - +/- (kick_consistency - 50) * 0.3
-    - minus opponent flat defense modifier
+	- +/- (kick_accuracy - 50) * 0.5
+	- +/- (kick_power - 50) * 0.2
+	- +/- (kick_consistency - 50) * 0.3
+	- minus opponent flat defense modifier
   - Clamp final chance to 50-99
 - Choice UX:
   - Human mode: present `Extra Point` and `2-Point` buttons
   - Sim mode: auto-pick using post-TD score differential (scoring_team - opponent):
-    - Pick 2-Point when differential equals exactly one of: -2, -5, -8, -10, +1, +5, +12
-    - Otherwise pick Extra Point
+	- Pick 2-Point when differential equals exactly one of: -2, -5, -8, -10, +1, +5, +12
+	- Otherwise pick Extra Point
 - Post-conversion behavior:
   - Normal post-TD kickoff is performed using the existing kicker `kick_power` rule
   - Conversion result does not change kickoff logic
@@ -258,8 +258,8 @@ Allowed `ended_by` values:
   - Player records reference skill levels (per skill) in [data/players.json](data/players.json)
   - Skill levels use range `1-10`
   - Skills may apply:
-    - stat modifiers (point-based)
-    - percentage chance modifiers
+	- stat modifiers (point-based)
+	- percentage chance modifiers
 - Skill scaling rules:
   - Modifier skills change target stat by increments of `1` per level
   - Percentage skills change chance by increments of `0.5%` per level
