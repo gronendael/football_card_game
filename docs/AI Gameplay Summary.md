@@ -1,6 +1,8 @@
+Mobile Football Game - Master Gameplay Summary
+Merged version including finalized design decisions.
 GAMEPLAY SUMMARY
 
-### PRE-GAME
+PRE-GAME
 - Coin Toss
 -- Away player selects heads or tails
 -- Random coin flip
@@ -8,18 +10,18 @@ GAMEPLAY SUMMARY
 --- Kickoff -> 1st half - Kickoff to the other team; 2nd half - Receive kickoff from other team
 --- Receive -> 1st half - Receive kickoff from other team; 2nd half - Kickoff to the other team
 
-### START GAME
+START GAME
 
 1ST HALF KICKOFF
 - Game Clock is NOT running; Play Clock IS running
 - Kicking team selects Kickoff play; Receiving team selects Kickoff Receiving play (Based on Coin Toss results)
 - Kickoff play executes and resolves
 
-### PLAY LOOP
+PLAY LOOP
 PRE-SNAP PLAY SELECTION (Off = TEAM IN POSSESSION; Def = TEAM NOT IN POSSESSION)
 - Play Clock is running; Game Clock may be Paused or Unpaused depending on factors listed in the Game Clock section
 - Both teams select a Play from their Playbook based on the Playbook that is currently equipped for their team
-- Both teams select Cards from their Deck based on the Deck that is currently equipped for their team (Cards act as modifiers which may adjust percentage chance of success or failure, adding/substracting stats to players/coaches/teams, effects to playbooks/decks, effects to Game Clock/Play Clock, effects to Momentum, effects to Downs, and more.
+- Both teams select Cards from their Deck based on the Deck that is currently equipped for their team (Cards act as modifiers which may adjust percentage chance of success or failure, adding/substracting stats to players/coordinatores/teams, effects to playbooks/decks, effects to Game Clock/Play Clock, effects to Momentum, effects to Downs, and more.
 - Both teams select Ready button when they are ready for the play to execute
 - When a team selects a Play:
 -- AI selects the Players for each position based on the Team's setup (see TEAM SETUP & PRE-GAME SETUP section)
@@ -27,7 +29,7 @@ PRE-SNAP PLAY SELECTION (Off = TEAM IN POSSESSION; Def = TEAM NOT IN POSSESSION)
 PLAY EXECUTION & RESOLUTION
 - After both Teams have pressed Ready button the current Play executes and resolves (or AI presses the Ready button)
 - Pause/Unpause the Game Clock if appropriate (Game Clock does NOT Unpause for Extra Points or 2-point Conversions)
-- Based on the Plays & Cards selected modifiers are applied to players, cards, plays, coaches, etc.
+- Based on the Plays & Cards selected modifiers are applied to players, cards, plays, coordinatores, etc.
 - The Offense may progress zones, regress zones, or end up in the same zone based on the Play Resolution
 - A Change of Possession may occur due to a Turnover, Running out of Downs (Turnover on Downs), 1st Half ends, Punt play, Kickoff Play
 - Plays that start before the Game Clock expires in the 1st or 2nd half resolve completely even if the Game Clock expires during the play
@@ -40,10 +42,19 @@ SCORING PLAYS, TURNOVERS, HALFTIME
 - Game Clock is paused
 - Play Clock resets based on Play Clock section
 
-### HALFTIME
-- Teams may 
+HALFTIME
+- Game Clock pauses
+- Teams may:
+-- Review stats
+-- Adjust Deck
+-- Adjust Playbook
+-- Change Coordinators
+-- Review injuries
+-- Make Lineup adjustments
+- No rewards granted at halftime
 
-### 2ND HALF
+
+2ND HALF
 
 2nd HALF KICKOFF
 - Game Clock is NOT running; Play Clock IS running
@@ -52,17 +63,17 @@ SCORING PLAYS, TURNOVERS, HALFTIME
 - Kickoff play executes and resolves
 - Go back to Play Loop
 
-### END OF GAME
+END OF GAME
 - Occurs when the Game Clock hits 0 in the 2nd Half
 - Winner and Loser are declared based on Team Scores
 - Team History is updated with:
 -- Win/Loss count
 -- Final Score
 -- Player stats (e.g. number of catches, number of runs, number of passes completed, number of incomplete passes, tackles, turnovers forced, field goals made, touchdowns scored, and many more)
--- Coach stats (e.g. wins/losses, and more to come)
+-- Coordinator stats (e.g. wins/losses, and more to come)
 - In-game currency, plays, cards, etc. are awarded to both Teams based on the result
 
-### DOWNS
+DOWNS
 - The team in possession as 4 Downs to gain 2 zones starting from 1 and going to 4
 - When a team first gains possession of the ball, they start with 1st Down
 - After a play is resolved, the Down increments
@@ -70,7 +81,7 @@ SCORING PLAYS, TURNOVERS, HALFTIME
 - If the team in possession does not gain 2 zones within the 4 Downs, there is a Turnover on Downs and their opponent gains possession in the same zone that the previous team ended up at
 - On 4th Down (or earlier if the Team in Possession chooses), a Team may Punt
 
-### CLOCKS
+CLOCKS
 
 GAME CLOCK
 - Pauses on:
@@ -91,12 +102,12 @@ PLAY CLOCK
 - If the Play Clock expires on 3 consecutive plays, the team Forfeits the game
 - Resets after each Play is resolved
 
-### TIMEOUTS
+TIMEOUTS
 - A Timeout is called when a Team presses their Timeout button
 - Game Clock pauses and restarts after both Team press the Ready button before the next play executes
 - Play Clock resets
 
-### PLAYS
+PLAYS
 OFFENSIVE PLAYS
 - Only selected by the Team in Possession
 - May select any Offensive Play from the Playbook (including Punt, FG)
@@ -121,7 +132,7 @@ PUNTING PLAYS
 - The Receiving Team may attempt a return based on Returner ability, blocking, coverage, cards, and modifiers.
 - Punt returns are resolved at the tile level and converted into zone advancement, with large returns and touchdowns being uncommon.
 
-### SCORING
+SCORING
 TOUCHDOWN
 - 6 points for OFF
 
@@ -137,7 +148,7 @@ FIELD GOAL PLAYS
 SAFETY 
 - 2 points for DEF
 
-### TOUCHDOWNS
+TOUCHDOWNS
 - After a TD is scored by either team, the Game Clock pauses, the Play Clock resets to 20 and runs
 - The team that scored the TD chooses a play FIRST; the opponent is notified as to what type of play the scoring team selected (XP or 2P)
 
@@ -151,14 +162,14 @@ SAFETY
 
 - XP or 2P play is resolved
 
-### INJURIES
+INJURIES
 - There is a chance that individual players may be injured based on their Toughness stat
 - Game Clock pauses
 - Team with injury may make a substitution for the injured player
 - Injury Timer - The team making the sub
 
 
-### FORFEIT
+FORFEIT
 - Occurs when:
 -- Team does not press the Ready button for 3 consecutive plays
 -- Team presses the Forfeit button
@@ -169,7 +180,7 @@ SAFETY
 --- Recorded as a Forfeit Loss in the Team History for the Forfeiting team and a Forfeit Win in the Team History for the team that did not Forfeit; The current score of the game is recorded for both teams; if the score is 0-0, the game is Abandoned and nothing is recorded in Team Histories; Rewards for the non-Forfeiting team are still awarded
 - If both teams Forfeit simultaneously due to not pressing the Ready button for 3 consecutive turns OR they press the Forfeit button on the same turn, the Game is considered abandoned and no stats are recorded; It's as if the Game never happened; No Rewards are awarded for either team
 
-### CHANGES OF POSSESSION
+CHANGES OF POSSESSION
 - Turnover on Downs (Downs have reached 4 and Off does not gain 2 zones)
 - Turnovers
 -- Fumbles (DEF forces the OFF player to drop the ball and recovers it or OFF player drops the ball)
@@ -186,7 +197,7 @@ SAFETY
 - Kickoffs (OFF kicks off to DEF)
 - Halftime (Team that Received KO in the 1st Half kicks off in the 2nd Half)
 
-### BASE PLAY TYPE SUCCESS/RESOLUTION
+BASE PLAY TYPE SUCCESS/RESOLUTION
 - As the Offense attempts to gain zones and move the ball up the field, the type of play selected by both the Offense and Defense is fundamental to determing the success of the play
 - The chance of success starts with the Offensive vs the Defensive play selection. The Defense attempts to call a play that matches up well defensively against the Offensive playa Run against a Deep Pass Defense is more likely to succeed, a Deep Pass against a Run Defense is more likely to succeed
 - Best matchups for Defense that give a higher success rate to the Defense:
@@ -198,11 +209,11 @@ SAFETY
 -- e.g. Deep Pass Defense vs Run - Much higher chance Run will gain more Tiles, Run Defense vs Short Pass Offense - Slightly higher chance Short Pass will gain more Tiles, etc.
 - After the Play type comparison, modifiers are taken into account
 -- Player modifiers
--- Coach modifiers
+-- Coordinator modifiers
 -- Card modifiers
 
 
-### ZONES
+ZONES
 - My Endzone - The team's own Endzone they are defending; If the Off is tackled in this zone, the opponent is awarded a Safety (2 points)
 - Build Zone - 1st Zone furthest from the Endzone the team is Attacking
 - Advance Zone - 2nd Zone 
@@ -211,9 +222,20 @@ SAFETY
 - Red Zone - 5th Zone on the opponent's side of the field closest to the Endzone they are Attacking
 - Endzone - Final Zone which scores a TD (6 points) and has the opportunity to kick and XP or go for a 2P
 
-### REWARDS (To be fleshed out later)
+REWARDS (To be fleshed out later)
 - In-game currency
 - New Cards
 - New Plays
 - Player Boosts
-- Coach Boosts
+- Coordinator Boosts
+FINALIZED GLOBAL DESIGN DECISIONS
+•	User is the Head Coach. Only Offensive and Defensive Coordinators exist.
+•	Automatic substitutions occur between possessions, timeouts, and injuries.
+•	Games target 3 to 5 minutes.
+•	Training-based evolution, not automatic game evolution.
+•	Optional rewarded ads only. No forced ads.
+•	No contracts.
+•	Roster limit: 50. Lineup: 12 to 22.
+•	Deck size: 8 to 16 cards. Playbook: 3 to 12 plays.
+•	No overtime in V1. Ties allowed.
+•	Offline single-player supported.

@@ -3,19 +3,27 @@ Player - An indivdual player that users may add/remove from their team
 - Players have a number of stats that effect play outcomes during a game (e.g. speed, strength, agility, toughness, tackling, blocking, hands, stamina, etc.)
 - May have additional player, team, play, or game boosts/modifiers/buffs/debuffs
 
-Coach - An individual coach that may be assigned as the Head Coach, Offensive Coordinator, or Defensive Coordinator 
-- Comes with 6 Core Plays always added to the Playbook 
--- Kickoff play, Kickoff Return play, FG play, FG Block play, Punt play, Punt Return/Block play
-- Comes with 2 Offense plays that can be added to the Playbook
-- Comes with 2 Defense plays that can be added to the Playbook
-- May have additional player, team, play, or game boosts/modifiers/buffs/debuffs
+Coordinator - A coach assigned as either the Offensive Coordinator (OC) or Defensive Coordinator (DC).
+- Provides Plays that may be added to the Playbook
+- May provide Player, Team, Play, or Game modifiers/buffs/debuffs
+- May provide unique Cards to the Team's available Decks
+- Comes with:
+-- 6 Core Plays always available:
+--- Kickoff
+--- Kickoff Return
+--- FG
+--- FG Block
+--- Punt
+--- Punt Return/Block
+-- 2 Offensive Plays (OC)
+-- 2 Defensive Plays (DC)
 
 Roster - A list of all players and coaches on the user's Team that they have accumulated over the course of playing the app.
 - Roster Limit: 50 players
 
 Lineup - A list of players from the user's Roster that play in games
 - Lineup Limit: 22 players
-- Lineup Minimum: 12 players
+- Lineup Minimum: 17 players
 
 Positions - All of the positions that should be occupied by a player on the field
 - Offense Positions

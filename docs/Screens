@@ -1,39 +1,219 @@
-### HEADER BAR FOR ALL SCREENS
-- Currencies available
-- Avatar
-- Inbox
-- Settings
-
-### FOOTER BAR FOR ALL SCREENS
-- Shop button
-- Roster button
-- Play Game button
-- League button
-- Events button
-- Alliance button
-
-### HOME SCREEN
-- Team Logo
-- Team Stadium in background
-- Equip Playbook button
-- Equip Deck button
-- Team Level icon with level number
-
-### SHOP SCREEN
-- Currency tabs
-- List of items available to be purchased for the selected currency
-
-### ROSTER SCREEN
-1. Roster - View/Edit the Players on your team including stats, boost, levels, shards (if I use them), etc.
-2. Coaches - View/Edit the Coaches on your team (HC, OC, DC)
-3. Playbooks - Create/Edit/Delete Playbooks that contain Plays
-4. Decks - Create/Edit/Delete Decks that contain Cards
-5. Training - Traing players to increase stats
-
-### PLAY GAME SCREEN
-
-### LEAGUE SCREEN
-
-### EVENTS SCREEN
-
-### ALLIANCE SCREEN
+HOME
+Main landing page after opening the app
+Shows current Team overview and quick actions
+Includes:
+-- Continue Season/Game
+-- Quick Play
+-- Claim Rewards
+-- Missions Progress
+-- Current Team Summary
+--- Team Name
+--- Team Logo
+--- Team Identity
+--- Active Coordinators
+--- Record (Future)
+-- Currency Summary
+-- Notifications/Alerts
+Example Alerts:
+-- Rewards Ready to Claim
+-- Roster Full
+-- Deck Not Equipped
+-- Playbook Not Equipped
+-- Injured Players
+-- Training Complete
+TEAM
+Main screen for managing the active Team
+Recommended to organize using Tabs
+TEAM Tabs:
+-- Roster
+-- Lineup
+-- Position Assignments
+-- Depth Chart
+-- Coordinators
+ROSTER TAB
+View all Players on the Team Roster
+Roster Limit: 50 Players
+Sort/Filter Options:
+-- Position
+-- Rating
+-- Archetype
+-- Rarity
+-- Injured
+-- Fatigue
+-- Favorites
+LINEUP TAB
+Manage active Lineup for Games
+Lineup Limit: 22 Players
+Lineup Minimum: 12 Players
+Auto Fill Button:
+-- Best Available
+--- Accounts for Injuries
+--- Accounts for Fatigue
+--- Accounts for Position eligibility
+POSITION ASSIGNMENTS TAB
+Select/Deselect which Positions each Player may play
+Quick Options:
+-- Select All Offense
+-- Select All Defense
+-- Select All Specialists
+-- Clear All
+-- Reset Recommended
+DEPTH CHART TAB
+Prioritize Players for each Position
+Example:
+-- RB Priority
+--- RB1
+--- RB2
+--- RB3
+-- WR Priority
+--- WR1
+--- WR2
+--- WR3
+Used by AI for:
+-- Automatic substitutions
+-- Injuries
+-- Fatigue
+-- Formation requirements
+COORDINATORS TAB
+Manage Coordinators assigned to the Team
+Includes:
+-- Offensive Coordinator (OC)
+-- Defensive Coordinator (DC)
+Shows:
+-- Coordinator Identity
+-- Passive Effects
+-- Granted Plays
+-- Granted Cards
+PLAYBOOK
+The Playbook is the list of Plays available during a Game
+Users may create/modify/delete Playbooks
+Only 1 Playbook may be equipped at Game start
+Playbook Size:
+-- Minimum 3 Plays
+-- Maximum 12 Plays
+Includes:
+-- Offensive Plays
+-- Defensive Plays
+-- Special Teams Plays
+UI Suggestions:
+-- Equipped Playbook
+-- Current Play Count (e.g. 7/12)
+-- Offensive Play Section
+-- Defensive Play Section
+-- Search/Filter
+DECK
+The Deck is the list of Cards available during a Game
+Users may create/modify/delete Decks
+Only 1 Deck may be equipped at Game start
+Deck Size:
+-- Minimum 8 Cards
+-- Maximum 16 Cards
+Includes:
+-- Equipped Deck
+-- Current Card Count (e.g. 12/16)
+-- Card Cost Preview
+-- Card Types
+-- Duplicate Count
+UI Suggestions:
+-- Momentum Cost Breakdown
+-- Search/Filter
+-- Sort by Cost
+-- Sort by Type
+TRAINING
+Used to improve Players over time
+Players gain Training XP from Games
+Users choose Training focus outside of Games
+Includes:
+-- Player XP
+-- Recommended Training Paths
+-- Training Progress
+-- Stat Improvements
+-- Skill Improvements
+Example Recommended Paths:
+-- Deep Threat WR
+-- Possession WR
+-- Power RB
+-- Speed RB
+-- Gunslinger QB
+-- Field General QB
+-- Lockdown CB
+-- Ball Hawk S
+PRE-GAME
+Screen shown before starting a Game
+Allows final review before entering gameplay
+Shows:
+-- Opponent Team
+-- Team Strength Comparison
+-- Active Coordinators
+-- Equipped Playbook
+-- Equipped Deck
+-- Difficulty
+-- Potential Rewards
+-- Weather (Future)
+Buttons:
+-- Start Game
+-- Edit Team
+-- Cancel
+Notifications:
+-- Missing Playbook
+-- Missing Deck
+-- Invalid Lineup
+-- Injured Players
+GAME
+Live Game screen
+Includes:
+-- Field
+-- HUD
+-- Score
+-- Clock
+-- Half
+-- Possession
+-- Zone
+-- Momentum
+-- Drive Points
+-- Result Messages
+-- Play Selection
+-- Card Selection
+-- Timeout Button
+REWARDS
+Claim Rewards after Games, Missions, Achievements, or Events
+Reward Types:
+-- Coins
+-- Credits
+-- Players
+-- Coordinators
+-- Cards
+-- Plays
+-- XP
+-- Cosmetics
+Notifications:
+-- Roster Full
+-- Duplicate Player
+-- New Unlock
+COLLECTION (Future)
+View all owned content across the account
+Categories:
+-- Players
+-- Coordinators
+-- Cards
+-- Plays
+Separate from active Team management
+SETTINGS
+Game settings and preferences
+Includes:
+-- Audio
+-- Graphics
+-- Notifications
+-- Accessibility
+-- Account
+-- Help
+-- Support
+-- Terms/Privacy
+BOTTOM NAVIGATION (Recommended)
+Home
+Team
+Playbook
+Deck
+Play
+Rewards
+Settings
