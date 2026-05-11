@@ -17,9 +17,10 @@ Deliver a stable 2v2 mobile-first prototype with:
 
 Keep a modular gameplay setup:
 
-- [scripts/game_state.gd](scripts/game_state.gd): authoritative runtime state and transitions
+- [scripts/game_state.gd](scripts/game_state.gd): authoritative runtime state and transitions; **`current_los_row_engine`** holds LOS tile row, **`current_zone`** derived after each move
 - [scripts/game_scene.gd](scripts/game_scene.gd): flow orchestration and UI wiring
-- [scripts/play_resolver.gd](scripts/play_resolver.gd): standard + field goal resolution
+- [scripts/play_resolver.gd](scripts/play_resolver.gd): standard + **spot kick** resolution; ball movement uses **tile deltas** (zones remain for range, modifiers, UI labels)
+- [scripts/formations_catalog.gd](scripts/formations_catalog.gd): [data/formations.json](data/formations.json) load/validate (**7** positions per formation, per-role caps)
 - [scripts/card_manager.gd](scripts/card_manager.gd): deck / hand / discard / draw / cost checks
 - [scripts/effect_manager.gd](scripts/effect_manager.gd): applied effect lifecycle
 - [scripts/targeting_manager.gd](scripts/targeting_manager.gd): target validation (Phase 4+)
@@ -95,12 +96,13 @@ Keep a modular gameplay setup:
 
 - Every possession starts from `next_drive_start_zone`
 - Default drive start zone = `StartZone`
-- Drive points start at 4
-- Each play costs 1 Drive Point
-- If the offense gains 2 cumulative zones during a drive, drive points reset to 4 (can trigger multiple times in the same drive)
+- Downs start at **1** on each new possession and increment after plays that do not earn a new first down (up to **4**).
+- A **first down** is earned when the ball reaches or crosses **10 tile rows** toward the opponent’s goal from the line of scrimmage that started the current first-down chain; downs reset to **1** and a new 10-row target is set from the new LOS row.
+- **Goal to go:** when LOS is within **10 tile rows** of the scoring endzone, no first-down line is shown; yardage cannot earn a new first down; downs still run **1–4** toward a TD or FG; the **full scoring endzone** is highlighted in yellow on the field.
+- **Scoring** field goals skip the normal down increment (possession ends); **missed** field goals still advance downs like other plays.
 - Drive ends on:
   - Touchdown
-  - Drive points depleted
+  - Turnover on downs (4th down ends without a new first down and no other possession-changing outcome on that play)
   - Game time expired
   - Field goal attempt result (make / miss)
 - On any turnover or change of possession, the team gaining possession starts based on where possession changed:
@@ -159,7 +161,6 @@ At possession end, append summary with:
 Allowed `ended_by` values:
 
 - `touchdown`
-- `drive_points_depleted`
 - `game_time_expired`
 - `field_goal`
 - `missed_field_goal`
@@ -170,6 +171,8 @@ Allowed `ended_by` values:
 - `extra_point_missed`
 - `two_point_made`
 - `two_point_failed`
+
+Note: possession summaries still use **`field_goal`** / **`missed_field_goal`** above; the **offensive play type id** in [data/plays.json](data/plays.json) and sim code is **`spot_kick`** (FG + XP).
 
 ## Card / Momentum System
 
@@ -224,7 +227,7 @@ Allowed `ended_by` values:
 ## Turnovers and Player Stats
 
 - Turnover types:
-  - Turnover on downs (drive points reach 0)
+  - Turnover on downs (4th down without a new first down)
   - Fumble recovery (run or post-catch on pass)
   - Interception (pass plays only)
   - Missed field goal
@@ -351,10 +354,11 @@ In `GameState`, maintain:
 
 - [scenes/game_scene.tscn](scenes/game_scene.tscn)
   - Root Control with managers as child nodes
-  - HUD labels for clock / half / score / possession / zone / drive points / phase / result
+  - HUD labels for clock / half / score / possession / zone / down / phase / result; event log uses tile rows toward goal per play and teal **First down** lines
   - `UserTeamLabel` showing random per-game assignment (`You are: Home/Away`)
   - Play buttons (Run, Short Pass, Deep Pass, Field Goal, card controls)
   - Player token container and card / target panels
+  - `Field` / [scripts/field_grid.gd](scripts/field_grid.gd): `is_user_perspective_home` is set from `(_user_team == "home")` on assign/restart so the **local** offense always advances toward the **top** of the field (multiplayer-ready per-client seat).
 - [scenes/player.tscn](scenes/player.tscn)
   - Root Control with `NameLabel` and `SelectButton`
   - [scripts/player.gd](scripts/player.gd) attached to player root
@@ -384,7 +388,8 @@ In `GameState`, maintain:
 - [data/skills.json](data/skills.json)
 - [data/cards.json](data/cards.json)
 - [data/coaches.json](data/coaches.json)
-- [data/plays.json](data/plays.json)
+- [data/plays.json](data/plays.json) (play ids + `formation_id` + metadata; **spot_kick** replaces legacy field goal key)
+- [data/formations.json](data/formations.json)
 
 Use typed conversion when loading JSON arrays to satisfy typed GDScript arrays.
 

@@ -20,7 +20,8 @@ P - Punter
 RET - Returner
 TO - Timeout
 TD - Touchdown
-FG - Field Goal
+G2G - Goal to go (within 10 tile rows of scoring endzone; no first-down line; full endzone highlight)
+FG - Field Goal (scoring); offensive play id in data is **`spot_kick`** (FG and XP)
 XP - Extra Point
 2P - 2-point Conversion
 SAF - Safety (scoring play when Offensive player is tackled in their own Endzone)

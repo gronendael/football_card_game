@@ -1,6 +1,5 @@
 [gd_scene format=3 uid="uid://cvwbna58y8gp8"]
 
-[ext_resource type="PackedScene" uid="uid://budwd3i6u1fn3" path="res://scenes/player.tscn" id="1_onqr8"]
 [ext_resource type="Script" uid="uid://bhxl8t2i1ebag" path="res://scripts/game_scene.gd" id="2_ycayy"]
 [ext_resource type="Script" uid="uid://d33khxi3fnjwc" path="res://scripts/game_state.gd" id="3_ycayy"]
 [ext_resource type="Script" uid="uid://v70plmt1bsuy" path="res://scripts/play_resolver.gd" id="4_utbpp"]
@@ -10,7 +9,7 @@
 [ext_resource type="Script" uid="uid://1358y0xuv5xd" path="res://scripts/player_data.gd" id="8_tqxxy"]
 [ext_resource type="Script" uid="uid://culivsr7t6exs" path="res://scripts/coach_data.gd" id="9_5ay1a"]
 [ext_resource type="Script" uid="uid://cpmi625jppg7l" path="res://scripts/team_data.gd" id="11_team"]
-[ext_resource type="PackedScene" path="res://scenes/field.tscn" id="12_field"]
+[ext_resource type="PackedScene" uid="uid://dnhyqxmvkb71" path="res://scenes/field.tscn" id="12_field"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_rvs2r"]
 content_margin_left = 0.0
@@ -66,7 +65,7 @@ script = ExtResource("2_ycayy")
 layout_mode = 1
 offset_right = 540.0
 offset_bottom = 960.0
-color = Color(0.16470589, 0, 0, 1)
+color = Color(0.16470589, 0, 0, 0.43529412)
 
 [node name="QuitButton" type="Button" parent="." unique_id=875355186]
 layout_mode = 0
@@ -137,44 +136,55 @@ offset_bottom = 960.0
 
 [node name="UserTeamsScoresPanel" type="HBoxContainer" parent="UserGroup/UserHUD" unique_id=1835196771]
 layout_mode = 0
-offset_left = 10.0
+offset_left = 8.0
 offset_top = 5.0
-offset_right = 530.0
+offset_right = 532.0
 offset_bottom = 109.0
 
-[node name="UserTeam" type="Control" parent="UserGroup/UserHUD/UserTeamsScoresPanel" unique_id=977640550]
+[node name="UserTeamMargin" type="MarginContainer" parent="UserGroup/UserHUD/UserTeamsScoresPanel" unique_id=977640550]
 layout_mode = 2
-size_flags_horizontal = 3
+size_flags_horizontal = 0
+theme_override_constants/margin_left = 0
+theme_override_constants/margin_top = 0
+theme_override_constants/margin_right = 0
+theme_override_constants/margin_bottom = 0
 
-[node name="UserPossessionIcon" type="Label" parent="UserGroup/UserHUD/UserTeamsScoresPanel/UserTeam" unique_id=981966759]
-visible = false
-layout_mode = 0
-offset_left = 6.0
-offset_top = -14.0
-offset_right = 46.0
-offset_bottom = 16.0
+[node name="UserTeamColumn" type="VBoxContainer" parent="UserGroup/UserHUD/UserTeamsScoresPanel/UserTeamMargin" unique_id=981966761]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="UserPossessionSlot" type="HBoxContainer" parent="UserGroup/UserHUD/UserTeamsScoresPanel/UserTeamMargin/UserTeamColumn" unique_id=981966762]
+custom_minimum_size = Vector2(0, 28)
+layout_mode = 2
+
+[node name="UserPossessionHudIcon" type="Label" parent="UserGroup/UserHUD/UserTeamsScoresPanel/UserTeamMargin/UserTeamColumn/UserPossessionSlot" unique_id=981966759]
+unique_name_in_owner = true
+modulate = Color(1, 1, 1, 0)
+custom_minimum_size = Vector2(32, 28)
+layout_mode = 2
 theme_override_font_sizes/font_size = 24
 text = "🏈"
 vertical_alignment = 1
 
-[node name="UserTeamNameValueLabel" type="Label" parent="UserGroup/UserHUD/UserTeamsScoresPanel/UserTeam" unique_id=1641103786]
-layout_mode = 0
-offset_left = 6.0
-offset_top = 10.0
-offset_right = 106.0
-offset_bottom = 55.0
-size_flags_horizontal = 3
+[node name="UserTeamRow" type="HBoxContainer" parent="UserGroup/UserHUD/UserTeamsScoresPanel/UserTeamMargin/UserTeamColumn" unique_id=981966760]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="UserTeamNameValueLabel" type="Label" parent="UserGroup/UserHUD/UserTeamsScoresPanel/UserTeamMargin/UserTeamColumn/UserTeamRow" unique_id=1641103786]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 0
 theme_override_font_sizes/font_size = 32
 text = "Bees"
 vertical_alignment = 1
 
-[node name="UserScoreValueLabel" type="Label" parent="UserGroup/UserHUD/UserTeamsScoresPanel/UserTeam" unique_id=1580911876]
-layout_mode = 0
-offset_left = 94.0
-offset_top = 10.0
-offset_right = 144.0
-offset_bottom = 60.0
+[node name="UserScoreValueLabel" type="Label" parent="UserGroup/UserHUD/UserTeamsScoresPanel/UserTeamMargin/UserTeamColumn/UserTeamRow" unique_id=1580911876]
+custom_minimum_size = Vector2(36, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 32
+text = "0"
+horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="Spacer" type="Control" parent="UserGroup/UserHUD/UserTeamsScoresPanel" unique_id=1314822769]
@@ -209,38 +219,51 @@ vertical_alignment = 1
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="OpponentTeam" type="Control" parent="UserGroup/UserHUD/UserTeamsScoresPanel" unique_id=75033058]
+[node name="OpponentTeamMargin" type="MarginContainer" parent="UserGroup/UserHUD/UserTeamsScoresPanel" unique_id=75033058]
 layout_mode = 2
-size_flags_horizontal = 3
+size_flags_horizontal = 0
+theme_override_constants/margin_left = 0
+theme_override_constants/margin_top = 0
+theme_override_constants/margin_right = 0
+theme_override_constants/margin_bottom = 0
 
-[node name="OpponentPossessionIcon" type="Label" parent="UserGroup/UserHUD/UserTeamsScoresPanel/OpponentTeam" unique_id=1782248954]
-visible = false
-layout_mode = 0
-offset_left = 60.0
-offset_top = -14.0
-offset_right = 100.0
-offset_bottom = 16.0
+[node name="OpponentTeamColumn" type="VBoxContainer" parent="UserGroup/UserHUD/UserTeamsScoresPanel/OpponentTeamMargin" unique_id=1782248956]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="OpponentPossessionSlot" type="HBoxContainer" parent="UserGroup/UserHUD/UserTeamsScoresPanel/OpponentTeamMargin/OpponentTeamColumn" unique_id=1782248957]
+custom_minimum_size = Vector2(0, 28)
+layout_mode = 2
+alignment = 2
+
+[node name="OpponentPossessionHudIcon" type="Label" parent="UserGroup/UserHUD/UserTeamsScoresPanel/OpponentTeamMargin/OpponentTeamColumn/OpponentPossessionSlot" unique_id=1782248954]
+unique_name_in_owner = true
+modulate = Color(1, 1, 1, 0)
+custom_minimum_size = Vector2(32, 28)
+layout_mode = 2
 theme_override_font_sizes/font_size = 24
 text = "🏈"
 horizontal_alignment = 2
 vertical_alignment = 1
 
-[node name="OpponentScoreValueLabel" type="Label" parent="UserGroup/UserHUD/UserTeamsScoresPanel/OpponentTeam" unique_id=684319615]
-layout_mode = 0
-offset_left = -37.0
-offset_top = 10.0
-offset_right = 13.0
-offset_bottom = 60.0
+[node name="OpponentTeamRow" type="HBoxContainer" parent="UserGroup/UserHUD/UserTeamsScoresPanel/OpponentTeamMargin/OpponentTeamColumn" unique_id=1782248955]
+layout_mode = 2
+theme_override_constants/separation = 6
+alignment = 2
+
+[node name="OpponentScoreValueLabel" type="Label" parent="UserGroup/UserHUD/UserTeamsScoresPanel/OpponentTeamMargin/OpponentTeamColumn/OpponentTeamRow" unique_id=684319615]
+custom_minimum_size = Vector2(36, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 32
-horizontal_alignment = 2
+text = "0"
+horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="OpponentTeamNameValueLabel" type="Label" parent="UserGroup/UserHUD/UserTeamsScoresPanel/OpponentTeam" unique_id=2076082349]
-layout_mode = 0
-offset_top = 10.0
-offset_right = 100.0
-offset_bottom = 55.0
-size_flags_horizontal = 3
+[node name="OpponentTeamNameValueLabel" type="Label" parent="UserGroup/UserHUD/UserTeamsScoresPanel/OpponentTeamMargin/OpponentTeamColumn/OpponentTeamRow" unique_id=2076082349]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 0
 theme_override_font_sizes/font_size = 32
 text = "Cavs"
 horizontal_alignment = 2
@@ -374,21 +397,6 @@ theme_override_font_sizes/font_size = 32
 theme_override_styles/normal = SubResource("StyleBoxFlat_5ay1a")
 text = "Ready"
 
-[node name="UserPlayersContainer" type="GridContainer" parent="UserGroup" unique_id=1912429368]
-offset_left = 2216.0
-offset_top = 156.0
-offset_right = 2416.0
-offset_bottom = 356.0
-theme_override_constants/h_separation = 16
-theme_override_constants/v_separation = 16
-columns = 4
-
-[node name="UserPlayer1" parent="UserGroup/UserPlayersContainer" unique_id=2089160178 instance=ExtResource("1_onqr8")]
-layout_mode = 2
-
-[node name="UserPlayer2" parent="UserGroup/UserPlayersContainer" unique_id=900997149 instance=ExtResource("1_onqr8")]
-layout_mode = 2
-
 [node name="OpponentGroup" type="Node" parent="." unique_id=756280709]
 
 [node name="OpponentHUD" type="Control" parent="OpponentGroup" unique_id=1850213906]
@@ -506,69 +514,54 @@ layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 8
 
-[node name="OpponentPlayersContainer" type="GridContainer" parent="OpponentGroup" unique_id=1438431258]
-offset_left = 2208.0
-offset_top = 24.0
-offset_right = 2408.0
-offset_bottom = 224.0
-theme_override_constants/h_separation = 16
-theme_override_constants/v_separation = 16
-columns = 4
-
-[node name="OpponentPlayer1" parent="OpponentGroup/OpponentPlayersContainer" unique_id=125429192 instance=ExtResource("1_onqr8")]
-modulate = Color(1, 0, 0, 1)
-layout_mode = 2
-
-[node name="OpponentPlayer2" parent="OpponentGroup/OpponentPlayersContainer" unique_id=851864178 instance=ExtResource("1_onqr8")]
-modulate = Color(1, 0, 0, 1)
-layout_mode = 2
-
 [node name="HUDGroup" type="Node" parent="." unique_id=425902874]
 
 [node name="GlobalHUD" type="VBoxContainer" parent="HUDGroup" unique_id=713179604]
 offset_left = 1176.0
 offset_top = 103.99999
 offset_right = 1476.0
-offset_bottom = 504.0001
-scale = Vector2(1.75, 1.75)
+offset_bottom = 259.42856
+scale = Vector2(1.25, 1.25)
 
 [node name="UserTeamLabel" type="Label" parent="HUDGroup/GlobalHUD" unique_id=1163176269]
 layout_mode = 2
+theme_override_font_sizes/font_size = 16
 text = "You are: Bees (Home)"
 
 [node name="HalfLabel" type="Label" parent="HUDGroup/GlobalHUD" unique_id=2086931693]
 layout_mode = 2
+theme_override_font_sizes/font_size = 16
 text = "Half: 1"
-vertical_alignment = 1
-
-[node name="PossessionLabel" type="Label" parent="HUDGroup/GlobalHUD" unique_id=1876753419]
-layout_mode = 2
-text = "Possession: Bees Ball"
 vertical_alignment = 1
 
 [node name="ZoneLabel" type="Label" parent="HUDGroup/GlobalHUD" unique_id=2136180461]
 layout_mode = 2
+theme_override_font_sizes/font_size = 16
 text = "Zone: StartZone"
 vertical_alignment = 1
 
 [node name="DrivePointsLabel" type="Label" parent="HUDGroup/GlobalHUD" unique_id=1550221750]
 layout_mode = 2
+theme_override_font_sizes/font_size = 16
 text = "Drive Points: 6"
 vertical_alignment = 1
 
 [node name="PhaseLabel" type="Label" parent="HUDGroup/GlobalHUD" unique_id=1534667255]
 layout_mode = 2
+theme_override_font_sizes/font_size = 16
 text = "Phase: play_selection"
 vertical_alignment = 1
 
 [node name="SimStatusLabel" type="Label" parent="HUDGroup/GlobalHUD" unique_id=435840413]
 visible = false
 layout_mode = 2
+theme_override_font_sizes/font_size = 16
 text = "SIM: OFF | 1.00x"
 
 [node name="SimStatsLabel" type="Label" parent="HUDGroup/GlobalHUD" unique_id=2002326592]
 visible = false
 layout_mode = 2
+theme_override_font_sizes/font_size = 16
 text = "N=0 | H:0 A:0 T:0"
 
 [node name="SimButtons" type="BoxContainer" parent="HUDGroup" unique_id=443397089]
@@ -611,10 +604,10 @@ layout_mode = 2
 text = "  x1  "
 
 [node name="PlayInfoHUD" type="Panel" parent="HUDGroup" unique_id=1248807706]
-offset_left = 560.0
-offset_top = 400.0
-offset_right = 1160.0
-offset_bottom = 664.0
+offset_left = 1173.0
+offset_top = 288.0
+offset_right = 1773.0
+offset_bottom = 640.0
 
 [node name="PlayLog" type="Label" parent="HUDGroup/PlayInfoHUD" unique_id=1471580771]
 layout_mode = 0
@@ -638,10 +631,10 @@ text = "Ready."
 
 [node name="EventLogPanel" type="Panel" parent="HUDGroup" unique_id=565045101]
 clip_contents = true
-offset_left = 560.0
-offset_top = 672.0
-offset_right = 1064.0
-offset_bottom = 885.33325
+offset_left = 552.0
+offset_top = 408.0
+offset_right = 1056.0
+offset_bottom = 841.3333
 scale = Vector2(1.2, 1.2)
 
 [node name="EventLogTitle" type="Label" parent="HUDGroup/EventLogPanel" unique_id=1273462195]

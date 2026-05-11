@@ -20,7 +20,7 @@ const PENDING_NONE := "none"
 const PLAY_RUN := "run"
 const PLAY_SHORT_PASS := "short_pass"
 const PLAY_DEEP_PASS := "deep_pass"
-const PLAY_FIELD_GOAL := "field_goal"
+const PLAY_SPOT_KICK := "spot_kick"
 
 const MAX_CLOCK_SECONDS := 300
 const HALF_SECONDS := 150
@@ -34,6 +34,10 @@ const ZONE_RED := 6
 const ZONE_END := 7
 const DEFAULT_START_ZONE := ZONE_START
 const PHASE_CARD_QUEUE := "card_queue"
+
+const TILE_ROWS_PER_ZONE := 5
+const TILE_ROWS_TOTAL := MAX_ZONE * TILE_ROWS_PER_ZONE
+const FIRST_DOWN_TILE_ROWS := 10
 
 var game_time_remaining: int = MAX_CLOCK_SECONDS
 var half: int = 1
@@ -49,11 +53,16 @@ var first_half_starting_team: String = "home"
 var home_possessions: int = 0
 var away_possessions: int = 0
 var current_zone: int = DEFAULT_START_ZONE
-var drive_points: int = 4
+## Current down (1–4). First down resets to 1; turnover on downs after 4th without a new first down.
+var downs: int = 1
 var next_drive_start_zone: int = DEFAULT_START_ZONE
 var plays_used_current_drive: int = 0
 var drive_start_zone: int = DEFAULT_START_ZONE
-var drive_positive_zones_gained_this_drive: int = 0
+## Authoritative LOS engine tile row (0 = top / scoring end). `current_zone` is derived from this after moves.
+var current_los_row_engine: int = 0
+## Engine-space LOS tile row (0 = top / scoring endzone strip). First-down line is 10 rows toward the goal (smaller row index), or **-1** in goal-to-go (no first-down line).
+var first_down_chain_base_row_engine: int = 0
+var first_down_target_row_engine: int = 0
 var _just_switched_for_halftime: bool = false
 
 var phase: String = PHASE_PLAY_SELECTION
@@ -126,12 +135,13 @@ func start_game() -> void:
 func start_possession(team: String, start_zone: int) -> void:
 	possession_team = team
 	current_zone = clampi(start_zone, 1, MAX_ZONE)
+	current_los_row_engine = los_row_engine_from_zone(current_zone)
 	drive_start_zone = current_zone
-	drive_points = 4
-	drive_positive_zones_gained_this_drive = 0
+	downs = 1
 	plays_used_current_drive = 0
 	selected_player_id = ""
 	pending_play_type = PENDING_NONE
+	reset_first_down_chain_from_current_zone()
 
 	# Reset both teams to exactly 1 on possession change.
 	momentum_home = 1
@@ -163,11 +173,41 @@ func apply_clock(seconds_used: int) -> void:
 
 func apply_zone_delta(zone_delta: int) -> void:
 	current_zone = clampi(current_zone + zone_delta, 1, MAX_ZONE)
-	if zone_delta > 0:
-		drive_positive_zones_gained_this_drive += zone_delta
-		while drive_positive_zones_gained_this_drive >= 2:
-			drive_points = 4
-			drive_positive_zones_gained_this_drive -= 2
+	current_los_row_engine = los_row_engine_from_zone(current_zone)
+
+## Map engine LOS row (0 = top / scoring end) to game zone 1..7.
+func zone_from_engine_row(row: int) -> int:
+	var zidx := clampi(row / TILE_ROWS_PER_ZONE, 0, MAX_ZONE - 1)
+	return clampi(ZONE_END - zidx, 1, MAX_ZONE)
+
+## Positive tile_delta moves the ball toward the scoring end (engine row decreases).
+func apply_ball_movement_tile_delta(tile_delta: int) -> void:
+	var r1 := clampi(current_los_row_engine - tile_delta, 0, TILE_ROWS_TOTAL - 1)
+	current_los_row_engine = r1
+	current_zone = zone_from_engine_row(r1)
+
+func los_row_engine_from_zone(zone: int) -> int:
+	var zone_top_based := clampi(ZONE_END - zone, 0, MAX_ZONE - 1)
+	return zone_top_based * TILE_ROWS_PER_ZONE + 2
+
+## True when LOS is within FIRST_DOWN_TILE_ROWS (10) tile rows of the scoring endzone (engine rows 0–4).
+func is_goal_to_go() -> bool:
+	return current_los_row_engine <= FIRST_DOWN_TILE_ROWS
+
+func reset_first_down_chain_from_current_zone() -> void:
+	first_down_chain_base_row_engine = current_los_row_engine
+	if is_goal_to_go():
+		first_down_target_row_engine = -1
+	else:
+		first_down_target_row_engine = maxi(0, first_down_chain_base_row_engine - FIRST_DOWN_TILE_ROWS)
+
+## After a play (same possession), keep FD target invalid in goal-to-go or restore chain after leaving it.
+func sync_goal_to_go_first_down_after_play() -> void:
+	if is_goal_to_go():
+		first_down_target_row_engine = -1
+		first_down_chain_base_row_engine = current_los_row_engine
+	elif first_down_target_row_engine < 0:
+		reset_first_down_chain_from_current_zone()
 
 func add_score(team: String, points: int) -> void:
 	if team == "home":

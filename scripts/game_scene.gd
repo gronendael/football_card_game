@@ -8,7 +8,7 @@ const PHASE_CARD_QUEUE := "card_queue"
 const PLAY_RUN := "run"
 const PLAY_SHORT_PASS := "short_pass"
 const PLAY_DEEP_PASS := "deep_pass"
-const PLAY_FIELD_GOAL := "field_goal"
+const PLAY_SPOT_KICK := "spot_kick"
 const PHASE_CONVERSION := "conversion"
 const CONVERSION_XP := "xp"
 const CONVERSION_2PT := "2pt"
@@ -39,9 +39,9 @@ const CARD_TILE_SCENE := preload("res://scenes/card_tile.tscn")
 @onready var result_text: RichTextLabel = $HUDGroup/PlayInfoHUD/ResultText
 @onready var opponent_momentum_value_label: Label = get_node_or_null("OpponentGroup/OpponentHUD/OpponentMomentumValueLabel") as Label
 @onready var opponent_hand_label: Label = $OpponentGroup/OpponentHUD/OpponentHandPanel/OpponentHandLabel
-@onready var opponent_team_name_value_label: Label = get_node_or_null("UserGroup/UserHUD/UserTeamsScoresPanel/OpponentTeam/OpponentTeamNameValueLabel") as Label
-@onready var opponent_possession_icon_label: Label = get_node_or_null("UserGroup/UserHUD/UserTeamsScoresPanel/OpponentTeam/OpponentPossessionIcon") as Label
-@onready var opponent_score_value_label: Label = get_node_or_null("UserGroup/UserHUD/UserTeamsScoresPanel/OpponentTeam/OpponentScoreValueLabel") as Label
+@onready var opponent_team_name_value_label: Label = %"OpponentTeamNameValueLabel"
+@onready var opponent_possession_icon_label: Label = %"OpponentPossessionHudIcon"
+@onready var opponent_score_value_label: Label = $UserGroup/UserHUD/UserTeamsScoresPanel/OpponentTeamMargin/OpponentTeamColumn/OpponentTeamRow/OpponentScoreValueLabel
 @onready var opponent_tos_button: Button = get_node_or_null("OpponentGroup/OpponentHUD/OpponentTimeoutsPanel/OpponentTOsPanel") as Button
 @onready var opponent_hud: Control = get_node_or_null("OpponentGroup/OpponentHUD") as Control
 @onready var user_momentum_value_label: Label = get_node_or_null("UserGroup/UserHUD/UserBottomUIPanel/UserMomentumValueLabel") as Label
@@ -49,12 +49,13 @@ const CARD_TILE_SCENE := preload("res://scenes/card_tile.tscn")
 @onready var user_hand_cards: HBoxContainer = get_node_or_null("UserGroup/UserHUD/UserHandPanel/UserHandScroll/UserHandCards") as HBoxContainer
 @onready var user_queued_label: Label = get_node_or_null("UserGroup/UserHUD/UserQueuedPanel/UserQueuedLabel") as Label
 @onready var user_queued_cards: HBoxContainer = get_node_or_null("UserGroup/UserHUD/UserQueuedPanel/UserQueuedScroll/UserQueuedCards") as HBoxContainer
-@onready var user_team_name_value_label: Label = get_node_or_null("UserGroup/UserHUD/UserTeamsScoresPanel/UserTeam/UserTeamNameValueLabel") as Label
-@onready var user_possession_icon_label: Label = get_node_or_null("UserGroup/UserHUD/UserTeamsScoresPanel/UserTeam/UserPossessionIcon") as Label
-@onready var user_score_value_label: Label = get_node_or_null("UserGroup/UserHUD/UserTeamsScoresPanel/UserTeam/UserScoreValueLabel") as Label
+@onready var user_team_name_value_label: Label = %"UserTeamNameValueLabel"
+@onready var user_possession_icon_label: Label = %"UserPossessionHudIcon"
+@onready var user_score_value_label: Label = $UserGroup/UserHUD/UserTeamsScoresPanel/UserTeamMargin/UserTeamColumn/UserTeamRow/UserScoreValueLabel
 @onready var user_tos_button: Button = get_node_or_null("UserGroup/UserHUD/UserTimeoutsPanel/UserTOsPanel") as Button
 @onready var user_forfeit_button: Button = get_node_or_null("UserGroup/UserHUD/UserBottomUIPanel/UserForfeitButton") as Button
 @onready var user_hud: Control = get_node_or_null("UserGroup/UserHUD") as Control
+@onready var field_grid: Node = get_node_or_null("Field")
 @onready var field_background: ColorRect = $Field/FieldBackground
 @onready var ball_marker: ColorRect = $Field/BallMarker
 @onready var possession_arrow: Label = $Field/PossessionArrow
@@ -105,6 +106,7 @@ var _player_tokens: Dictionary = {}
 @export_range(1, 5, 1) var current_phase_level: int = 5
 var _opponent_flat_def_mod: int = 10
 var _staff_data: Dictionary = {}
+var _formations_catalog: FormationsCatalog
 var _skills_db: Dictionary = {}
 var _pending_target_card: Dictionary = {}
 var _turn_initialized: bool = false
@@ -220,6 +222,12 @@ func _assign_user_team_random() -> void:
 	if user_team_label:
 		user_team_label.text = "You are: %s (%s)" % [_team_display_name(_user_team), _user_team.capitalize()]
 	_append_event_log("[b]You are controlling: %s (%s)[/b]" % [_team_display_name(_user_team), _user_team.capitalize()])
+	_sync_field_perspective_to_user_team()
+
+func _sync_field_perspective_to_user_team() -> void:
+	if field_grid == null:
+		return
+	field_grid.set("is_user_perspective_home", _user_team == "home")
 
 func _team_profile(team: String) -> Dictionary:
 	var team_id := _home_team_id if team == "home" else _away_team_id
@@ -240,20 +248,16 @@ func _team_color(team: String, key: String, fallback: Color) -> Color:
 
 func _init_team_ids_from_data() -> void:
 	var ids := team_data.get_all_ids()
-	if ids.is_empty():
+	if ids.size() < 2:
+		OS.alert("teams.json must contain at least two distinct teams.", "Team data error")
 		_home_team_id = DEFAULT_USER_TEAM_ID
 		_away_team_id = DEFAULT_OPPONENT_TEAM_ID
+		if _away_team_id == _home_team_id:
+			_away_team_id = "cavs"
 		return
-	if team_data.has_team(DEFAULT_USER_TEAM_ID):
-		_home_team_id = DEFAULT_USER_TEAM_ID
-	else:
-		_home_team_id = ids[0]
-	if team_data.has_team(DEFAULT_OPPONENT_TEAM_ID):
-		_away_team_id = DEFAULT_OPPONENT_TEAM_ID
-	else:
-		_away_team_id = ids[0]
-	if _away_team_id == _home_team_id and ids.size() > 1:
-		_away_team_id = ids[1]
+	ids.shuffle()
+	_home_team_id = ids[0]
+	_away_team_id = ids[1]
 
 func _is_ai_controlled_team(team: String, include_user_autoplay: bool = false) -> bool:
 	if team == _user_team:
@@ -611,6 +615,10 @@ func _maybe_sim_call_timeouts() -> bool:
 func _load_data() -> void:
 	team_data.load_from_json("res://data/teams.json")
 	_init_team_ids_from_data()
+	if _formations_catalog == null:
+		_formations_catalog = FormationsCatalog.new()
+	if not _formations_catalog.load_from_json("res://data/formations.json"):
+		push_error("formations.json failed to load or validate")
 	player_data.load_from_json("res://data/players.json")
 	coach_data.load_from_json("res://data/coaches.json")
 	_load_skills_data()
@@ -695,7 +703,7 @@ func _wire_buttons() -> void:
 	if adeep:
 		adeep.pressed.connect(func(): _on_select_play_for_team(opponent_team, PLAY_DEEP_PASS))
 	if afg:
-		afg.pressed.connect(func(): _on_select_play_for_team(opponent_team, PLAY_FIELD_GOAL))
+		afg.pressed.connect(func(): _on_select_play_for_team(opponent_team, PLAY_SPOT_KICK))
 	if aready:
 		aready.pressed.connect(func(): _on_ready_pressed_for_team(opponent_team))
 	if axp:
@@ -718,7 +726,7 @@ func _wire_buttons() -> void:
 	if hdeep:
 		hdeep.pressed.connect(func(): _on_select_play_for_team(_user_team, PLAY_DEEP_PASS))
 	if hfg:
-		hfg.pressed.connect(func(): _on_select_play_for_team(_user_team, PLAY_FIELD_GOAL))
+		hfg.pressed.connect(func(): _on_select_play_for_team(_user_team, PLAY_SPOT_KICK))
 	if hready:
 		hready.pressed.connect(func(): _on_ready_pressed_for_team(_user_team))
 	if hxp:
@@ -945,7 +953,7 @@ func _map_button_play_to_defense_play(play_type: String) -> String:
 		return DEF_RUN
 	if play_type == PLAY_SHORT_PASS:
 		return DEF_MAN
-	if play_type == PLAY_FIELD_GOAL:
+	if play_type == PLAY_SPOT_KICK:
 		return DEF_FG
 	return DEF_ZONE
 
@@ -999,13 +1007,13 @@ func _resolve_play() -> void:
 	var play_result: Dictionary
 	var defense_mod := _defense_modifier_for_play(game_state.pending_play_type, _selected_defense_play)
 
-	if game_state.pending_play_type == PLAY_FIELD_GOAL and current_phase_level >= 2:
+	if game_state.pending_play_type == PLAY_SPOT_KICK and current_phase_level >= 2:
 		var kicker := _kicker_for_fg_attempt()
 		var kicker_id := str(kicker.get("id", ""))
 		if kicker_id.is_empty():
 			kicker_id = game_state.selected_player_id
 		var staff_bonus := int(_staff_data[game_state.possession_team]["head_coach"].get("bonus", {}).get("field_goal_bonus", 0))
-		play_result = play_resolver.resolve_field_goal(kicker_id, game_state.current_zone, kicker, _opponent_flat_def_mod + defense_mod - staff_bonus)
+		play_result = play_resolver.resolve_spot_kick(kicker_id, game_state.current_zone, kicker, _opponent_flat_def_mod + defense_mod - staff_bonus)
 		play_result["breakdown"].append("Defense call: %s (%+d)" % [_selected_defense_play, defense_mod])
 	else:
 		if game_state.selected_player_id.is_empty():
@@ -1016,16 +1024,63 @@ func _resolve_play() -> void:
 		play_result = play_resolver.resolve_standard_play(game_state.pending_play_type, game_state.selected_player_id, game_state.current_zone)
 		play_result["breakdown"].append("Opponent defense: -%d" % _opponent_flat_def_mod)
 		play_result["breakdown"].append("Defense call: %s (%+d)" % [_selected_defense_play, defense_mod])
+		var tile_delta := int(play_result.get("tile_delta", 0))
 		if defense_mod != 0:
-			play_result["zone_delta"] = max(int(play_result["zone_delta"]) - 1, 0)
-			play_result["breakdown"].append("Defense impact: -1 zone")
+			tile_delta = maxi(tile_delta - defense_mod, 0)
+			play_result["breakdown"].append("Net from defense matchup: %+d tile rows toward goal" % -defense_mod)
 
 		var staff_play_bonus := int(_staff_data[game_state.possession_team]["off_coord"].get("bonus", {}).get("standard_zone_bonus", 0))
 		if staff_play_bonus != 0:
-			play_result["zone_delta"] = max(int(play_result["zone_delta"]) + staff_play_bonus, 0)
-			play_result["breakdown"].append("Staff bonus: %+d zone" % staff_play_bonus)
+			tile_delta += staff_play_bonus
+			play_result["breakdown"].append("Staff bonus: %+d tile rows" % staff_play_bonus)
+
+		play_result["tile_delta"] = tile_delta
+		play_result["result_text"] = "%s: %+d tile rows toward goal." % [str(play_result.get("play_type", "")), tile_delta]
 
 	_apply_play_result(play_result)
+
+## 0 = normal; 1 = turnover on downs + defensive TD (caller returns); 2 = turnover on downs, caller runs common footer
+func _apply_downs_and_first_down_after_play(
+	row_after_engine: int,
+	offense_team_for_summary: String,
+	offense_play_for_summary: String,
+	defense_play_for_summary: String,
+	summary_result_text: String,
+	tile_rows_toward_goal: int,
+	earned_first_down: bool
+) -> int:
+	if earned_first_down:
+		game_state.downs = 1
+		game_state.reset_first_down_chain_from_current_zone()
+		return 0
+	if game_state.downs == 4:
+		if game_state.current_zone == GameState.ZONE_MY_END:
+			game_state.next_drive_start_zone = _map_possession_start_zone(game_state.current_zone)
+			game_state.end_possession("turnover_on_downs", 0)
+			_stop_clock("turnover on downs")
+			var scoring_team := "away" if game_state.possession_team == "home" else "home"
+			_game_tds += 1
+			game_state.add_score(scoring_team, 6)
+			game_state.conversion_pending = true
+			game_state.conversion_team = scoring_team
+			result_text.text = "[center][color=#ff4444][b]TURNOVER ON DOWNS + DEFENSIVE TD![/b][/color][/center]"
+			var tod_summary := "TURNOVER ON DOWNS + DEFENSIVE TD"
+			_append_event_log("[color=#ff6666][b]TURNOVER ON DOWNS[/b][/color]")
+			_begin_post_td_conversion(scoring_team)
+			_render_last_play_info(offense_team_for_summary, offense_play_for_summary, defense_play_for_summary, tod_summary, tile_rows_toward_goal)
+			game_state.pending_play_type = GameState.PENDING_NONE
+			_selected_defense_play = DEF_ZONE
+			_awaiting_defense_pick = false
+			game_state.emit_signal("state_changed")
+			return 1
+		game_state.next_drive_start_zone = _map_possession_start_zone(game_state.current_zone)
+		game_state.end_possession("turnover_on_downs", 0)
+		_stop_clock("turnover on downs")
+		result_text.text = "[center][color=#ff4444][b]TURNOVER ON DOWNS![/b][/color][/center]\nOpponent starts in %s." % _zone_name(game_state.next_drive_start_zone)
+		_append_event_log("[color=#ff6666][b]TURNOVER ON DOWNS[/b][/color] Opponent starts in %s." % _zone_name(game_state.next_drive_start_zone))
+		return 2
+	game_state.downs += 1
+	return 0
 
 func _defense_modifier_for_play(offense_play: String, defense_play: String) -> int:
 	if offense_play == PLAY_RUN:
@@ -1038,7 +1093,7 @@ func _defense_modifier_for_play(offense_play: String, defense_play: String) -> i
 			return 5
 		if defense_play == DEF_RUN:
 			return -5
-	elif offense_play == PLAY_FIELD_GOAL:
+	elif offense_play == PLAY_SPOT_KICK:
 		if defense_play == DEF_FG:
 			return 6
 	return 0
@@ -1048,15 +1103,19 @@ func _apply_play_result(result: Dictionary) -> void:
 	var offense_team_for_summary := game_state.possession_team
 	var offense_play_for_summary := game_state.pending_play_type
 	var defense_play_for_summary := _selected_defense_play
-	var zone_delta_for_summary := int(result.get("zone_delta", 0))
 	var summary_result_text := str(result.get("result_text", ""))
 	var is_two_point_attempt := game_state.conversion_pending and game_state.conversion_type == CONVERSION_2PT
 	_game_plays += 1
-	if game_state.pending_play_type == PLAY_FIELD_GOAL:
+	if game_state.pending_play_type == PLAY_SPOT_KICK:
 		_game_fg_attempts += 1
 	game_state.plays_used_current_drive += 1
-	game_state.drive_points -= 1
-	game_state.apply_zone_delta(int(result.get("zone_delta", 0)))
+	var row_before_engine: int = game_state.current_los_row_engine
+	var prev_fd_target: int = game_state.first_down_target_row_engine
+	game_state.apply_ball_movement_tile_delta(int(result.get("tile_delta", 0)))
+	var row_after_engine: int = game_state.current_los_row_engine
+	var tile_rows_toward_goal: int = row_before_engine - row_after_engine
+	var earned_first_down: bool = (not game_state.is_goal_to_go()) and prev_fd_target >= 0 and row_after_engine <= prev_fd_target
+	var score_delta_early := int(result.get("score_delta", 0))
 	if is_two_point_attempt:
 		if game_state.current_zone >= GameState.ZONE_END:
 			game_state.add_score(game_state.conversion_team, 2)
@@ -1067,13 +1126,14 @@ func _apply_play_result(result: Dictionary) -> void:
 			_append_event_log("[b]2-Point Conversion FAILED[/b]")
 			summary_result_text = "2-Point Conversion FAILED"
 			_finish_conversion("two_point_failed", false)
-		_render_last_play_info(offense_team_for_summary, offense_play_for_summary, defense_play_for_summary, summary_result_text, zone_delta_for_summary)
+		game_state.sync_goal_to_go_first_down_after_play()
+		_render_last_play_info(offense_team_for_summary, offense_play_for_summary, defense_play_for_summary, summary_result_text, tile_rows_toward_goal)
 		game_state.pending_play_type = GameState.PENDING_NONE
 		_selected_defense_play = DEF_ZONE
 		_awaiting_defense_pick = false
 		game_state.emit_signal("state_changed")
 		return
-	var turnover := _roll_turnover_if_any(game_state.pending_play_type, int(result.get("zone_delta", 0)))
+	var turnover := _roll_turnover_if_any(game_state.pending_play_type, int(result.get("tile_delta", 0)))
 	if bool(turnover.get("occurred", false)):
 		var defensive_td := game_state.current_zone == GameState.ZONE_MY_END
 		game_state.next_drive_start_zone = int(turnover.get("start_zone", GameState.DEFAULT_START_ZONE))
@@ -1099,7 +1159,7 @@ func _apply_play_result(result: Dictionary) -> void:
 			result_text.text = "[center][color=#ff4444][b]TURNOVER + DEFENSIVE TD![/b][/color][/center]\n%s%s" % [turnover_text, proc_line]
 			summary_result_text = "TURNOVER + DEFENSIVE TD"
 			_begin_post_td_conversion(scoring_team)
-			_render_last_play_info(offense_team_for_summary, offense_play_for_summary, defense_play_for_summary, summary_result_text, zone_delta_for_summary)
+			_render_last_play_info(offense_team_for_summary, offense_play_for_summary, defense_play_for_summary, summary_result_text, tile_rows_toward_goal)
 			game_state.pending_play_type = GameState.PENDING_NONE
 			_selected_defense_play = DEF_ZONE
 			_awaiting_defense_pick = false
@@ -1108,19 +1168,27 @@ func _apply_play_result(result: Dictionary) -> void:
 		game_state.pending_play_type = GameState.PENDING_NONE
 		_selected_defense_play = DEF_ZONE
 		_awaiting_defense_pick = false
-		_render_last_play_info(offense_team_for_summary, offense_play_for_summary, defense_play_for_summary, summary_result_text, zone_delta_for_summary)
+		_render_last_play_info(offense_team_for_summary, offense_play_for_summary, defense_play_for_summary, summary_result_text, tile_rows_toward_goal)
 		_reset_next_turn_after_possession_change("turnover")
 		game_state.emit_signal("state_changed")
 		return
 
-	var score_delta := int(result.get("score_delta", 0))
-	if game_state.pending_play_type == PLAY_FIELD_GOAL and score_delta > 0:
+	var downs_res: int = 0
+	var had_first_down: bool = earned_first_down
+	var skip_downs := is_two_point_attempt or bool(turnover.get("occurred", false)) or game_state.is_touchdown() or (game_state.pending_play_type == PLAY_SPOT_KICK and score_delta_early > 0)
+	if not skip_downs:
+		downs_res = _apply_downs_and_first_down_after_play(row_after_engine, offense_team_for_summary, offense_play_for_summary, defense_play_for_summary, summary_result_text, tile_rows_toward_goal, earned_first_down)
+		if downs_res == 1:
+			return
+
+	var score_delta := score_delta_early
+	if game_state.pending_play_type == PLAY_SPOT_KICK and score_delta > 0:
 		_game_fg_makes += 1
 		game_state.add_score(game_state.possession_team, 3)
 		game_state.next_drive_start_zone = _map_possession_start_zone(game_state.current_zone)
 		game_state.end_possession("field_goal", 3)
 		_stop_clock("field goal")
-	elif game_state.pending_play_type == PLAY_FIELD_GOAL:
+	elif game_state.pending_play_type == PLAY_SPOT_KICK:
 		game_state.next_drive_start_zone = _map_possession_start_zone(game_state.current_zone)
 		game_state.end_possession("missed_field_goal", 0)
 		_stop_clock("missed FG turnover")
@@ -1143,40 +1211,21 @@ func _apply_play_result(result: Dictionary) -> void:
 		return
 	elif game_state.game_time_remaining <= 0:
 		game_state.end_game_if_time_up()
-	elif game_state.drive_points <= 0:
-		if game_state.current_zone == GameState.ZONE_MY_END:
-			game_state.next_drive_start_zone = _map_possession_start_zone(game_state.current_zone)
-			game_state.end_possession("turnover_on_downs", 0)
-			_stop_clock("turnover on downs")
-			var scoring_team := "away" if game_state.possession_team == "home" else "home"
-			_game_tds += 1
-			game_state.add_score(scoring_team, 6)
-			game_state.conversion_pending = true
-			game_state.conversion_team = scoring_team
-			result_text.text = "[center][color=#ff4444][b]TURNOVER ON DOWNS + DEFENSIVE TD![/b][/color][/center]"
-			summary_result_text = "TURNOVER ON DOWNS + DEFENSIVE TD"
-			_append_event_log("[color=#ff6666][b]TURNOVER ON DOWNS[/b][/color]")
-			_begin_post_td_conversion(scoring_team)
-			_render_last_play_info(offense_team_for_summary, offense_play_for_summary, defense_play_for_summary, summary_result_text, zone_delta_for_summary)
-			game_state.pending_play_type = GameState.PENDING_NONE
-			_selected_defense_play = DEF_ZONE
-			_awaiting_defense_pick = false
-			game_state.emit_signal("state_changed")
-			return
-		game_state.next_drive_start_zone = _map_possession_start_zone(game_state.current_zone)
-		game_state.end_possession("turnover_on_downs", 0)
-		_stop_clock("turnover on downs")
-		result_text.text = "[center][color=#ff4444][b]TURNOVER ON DOWNS![/b][/color][/center]\nOpponent starts in %s." % _zone_name(game_state.next_drive_start_zone)
-		summary_result_text = "TURNOVER ON DOWNS"
-		_append_event_log("[color=#ff6666][b]TURNOVER ON DOWNS[/b][/color] Opponent starts in %s." % _zone_name(game_state.next_drive_start_zone))
-	else:
+	elif downs_res != 2:
 		game_state.phase = PHASE_PLAY_SELECTION
 
 	game_state.pending_play_type = GameState.PENDING_NONE
 	_selected_defense_play = DEF_ZONE
 	_awaiting_defense_pick = false
-	_render_last_play_info(offense_team_for_summary, offense_play_for_summary, defense_play_for_summary, summary_result_text, zone_delta_for_summary)
-	_append_event_log("[b]%s[/b]" % str(result.get("result_text", "")))
+	game_state.sync_goal_to_go_first_down_after_play()
+	_render_last_play_info(offense_team_for_summary, offense_play_for_summary, defense_play_for_summary, summary_result_text, tile_rows_toward_goal)
+	_append_event_log("%s (%s): [b]%+d tile rows[/b] toward goal." % [
+		_team_display_name(offense_team_for_summary),
+		_friendly_play_name(offense_play_for_summary, false),
+		tile_rows_toward_goal
+	])
+	if had_first_down:
+		_append_event_log("[color=#2dd4bf][b]First down[/b][/color] — %s." % _team_display_name(offense_team_for_summary))
 
 	if game_state.phase == GameState.PHASE_GAME_OVER:
 		game_state.emit_signal("state_changed")
@@ -1243,7 +1292,7 @@ func _map_possession_start_zone(zone_at_change: int) -> int:
 			return GameState.ZONE_START
 
 func _roll_turnover_if_any(play_type: String, zone_delta: int) -> Dictionary:
-	if play_type == PLAY_FIELD_GOAL:
+	if play_type == PLAY_SPOT_KICK:
 		return {"occurred": false}
 
 	var offense_player := _get_offense_ball_carrier(play_type)
@@ -1458,7 +1507,10 @@ func _update_ui() -> void:
 	if game_state.conversion_pending and game_state.phase == PHASE_CONVERSION:
 		display_zone = GameState.ZONE_END
 	zone_label.text = "Zone: %s" % _zone_name(display_zone)
-	drive_points_label.text = "Drive Points: %d" % game_state.drive_points
+	if game_state.is_goal_to_go():
+		drive_points_label.text = "Goal to go | Down: %d" % game_state.downs
+	else:
+		drive_points_label.text = "Down: %d" % game_state.downs
 	phase_label.text = "Phase: %s (P%d)" % [game_state.phase, current_phase_level]
 	var play_clock_visible := _turn_action_timer_active
 	if play_clock_value_label:
@@ -1467,9 +1519,11 @@ func _update_ui() -> void:
 	var user_team := _user_team
 	var opponent_team := "away" if user_team == "home" else "home"
 	if user_possession_icon_label:
-		user_possession_icon_label.visible = game_state.possession_team == user_team
+		var show_u := game_state.possession_team == user_team
+		user_possession_icon_label.modulate.a = 1.0 if show_u else 0.0
 	if opponent_possession_icon_label:
-		opponent_possession_icon_label.visible = game_state.possession_team == opponent_team
+		var show_o := game_state.possession_team == opponent_team
+		opponent_possession_icon_label.modulate.a = 1.0 if show_o else 0.0
 	_sync_selected_cards_with_hand("home")
 	_sync_selected_cards_with_hand("away")
 	if user_score_value_label:
@@ -1779,6 +1833,8 @@ func _update_staff_ui() -> void:
 	if user_team_name_value_label:
 		user_team_name_value_label.text = _team_display_name(user_team)
 		user_team_name_value_label.add_theme_color_override("font_color", user_primary)
+	if user_score_value_label:
+		user_score_value_label.add_theme_color_override("font_color", user_primary)
 	if user_momentum_value_label:
 		user_momentum_value_label.add_theme_color_override("font_color", user_secondary)
 	if user_tos_button:
@@ -1791,6 +1847,8 @@ func _update_staff_ui() -> void:
 	if opponent_team_name_value_label:
 		opponent_team_name_value_label.text = _team_display_name(opponent_team)
 		opponent_team_name_value_label.add_theme_color_override("font_color", opp_primary)
+	if opponent_score_value_label:
+		opponent_score_value_label.add_theme_color_override("font_color", opp_primary)
 	if opponent_momentum_value_label:
 		opponent_momentum_value_label.add_theme_color_override("font_color", opp_secondary)
 	if opponent_tos_button:
@@ -1801,19 +1859,59 @@ func _format_time(seconds_total: int) -> String:
 	var s := seconds_total % 60
 	return "%d:%02d" % [m, s]
 
+func _tile_data_from_los(los_row: int, row_offset: int, col_offset: int, base_col: int = 3) -> Dictionary:
+	if field_grid == null:
+		return {}
+	return field_grid.call("tile_data_from_los", los_row, row_offset, col_offset, base_col)
+
+func _tile_world_pos(global_row: int, col: int, offense_is_home: bool = true) -> Vector2:
+	if field_grid == null:
+		return Vector2.ZERO
+	var row_for_perspective: int = int(field_grid.call("perspective_row", global_row, offense_is_home))
+	return field_grid.call("world_pos_from_tile", row_for_perspective, col)
+
+func _tiles_per_step_for_speed(speed: float) -> int:
+	if field_grid == null:
+		return 1
+	return int(field_grid.call("tiles_per_step_from_speed", speed))
+
 func _update_field_ball_marker() -> void:
 	var zone := clampi(game_state.current_zone, 1, 7)
+	var los_eng: int = game_state.current_los_row_engine
 	if game_state.conversion_pending and game_state.phase == PHASE_CONVERSION:
 		zone = GameState.ZONE_END
+		los_eng = game_state.los_row_engine_from_zone(zone)
 	var field_h: float = field_background.size.y
 	var field_w: float = field_background.size.x
-	var zone_h: float = field_h / 7.0
-	var index_from_bottom: int = zone - 1
-	var center_y: float = field_h - (float(index_from_bottom) + 0.5) * zone_h
-	if game_state.possession_team != _user_team:
-		center_y = field_h - center_y
-
-	ball_marker.position = Vector2(field_w * 0.5 - ball_marker.size.x * 0.5, center_y - ball_marker.size.y * 0.5)
+	var offense_is_home := game_state.possession_team == "home"
+	if field_grid != null:
+		var los_disp: int = int(field_grid.call("perspective_row", los_eng, offense_is_home))
+		var ball_center: Vector2 = field_grid.call("world_pos_from_tile", los_disp, 3)
+		ball_marker.position = ball_center - (ball_marker.size * 0.5)
+		if game_state.conversion_pending and game_state.phase == PHASE_CONVERSION:
+			field_grid.call("set_field_line_display_rows", los_disp, -1, -1, -1, -1)
+		elif game_state.is_goal_to_go():
+			var ez0_eng := 0
+			var ez4_eng := GameState.TILE_ROWS_PER_ZONE - 1
+			var ez0_disp: int = int(field_grid.call("perspective_row", ez0_eng, offense_is_home))
+			var ez4_disp: int = int(field_grid.call("perspective_row", ez4_eng, offense_is_home))
+			var ez_lo := mini(ez0_disp, ez4_disp)
+			var ez_hi := maxi(ez0_disp, ez4_disp)
+			field_grid.call("set_field_line_display_rows", los_disp, -1, -1, ez_lo, ez_hi)
+		else:
+			var fd_eng := game_state.first_down_target_row_engine
+			if fd_eng < 0:
+				field_grid.call("set_field_line_display_rows", los_disp, -1, -1, -1, -1)
+			else:
+				var fd_disp: int = int(field_grid.call("perspective_row", fd_eng, offense_is_home))
+				field_grid.call("set_field_line_display_rows", los_disp, fd_disp, fd_disp, -1, -1)
+	else:
+		var zone_h: float = field_h / 7.0
+		var index_from_bottom: int = zone - 1
+		var center_y: float = field_h - (float(index_from_bottom) + 0.5) * zone_h
+		if game_state.possession_team != _user_team:
+			center_y = field_h - center_y
+		ball_marker.position = Vector2(field_w * 0.5 - ball_marker.size.x * 0.5, center_y - ball_marker.size.y * 0.5)
 
 	var is_home := game_state.possession_team == "home"
 	ball_marker.color = Color(0.2, 0.5, 1.0, 1.0) if is_home else Color(1.0, 0.3, 0.3, 1.0)
@@ -1953,8 +2051,8 @@ func _pick_sim_defense_play_for_offense(offense_play: String) -> String:
 		return PLAY_RUN
 	if offense_play == PLAY_SHORT_PASS or offense_play == PLAY_DEEP_PASS:
 		return PLAY_SHORT_PASS
-	if offense_play == PLAY_FIELD_GOAL:
-		return PLAY_FIELD_GOAL
+	if offense_play == PLAY_SPOT_KICK:
+		return DEF_FG
 	return PLAY_DEEP_PASS
 
 func _pick_sim_play_type() -> String:
@@ -1966,7 +2064,7 @@ func _pick_sim_play_type() -> String:
 			return PLAY_SHORT_PASS
 		return PLAY_DEEP_PASS
 	if current_phase_level >= 2 and _can_attempt_field_goal_from_current_zone() and randf() < 0.2:
-		return PLAY_FIELD_GOAL
+		return PLAY_SPOT_KICK
 	var roll := randf()
 	if roll < 0.45:
 		return PLAY_RUN
@@ -2080,7 +2178,8 @@ func _choose_conversion(conv_type: String) -> void:
 		_run_extra_point_attempt()
 		return
 	game_state.current_zone = GameState.ZONE_RED
-	game_state.drive_points = 1
+	game_state.current_los_row_engine = game_state.los_row_engine_from_zone(game_state.current_zone)
+	game_state.downs = 1
 	game_state.pending_play_type = PENDING_NONE()
 	result_text.text = "[b]2-Point Conversion[/b]\nSelect Run or Pass play."
 	_append_event_log("2-Point attempt from %s." % _zone_name(GameState.ZONE_RED))
@@ -2571,8 +2670,8 @@ func _friendly_play_name(play: String, is_defense: bool = false) -> String:
 			return "Short Pass"
 		PLAY_DEEP_PASS:
 			return "Deep Pass"
-		PLAY_FIELD_GOAL:
-			return "Field Goal"
+		PLAY_SPOT_KICK:
+			return "Spot kick"
 		_:
 			return "-"
 
@@ -2594,7 +2693,7 @@ func _friendly_effects_text(effect_data: Dictionary) -> String:
 				parts.append("%s %s" % [k, str(v)])
 	return ", ".join(parts)
 
-func _render_last_play_info(offense_team: String, offense_play: String, defense_play: String, result_line: String, zone_delta: int) -> void:
+func _render_last_play_info(offense_team: String, offense_play: String, defense_play: String, result_line: String, tile_rows_toward_goal: int) -> void:
 	var opponent_team := "away" if _user_team == "home" else "home"
 	var user_play := _friendly_play_name(offense_play, false) if offense_team == _user_team else _friendly_play_name(defense_play, true)
 	var opponent_play := _friendly_play_name(offense_play, false) if offense_team == opponent_team else _friendly_play_name(defense_play, true)
@@ -2606,7 +2705,7 @@ func _render_last_play_info(offense_team: String, offense_play: String, defense_
 	var opponent_cards_txt := "-" if opponent_cards.is_empty() else ", ".join(opponent_cards)
 	var user_effects_txt := "-" if user_effects.is_empty() else "; ".join(user_effects)
 	var opponent_effects_txt := "-" if opponent_effects.is_empty() else "; ".join(opponent_effects)
-	var zone_txt := "Zone Gain/Loss: %+d" % zone_delta
+	var zone_txt := "Tile rows toward goal: %+d" % tile_rows_toward_goal
 	result_text.text = "[b]Opponent Play Selected:[/b] %s\n[b]Opponent Played Cards:[/b] %s\n[b]Opponent Card Effects:[/b] %s\n\n[b]User Play Selected:[/b] %s\n[b]User Played Cards:[/b] %s\n[b]User Card Effects:[/b] %s\n\n[b]Play Result:[/b] %s\n[b]%s[/b]" % [
 		opponent_play, opponent_cards_txt, opponent_effects_txt,
 		user_play, user_cards_txt, user_effects_txt,

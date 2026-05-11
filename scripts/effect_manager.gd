@@ -35,7 +35,7 @@ func collect_modifiers(play_type: String) -> Dictionary:
 		var data: Dictionary = effect.get("effect_data", {})
 		if data.has("zone_bonus"):
 			out["zone_bonus"] += int(data["zone_bonus"])
-		if play_type == "field_goal" and data.has("field_goal_bonus"):
+		if play_type == "spot_kick" and data.has("field_goal_bonus"):
 			out["field_goal_bonus"] += int(data["field_goal_bonus"])
 		if data.has("defense_penalty"):
 			out["defense_penalty"] += int(data["defense_penalty"])

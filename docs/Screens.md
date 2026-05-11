@@ -162,15 +162,17 @@ Notifications:
 GAME
 Live Game screen
 Includes:
--- Field
+-- Field (LOS / first-down markers; view mirrors when you are Away so your offense always advances toward the top)
 -- HUD
+-- `UserTeamsScoresPanel`: full width with small horizontal inset from the mobile frame; **user** — possession icon in a **fixed-height row above** the name+score row (icon shown/hidden via alpha so the name and score do not shift); **opponent** — same (icon above score+name), opponent strip **right-aligned**; clocks centered between the two team strips
+-- Event log (timestamped lines; per-play movement in tile rows toward goal; first downs in teal)
 -- Score
 -- Clock
 -- Half
 -- Possession
 -- Zone
 -- Momentum
--- Drive Points
+-- Down (1–4); **Goal to go** when LOS is within 10 tile rows of the scoring endzone (label shows `Goal to go | Down: n`; no first-down row, full endzone highlight on field)
 -- Result Messages
 -- Play Selection
 -- Card Selection

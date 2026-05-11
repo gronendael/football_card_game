@@ -34,6 +34,7 @@ PLAY EXECUTION & RESOLUTION
 - A Change of Possession may occur due to a Turnover, Running out of Downs (Turnover on Downs), 1st Half ends, Punt play, Kickoff Play
 - Plays that start before the Game Clock expires in the 1st or 2nd half resolve completely even if the Game Clock expires during the play
 - The Play resolves while visually displaying Player movements, ball movement from player to player, blocks, tackles, passes, runs, interceptions, fumbles, scoring, etc.
+- The in-game **event log** records each offensive play’s **tile rows gained toward the goal** (from LOS before vs after the play); when a new first down is earned, a separate **First down** line appears in teal (`#2dd4bf`), a color not used for other log highlights.
 - Play Loop resets allowing Teams to select their next Play and Cards
 - Play Clock resets
 - Game Clock may be Paused or Unpaused depending on factors listed in the Game Clock section
@@ -74,12 +75,13 @@ END OF GAME
 - In-game currency, plays, cards, etc. are awarded to both Teams based on the result
 
 DOWNS
-- The team in possession as 4 Downs to gain 2 zones starting from 1 and going to 4
-- When a team first gains possession of the ball, they start with 1st Down
-- After a play is resolved, the Down increments
-- On a Change of Possesion, the Downs reset to 1 for the team that now has possession
-- If the team in possession does not gain 2 zones within the 4 Downs, there is a Turnover on Downs and their opponent gains possession in the same zone that the previous team ended up at
-- On 4th Down (or earlier if the Team in Possession chooses), a Team may Punt
+- The team in possession has 4 downs (numbered 1–4). A new possession starts on **Down 1**.
+- After a play resolves without a new first down, the down increments (1→2→3→4).
+- A **first down** is earned when the offense advances the ball **10 tile rows** toward the opponent’s goal from the line of scrimmage that started the current first-down chain; then downs reset to **1** and a new 10-row target is set from the new LOS row.
+- **Goal to go:** when the offense’s LOS is within **10 tile rows** of the scoring endzone, there is **no first-down line**; yardage cannot earn a new first down. The offense still has **downs 1–4** to score a **touchdown** or **field goal** (or suffer turnover on downs / turnover / safety as usual). The field highlights the **entire scoring endzone** in yellow instead of a single first-down row.
+- On a change of possession, downs reset to **1** for the new offense.
+- If the offense is on **down 4** and the play ends without a first down (and the play does not otherwise change possession, e.g. score or turnover), it is **turnover on downs**; the opponent takes possession at the spot implied by the play result / field rules.
+- On 4th down (or earlier if the team chooses), a team may punt (when implemented).
 
 CLOCKS
 
@@ -110,7 +112,7 @@ TIMEOUTS
 PLAYS
 OFFENSIVE PLAYS
 - Only selected by the Team in Possession
-- May select any Offensive Play from the Playbook (including Punt, FG)
+- May select any Offensive Play from the Playbook (including Punt, **spot kick** / FG)
 - AI reviews the formation for the selected play and automatically chooses the players from the lineup for each position needed based on the team's Depth Chart
 
 DEFENSIVE PLAYS
@@ -122,7 +124,7 @@ KICKOFF PLAYS
 - The Kicking Team kicks the ball to the Receiving Team.
 - Kick distance and landing zone are determined by the Kicker’s stats and modifiers.
 - The Receiving Team attempts a return based on the Returner’s stats, blocking, coverage players, cards, and other modifiers.
-- Returns are resolved at the tile level and then converted into zone advancement.
+- Returns are resolved at the **tile** level (zones are not used for ball movement; they may still drive modifiers and UI labels).
 - Most returns result in little to moderate advancement, while long returns and return touchdowns are rare outcomes.
 
 PUNTING PLAYS
@@ -130,7 +132,7 @@ PUNTING PLAYS
 - Punt distance and landing zone are determined by the Punter’s stats and modifiers.
 - Punts may be blocked by the Defense.
 - The Receiving Team may attempt a return based on Returner ability, blocking, coverage, cards, and modifiers.
-- Punt returns are resolved at the tile level and converted into zone advancement, with large returns and touchdowns being uncommon.
+- Punt returns are resolved at the **tile** level, with large returns and touchdowns being uncommon.
 
 SCORING
 TOUCHDOWN
@@ -142,8 +144,8 @@ EXTRA POINT PLAYS
 2-POINT CONVERSION PLAYS
 - 2 points for OFF
 
-FIELD GOAL PLAYS
-- 3 points for OFF
+SPOT KICK (FG) PLAYS
+- 3 points for OFF (play id **`spot_kick`** in data; XP uses the same offensive play type)
 
 SAFETY 
 - 2 points for DEF
@@ -181,7 +183,7 @@ FORFEIT
 - If both teams Forfeit simultaneously due to not pressing the Ready button for 3 consecutive turns OR they press the Forfeit button on the same turn, the Game is considered abandoned and no stats are recorded; It's as if the Game never happened; No Rewards are awarded for either team
 
 CHANGES OF POSSESSION
-- Turnover on Downs (Downs have reached 4 and Off does not gain 2 zones)
+- Turnover on downs (offense on down 4 does not earn a new first down and does not otherwise lose possession on that play)
 - Turnovers
 -- Fumbles (DEF forces the OFF player to drop the ball and recovers it or OFF player drops the ball)
 --- May occur on every play
@@ -198,13 +200,13 @@ CHANGES OF POSSESSION
 - Halftime (Team that Received KO in the 1st Half kicks off in the 2nd Half)
 
 BASE PLAY TYPE SUCCESS/RESOLUTION
-- As the Offense attempts to gain zones and move the ball up the field, the type of play selected by both the Offense and Defense is fundamental to determing the success of the play
+- As the Offense attempts to move the ball toward the scoring end (**tile** resolution for ball position), **zones** remain for range checks (e.g. FG range), modifiers, and named field regions. The type of play selected by both the Offense and Defense is fundamental to determining the success of the play
 - The chance of success starts with the Offensive vs the Defensive play selection. The Defense attempts to call a play that matches up well defensively against the Offensive playa Run against a Deep Pass Defense is more likely to succeed, a Deep Pass against a Run Defense is more likely to succeed
 - Best matchups for Defense that give a higher success rate to the Defense:
 -- Run Def vs Run Off
 -- Short Pass Def vs Short Pass Off
 -- Deep Pass Def vs Deep Pass Off
--- FG Block vs FG 
+-- FG/XP block vs **spot kick** (FG/XP)
 - If the Defensive play does not match the Offensive play, the Offense has a somewhat better chance of success
 -- e.g. Deep Pass Defense vs Run - Much higher chance Run will gain more Tiles, Run Defense vs Short Pass Offense - Slightly higher chance Short Pass will gain more Tiles, etc.
 - After the Play type comparison, modifiers are taken into account
@@ -228,6 +230,7 @@ REWARDS (To be fleshed out later)
 - New Plays
 - Player Boosts
 - Coordinator Boosts
+
 FINALIZED GLOBAL DESIGN DECISIONS
 •	User is the Head Coach. Only Offensive and Defensive Coordinators exist.
 •	Automatic substitutions occur between possessions, timeouts, and injuries.
@@ -239,3 +242,220 @@ FINALIZED GLOBAL DESIGN DECISIONS
 •	Deck size: 8 to 16 cards. Playbook: 3 to 12 plays.
 •	No overtime in V1. Ties allowed.
 •	Offline single-player supported.
+
+PLATFORM PHILOSOPHY
+TARGET PLATFORMS
+The game is designed for:
+-- Mobile
+-- PC (Steam)
+CORE DESIGN GOAL
+Gameplay systems should function well on both:
+-- Touch controls
+-- Mouse controls
+No platform should have a major gameplay advantage.
+
+MOBILE-FIRST DESIGN
+The game is primarily designed around:
+-- Short sessions
+-- Readable UI
+-- Fast decisions
+-- Touch-friendly controls
+PC SUPPORT
+PC version should preserve the same gameplay rules and pacing while improving:
+-- Screen space usage
+-- Information visibility
+-- Menu navigation
+-- Visual polish
+CROSS-PLATFORM GAMEPLAY
+Core gameplay systems remain identical across platforms.
+
+Examples:
+-- Same rules
+-- Same cards
+-- Same teams
+-- Same progression
+-- Same balance philosophy
+
+UI SCALING
+UI should support:
+-- Portrait mobile layouts
+-- Landscape PC layouts
+-- Dynamic scaling
+-- Mouse and touch input
+INPUT DESIGN
+All gameplay interactions should be achievable through:
+-- Single tap/click
+-- Drag and drop (optional)
+-- Minimal precision requirements
+SESSION LENGTH
+Average Game length target remains:
+-- 3 to 5 minutes
+
+Across all platforms.
+
+PLAYER IDENTITY & RECOGNITION
+CORE PHILOSOPHY
+Players are intended to feel unique and recognizable without requiring duplicate universal Players shared across all Teams.
+Recognition should come from:
+-- Position
+-- Archetype
+-- Traits
+-- Visual indicators
+-- Gameplay behavior
+-- Team identity
+The game does NOT rely on all Teams owning identical Players like a traditional trading card game.
+PLAYER RECOGNITION
+
+Players should become recognizable through:
+-- Archetype labels
+-- Trait keywords
+-- Playstyle
+-- Performance during Games
+-- Visual presentation
+
+Example:
+Marcus Reed
+WR
+Deep Threat
+Traits:
+-- Burner
+-- Sideline Specialist
+
+Experienced Players should quickly understand:
+-- Strong deep threat
+-- Dangerous vertical receiver
+-- High explosive-play potential
+
+ARCHETYPES
+Each Position contains multiple Archetypes that define gameplay tendencies and strengths.
+
+Examples:
+
+QB
+-- Gunslinger
+-- Mobile QB
+-- Field General
+
+RB
+-- Power Back
+-- Elusive Back
+-- Receiving Back
+
+WR
+-- Deep Threat
+-- Possession Receiver
+-- Route Runner
+
+CB
+-- Ball Hawk
+-- Press Corner
+-- Zone Specialist
+
+TRAITS
+Traits act as readable gameplay keywords that communicate a Player’s strengths and tendencies.
+
+Examples:
+-- Burner
+--- Increased deep separation
+
+-- Sure Hands
+--- Reduced fumble chance
+
+-- Ball Hawk
+--- Increased interception chance
+
+-- Enforcer
+--- Increased tackle/fumble pressure
+
+-- Pocket Presence
+--- Reduced pressure penalties
+
+VISUAL READABILITY
+Archetypes and Traits should use consistent visual indicators.
+
+Examples:
+-- Icons
+-- Colors
+-- Badges
+-- Labels
+
+Goal:
+
+Opponents should quickly identify important threats during gameplay.
+GAMEPLAY PERSONALITY
+Players should feel memorable through their in-game performance and tendencies.
+
+Examples:
+-- Fast WR repeatedly beating coverage deep
+-- Ball Hawk CB creating turnovers
+-- Power RB consistently breaking tackles
+
+PLAYER GENERATION RULES
+Players are generated around strong identities instead of evenly distributed stats.
+Archetypes should create clear strengths and weaknesses.
+
+Bad Example:
+
+Balanced stats with no clear role
+
+Good Example:
+Deep Threat WR
+-- Very high Speed
+-- Strong deep route ability
+-- Lower short-route effectiveness
+
+Possession WR
+-- Strong Hands
+-- Reliable short catches
+-- Lower explosive-play ability
+
+SCOUTING & OPPONENT RECOGNITION
+Pre-game scouting may highlight important opposing Players.
+
+Examples:
+-- Elite Deep Threat WR
+-- Ball Hawk CB
+-- Mobile QB
+-- Elite Pass Rusher
+
+Goal:
+
+Encourage strategic planning and player recognition over time.
+
+FIELD STRUCTURE
+LOCAL FIELD VIEW
+- The simulation uses one shared engine orientation; the **on-field view mirrors** when you are assigned **Away** so **your offense always advances toward the top** of the screen (same seat as Home). Future multiplayer uses the same rule per client.
+ZONES
+Zones represent major field progression.
+Zones are used for:
+-- Scoring range
+-- Field position
+-- Strategic state
+TILES
+Tiles represent smaller movement units within Zones.
+Tiles are primarily used for:
+-- Visual movement
+-- First-down distance (10 rows toward the goal from the chain LOS)
+-- Play resolution
+-- Returns
+-- Positioning
+-- Micro progression
+GAMEPLAY PRIORITY
+Gameplay uses zones for macro field position and resolution; **first downs** use the **tile row grid** (10 rows toward the goal per chain).
+FIRST DOWNS
+First downs are measured in **tile rows** (10 rows gained toward the opponent’s goal from the current chain’s line of scrimmage row). When **not** goal to go, the HUD/field highlights the target row in yellow. In **goal to go** (LOS within 10 tile rows of the scoring endzone), there is no first-down marker; the **full scoring endzone** is highlighted in yellow instead.
+PLAY RESOLUTION
+Plays may gain or lose Tiles.
+Tile progress converts naturally into Zone advancement.
+
+Example:
+
+5 Tiles gained
+Advance into next Zone
+DESIGN GOAL
+Maintain:
+-- Fast gameplay
+-- Readable field position
+-- Strategic clarity
+
+Without requiring full tile-by-tile simulation

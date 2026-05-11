@@ -1,0 +1,61 @@
+---
+alwaysApply: true
+---
+
+---
+description: Enforce gameplay/doc sync on implementation changes
+alwaysApply: true
+---
+
+When making gameplay, data model, or game-flow changes, documentation must be updated in the same task.
+
+## Trigger
+Apply this rule whenever changes touch:
+- scripts/game_scene.gd
+- scripts/game_state.gd
+- scripts/play_resolver.gd
+- scripts/card_manager.gd
+- scripts/effect_manager.gd
+- scripts/targeting_manager.gd
+- scenes/game_scene.tscn
+- scenes/field.tscn
+- scripts/field_grid.gd
+- scripts/field_grid_overlay.gd
+- data/*.json
+
+## Required doc sync
+Update all relevant docs from this list based on what changed:
+- docs/Gameplay_Summary.md
+- docs/Properties.md
+- docs/Team_Setup.md
+- docs/Screens.md
+- docs/Todo List.md
+- docs/Abbreviations.md
+- docs/Ideas.md
+- Implementation_Plan.md
+
+## Mapping guardrail (minimum expectations)
+- Game flow/phases/conversions/clock/turnovers/downs -> docs/Gameplay_Summary.md + Implementation_Plan.md
+- Stats/properties/schema/field names -> docs/Properties.md + Implementation_Plan.md
+- Team roles, formations, lineups, setup rules -> docs/Team_Setup.md + Implementation_Plan.md
+- UI/HUD/screen behavior -> docs/Screens.md + Implementation_Plan.md
+- New work items / follow-ups -> docs/Todo List.md
+- New terms/acronyms -> docs/Abbreviations.md
+- Design notes/parking-lot decisions -> docs/Ideas.md
+
+## Conflict handling
+If docs and code differ:
+1) Call out the conflict explicitly.
+2) Propose smallest alignment update.
+3) Update docs to match implemented behavior unless user asks otherwise.
+
+## Scope discipline
+- Do not rewrite entire docs.
+- Edit only impacted sections.
+- Keep wording concise and implementation-accurate.
+
+## Completion checklist (must satisfy before done)
+- [ ] Relevant docs updated
+- [ ] Implementation_Plan.md updated when behavior/scope changed
+- [ ] Any code-doc conflicts called out and resolved
+- [ ] Summary includes which docs were updated

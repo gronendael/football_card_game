@@ -1,0 +1,23 @@
+---
+description: 
+alwaysApply: true
+---
+
+---
+description: Use docs as persistent gameplay context
+alwaysApply: true
+---
+
+Use these docs as project reference context:
+- docs/Gameplay_Summary.md
+- docs/Properties.md
+- docs/Team_Setup.md
+- docs/Screens.md
+- docs/Abbreviations.md
+- docs/Implementation_Plan.md
+
+Working rules:
+1) Before changing gameplay/data/UI behavior, read the relevant docs first.
+2) If implemented behavior changes, update the corresponding docs in the same task.
+3) If docs and code conflict, call it out explicitly and propose the smallest alignment update.
+4) Keep docs concise and current; do not rewrite unrelated sections.

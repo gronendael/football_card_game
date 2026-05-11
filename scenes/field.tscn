@@ -1,7 +1,11 @@
 [gd_scene format=3 uid="uid://dnhyqxmvkb71"]
 
+[ext_resource type="Script" path="res://scripts/field_grid.gd" id="1_field_grid"]
+[ext_resource type="Script" path="res://scripts/field_grid_overlay.gd" id="2_field_grid_overlay"]
+
 [node name="Field" type="Node2D"]
 position = Vector2(45, 110)
+script = ExtResource("1_field_grid")
 
 [node name="FieldBackground" type="ColorRect" parent="."]
 offset_right = 450.0
@@ -92,3 +96,6 @@ scale = Vector2(2, 2)
 offset_right = 40.0
 offset_bottom = 23.0
 scale = Vector2(2.5, 2.5)
+
+[node name="TileLayer" type="Node2D" parent="."]
+script = ExtResource("2_field_grid_overlay")

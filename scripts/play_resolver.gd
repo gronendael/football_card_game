@@ -4,7 +4,7 @@ class_name PlayResolver
 const PLAY_RUN := "run"
 const PLAY_SHORT_PASS := "short_pass"
 const PLAY_DEEP_PASS := "deep_pass"
-const PLAY_FIELD_GOAL := "field_goal"
+const PLAY_SPOT_KICK := "spot_kick"
 const ZONE_MIDFIELD := 4
 const ZONE_ATTACK := 5
 const ZONE_RED := 6
@@ -29,36 +29,36 @@ func _zone_name(zone: int) -> String:
 			return "UnknownZone"
 
 func resolve_standard_play(play_type: String, selected_player_id: String, current_zone: int) -> Dictionary:
-	var zone_delta := 0
+	var tile_delta := 0
 	match play_type:
 		PLAY_RUN:
-			zone_delta = randi_range(0, 2)
+			tile_delta = randi_range(0, 10)
 		PLAY_SHORT_PASS:
-			zone_delta = randi_range(0, 2)
+			tile_delta = randi_range(0, 10)
 		PLAY_DEEP_PASS:
-			zone_delta = randi_range(0, 3)
+			tile_delta = randi_range(0, 15)
 		_:
-			zone_delta = 0
+			tile_delta = 0
 
-	var success := zone_delta > 0
+	var success := tile_delta > 0
 	var breakdown := [
 		"Play type: %s" % play_type,
 		"Selected player: %s" % selected_player_id,
-		"Random zone gain: +%d" % zone_delta
+		"Tile rows toward goal: +%d" % tile_delta
 	]
 	return {
 		"play_type": play_type,
 		"selected_player_id": selected_player_id,
 		"success": success,
-		"zone_delta": zone_delta,
+		"tile_delta": tile_delta,
 		"score_delta": 0,
 		"possession_switch": false,
 		"clock_seconds_used": 0,
-		"result_text": "%s gained %d zone(s)." % [play_type, zone_delta],
+		"result_text": "%s: %+d tile rows toward goal." % [play_type, tile_delta],
 		"breakdown": breakdown
 	}
 
-func resolve_field_goal(selected_player_id: String, current_zone: int, kick_stats: Dictionary, opponent_mod: int = 0) -> Dictionary:
+func resolve_spot_kick(selected_player_id: String, current_zone: int, kick_stats: Dictionary, opponent_mod: int = 0) -> Dictionary:
 	var kick_accuracy: int = int(kick_stats.get("kick_accuracy", 50))
 	var kick_power: int = int(kick_stats.get("kick_power", 50))
 	var kick_consistency: int = int(kick_stats.get("kick_consistency", 50))
@@ -71,31 +71,31 @@ func resolve_field_goal(selected_player_id: String, current_zone: int, kick_stat
 		base_chance = 35
 	else:
 		return {
-			"play_type": PLAY_FIELD_GOAL,
+			"play_type": PLAY_SPOT_KICK,
 			"selected_player_id": selected_player_id,
 			"success": false,
-			"zone_delta": 0,
+			"tile_delta": 0,
 			"score_delta": 0,
 			"possession_switch": true,
 			"clock_seconds_used": 0,
-			"result_text": "Field Goal unavailable from %s." % _zone_name(current_zone),
-			"breakdown": ["Invalid field goal zone: %s" % _zone_name(current_zone)]
+			"result_text": "Spot kick unavailable from %s." % _zone_name(current_zone),
+			"breakdown": ["Invalid spot kick zone: %s" % _zone_name(current_zone)]
 		}
 
 	var target := clampi(base_chance + int((kick_accuracy - 50) * 0.5) + int((kick_power - 50) * 0.2) + int((kick_consistency - 50) * 0.3) - opponent_mod, 5, 95)
 	var roll := randi_range(1, 100)
 	var success := roll <= target
 	return {
-		"play_type": PLAY_FIELD_GOAL,
+		"play_type": PLAY_SPOT_KICK,
 		"selected_player_id": selected_player_id,
 		"success": success,
-		"zone_delta": 0,
+		"tile_delta": 0,
 		"score_delta": 3 if success else 0,
 		"possession_switch": true,
 		"clock_seconds_used": 0,
-		"result_text": "Field Goal Good" if success else "Missed Field Goal",
+		"result_text": "Spot kick good" if success else "Missed spot kick",
 		"breakdown": [
-			"Base field goal chance: %d" % base_chance,
+			"Base spot kick chance: %d" % base_chance,
 			"Kicker accuracy bonus: %d" % int((kick_accuracy - 50) * 0.5),
 			"Opponent defense: -%d" % opponent_mod,
 			"Final roll: %d vs target %d" % [roll, target]
@@ -118,10 +118,10 @@ func resolve_extra_point(selected_player_id: String, kick_stats: Dictionary, opp
 	var roll := randi_range(1, 100)
 	var success := roll <= target
 	return {
-		"play_type": "extra_point",
+		"play_type": PLAY_SPOT_KICK,
 		"selected_player_id": selected_player_id,
 		"success": success,
-		"zone_delta": 0,
+		"tile_delta": 0,
 		"score_delta": 1 if success else 0,
 		"possession_switch": true,
 		"clock_seconds_used": 0,

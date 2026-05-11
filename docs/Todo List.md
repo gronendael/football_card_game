@@ -4,6 +4,7 @@ BUGS
 
 CORE GAMEPLAY
 
+
 FIELD & PLAYER VISUALS
 - Tile structure on field scene
 - Routes
@@ -34,6 +35,8 @@ CARD LIST
 
 
 PLAYBOOK
+- Create Formations (starter set: [data/formations.json](data/formations.json))
+- Create Plays (starter set: [data/plays.json](data/plays.json); expand punt/kickoff wiring in sim/UI)
 
 OPPONENT AI
 

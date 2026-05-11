@@ -20,6 +20,7 @@ PROPERTIES
 - Players IDs for entire Roster
 - Wins/Losses/Ties
 - Level/Ranking
+- Fan Support (earned over time; higher the rank, the more people at the game, and therefore the more noise that can disrupt the opponent; Home Field Advantage)
 
 ### PLAYERS
 BIO
@@ -89,7 +90,7 @@ DEFENSE (1-100)
 - Short Pass Defense
 - Deep Pass Defense
 
-PLAYBOOK
+COACH_PLAYS
 - List of Plays the Coach comes with
 -- 6 Core Plays used if they are the Head Coach and are always in the Playbook
 -- 2 Off Plays if they are the Offensive Coordinator (may be added to the Playbook by the user)
@@ -99,11 +100,22 @@ SPECIALTIES (List of specialties the coach has which gives boosts to players, pl
 - Specialty ID
 - Specialty Rank
 
+### FORMATIONS
+- ID
+- Name
+- **Side**: `offense` | `defense` | `special` (special teams shells: spot kick, punt, kickoff, etc.)
+- Optional: description, tags (strings)
+- **Positions** (JSON array): each entry `{ "role", "delta_row", "delta_col" }` relative to the **ball at the LOS center tile** `(0,0)`. **Negative `delta_row`** = toward the offense’s **scoring end** (same direction as positive ball movement in sim). Multiple roles may share one tile; **even spacing within a tile is rendering-only**.
+- **7v7:** each formation lists **exactly 7** positions. Per-role counts must stay within global caps (see [docs/Team_Setup.md](Team_Setup.md)); [scripts/formations_catalog.gd](scripts/formations_catalog.gd) enforces count **== 7** and per-family maxima at load.
+- Data: [data/formations.json](data/formations.json); loader/validation: [scripts/formations_catalog.gd](scripts/formations_catalog.gd)
+- Role keys used in data include: `QB`, `RB1`…, `WR1`…, `OL1`…, `DL1`…, `LB1`…, `CB1`…, `S1`…, `K`, `P`, `RET1`/`RET2`, `ST1`…`ST6`
+
 ### OFFENSIVE PLAYS
 - ID
-- Play Name
-- Type (Run, Short Pass, Deep Pass, FG, XP, Kickoff, Punt)
-- Formation (List of 7 positions and their Tile locations)
+- Name
+- Type (Run, Short Pass, Deep Pass, **Spot kick** (FG + XP), Kickoff, Punt)
+- **Formation ID** (references [data/formations.json](data/formations.json))
+- Data: [data/plays.json](data/plays.json) (no per-play tile min/max on advancement; resolver defines ranges)
 - Run Path
 -- Tile path the RB will take for a Run Play
 - Routes (List of 3-5 routes)
@@ -117,15 +129,23 @@ SPECIALTIES (List of specialties the coach has which gives boosts to players, pl
 
 ### DEFENSIVE PLAYS
 - ID
-- Play Name
-- Type (Run Defense, Short Pass Defense, Deep Pass Defense, FG/XP Block, Kickoff Return, Punt Return)
+- Name
+- Type (Run Defense, Short Pass Defense, Deep Pass Defense, **FG/XP block**, **Kickoff return**, **Punt return**)
 - Coverage Type (Man-to-Man, Zone)
 - Blitzing Positions (List of player positions blitzing)
 - Formation (List of 7 positions)
 
+### PLAYBOOKS
+- ID
+- Name
+- Cover
+- Plays Maximum (Number of Plays)
+- Plays Minimum (Number of Plays)
+- List of Plays (manually added/removed by the user)
+
 ### CARDS
 - ID
-- Card Name
+- Name
 - Description
 - Rarity
 - Momentum Cost
@@ -143,6 +163,20 @@ SPECIALTIES (List of specialties the coach has which gives boosts to players, pl
 - Can Stack?
 - Max Stack Count
 
+### DECKS
+- ID
+- Name
+- Cover
+- Deck Maximum (number of cards)
+- Deck Minimum (number of cards)
+- List of Cards (manually added/removed by ther user)
+
+### GAME STATE (runtime / prototype)
+- `downs` — current down, **1–4**; resets to **1** on new possession and on each new first down
+- `first_down_chain_base_row_engine` / `first_down_target_row_engine` — engine tile row for LOS at chain start and yellow first-down line (**10 rows** toward the goal from base); `first_down_target_row_engine == -1` when **goal to go** (LOS within 10 rows of the scoring endzone — no first-down line; still 4 downs to score)
+- `current_zone` — macro field position (named zones in UI; FG range and modifiers may still be zone-based)
+- `current_los_row_engine` — authoritative LOS **engine tile row** (0 = top / scoring end); updated each play by `tile_delta`; `current_zone` is derived from this row (not reset from zone-only anchors between plays)
+- Ball spot / first-down logic use **`current_los_row_engine`**; standard-play **defense matchup** and OC **`standard_zone_bonus`** adjust `tile_delta` in **whole tile rows** (not ×5)
 
 ### SKILLS (for Players)
 - ID
@@ -163,13 +197,75 @@ SPECIALTIES (List of specialties the coach has which gives boosts to players, pl
 - Description
 - Effects
 
-### JERSEYS
+### UNIFORMS
 - ID
-- Image of Pattern
+- Name
+- Team ID
+- Helmet ID
+- Helmet Primary Color
+- Helmet Secondary Color
+- Helmet Accent Color
+- Helmet Logo
+- Jersey ID
+- Jersey Primary Color
+- Jersey Secondary Color
+- Jersey Accent Color
+- Pants ID
+- Pants Primary Color
+- Pants Secondary Color
+- Pants Accent Color
+- Socks ID
+- Socks Primary Color
+- Socks Secondary Color
+- Socks Accent Color
+- Shoes ID
+- Shoes Primary Color
+- Shoes Secondary Color
+- Shoes Accent Color
+- Home/Away/Alternate
+
+### LOGO
+- ID 
+- Name
+- Logo
+- Image of Pattern (3 colors than can be changed by user)
+
+### HELMET
+- ID 
+- Name
+- Logo
+- Image of Pattern (3 colors than can be changed by user)
+
+### JERSEYS
+- ID 
+- Name
+- Image of Pattern (3 colors than can be changed by user)
+
+### PANTS
+- ID 
+- Name
+- Image of Pattern (3 colors than can be changed by user)
+
+### SOCKS
+- ID 
+- Name
+- Image of Pattern (3 colors than can be changed by user)
+
+### SHOES
+- ID 
+- Name
+- Image of Pattern (3 colors than can be changed by user)
 
 ### STADIUMS
 - ID
 - Image of Stadium
+- Altitude
+- Chance of Snow
+- Snow Severity Max (1 - Flurries, 5 = Blizzard)
+- Chance of Rain
+- Rain Severity Max (1 - Light Shower, 5 = Torrential Storm)
+- Change of Wind
+- Wind Severity Max (1 - Light Breeze, 5 = Hurricane Force winds)
 
 ### SEASON EVENTS
 - ID

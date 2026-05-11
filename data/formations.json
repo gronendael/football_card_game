@@ -1,0 +1,258 @@
+[
+  {
+    "id": "off_i",
+    "name": "I-Formation",
+    "side": "offense",
+    "description": "Traditional I look; balanced run/pass. 7v7 on field.",
+    "tags": ["balanced", "run"],
+    "positions": [
+      {"role": "QB", "delta_row": 1, "delta_col": 0},
+      {"role": "RB1", "delta_row": 3, "delta_col": 0},
+      {"role": "OL1", "delta_row": 0, "delta_col": -1},
+      {"role": "OL2", "delta_row": 0, "delta_col": 0},
+      {"role": "OL3", "delta_row": 0, "delta_col": 1},
+      {"role": "WR1", "delta_row": 0, "delta_col": -3},
+      {"role": "WR2", "delta_row": 0, "delta_col": 3}
+    ]
+  },
+  {
+    "id": "off_shotgun",
+    "name": "Shotgun",
+    "side": "offense",
+    "description": "QB in shotgun; spread spacing. 7v7 on field.",
+    "tags": ["spread", "pass"],
+    "positions": [
+      {"role": "QB", "delta_row": 1, "delta_col": 0},
+      {"role": "RB1", "delta_row": 2, "delta_col": 1},
+      {"role": "OL1", "delta_row": 0, "delta_col": -1},
+      {"role": "OL2", "delta_row": 0, "delta_col": 0},
+      {"role": "OL3", "delta_row": 0, "delta_col": 1},
+      {"role": "WR1", "delta_row": -1, "delta_col": -3},
+      {"role": "WR2", "delta_row": -1, "delta_col": 3}
+    ]
+  },
+  {
+    "id": "off_pro",
+    "name": "Pro Set",
+    "side": "offense",
+    "description": "Two backs; pro spacing. 7v7 on field.",
+    "tags": ["pro", "balanced"],
+    "positions": [
+      {"role": "QB", "delta_row": 1, "delta_col": 0},
+      {"role": "RB1", "delta_row": 2, "delta_col": -1},
+      {"role": "RB2", "delta_row": 2, "delta_col": 1},
+      {"role": "OL1", "delta_row": 0, "delta_col": -1},
+      {"role": "OL2", "delta_row": 0, "delta_col": 0},
+      {"role": "OL3", "delta_row": 0, "delta_col": 1},
+      {"role": "WR1", "delta_row": 0, "delta_col": -3}
+    ]
+  },
+  {
+    "id": "off_empty",
+    "name": "Empty Backfield",
+    "side": "offense",
+    "description": "No RB; spread eligible. 7v7 on field.",
+    "tags": ["spread", "pass"],
+    "positions": [
+      {"role": "QB", "delta_row": 1, "delta_col": 0},
+      {"role": "OL1", "delta_row": 0, "delta_col": -1},
+      {"role": "OL2", "delta_row": 0, "delta_col": 0},
+      {"role": "OL3", "delta_row": 0, "delta_col": 1},
+      {"role": "WR1", "delta_row": -1, "delta_col": -3},
+      {"role": "WR2", "delta_row": 0, "delta_col": -2},
+      {"role": "WR3", "delta_row": -1, "delta_col": 3}
+    ]
+  },
+  {
+    "id": "off_singleback",
+    "name": "Singleback",
+    "side": "offense",
+    "description": "One back offset; versatile. 7v7 on field.",
+    "tags": ["singleback"],
+    "positions": [
+      {"role": "QB", "delta_row": 1, "delta_col": 0},
+      {"role": "RB1", "delta_row": 2, "delta_col": 0},
+      {"role": "OL1", "delta_row": 0, "delta_col": -1},
+      {"role": "OL2", "delta_row": 0, "delta_col": 0},
+      {"role": "OL3", "delta_row": 0, "delta_col": 1},
+      {"role": "WR1", "delta_row": 0, "delta_col": -3},
+      {"role": "WR2", "delta_row": -1, "delta_col": 2}
+    ]
+  },
+  {
+    "id": "def_43",
+    "name": "4-3 Base",
+    "side": "defense",
+    "description": "7v7 shell: 3 DL, 2 LB, 2 CB (global caps).",
+    "tags": ["43"],
+    "positions": [
+      {"role": "DL1", "delta_row": -1, "delta_col": -1},
+      {"role": "DL2", "delta_row": -1, "delta_col": 0},
+      {"role": "DL3", "delta_row": -1, "delta_col": 1},
+      {"role": "LB1", "delta_row": -2, "delta_col": -1},
+      {"role": "LB2", "delta_row": -2, "delta_col": 1},
+      {"role": "CB1", "delta_row": -1, "delta_col": -3},
+      {"role": "CB2", "delta_row": -1, "delta_col": 3}
+    ]
+  },
+  {
+    "id": "def_nickel",
+    "name": "Nickel",
+    "side": "defense",
+    "description": "7v7 shell: 2 DL, 2 LB, 2 CB, 1 S.",
+    "tags": ["nickel", "pass"],
+    "positions": [
+      {"role": "DL1", "delta_row": -1, "delta_col": -1},
+      {"role": "DL2", "delta_row": -1, "delta_col": 1},
+      {"role": "LB1", "delta_row": -2, "delta_col": -1},
+      {"role": "LB2", "delta_row": -2, "delta_col": 1},
+      {"role": "CB1", "delta_row": -1, "delta_col": -3},
+      {"role": "CB2", "delta_row": -1, "delta_col": 3},
+      {"role": "S1", "delta_row": -3, "delta_col": 0}
+    ]
+  },
+  {
+    "id": "def_dime",
+    "name": "Dime",
+    "side": "defense",
+    "description": "7v7 shell: 2 DL, 2 LB, 2 CB, 1 S.",
+    "tags": ["dime", "pass"],
+    "positions": [
+      {"role": "DL1", "delta_row": -1, "delta_col": 0},
+      {"role": "DL2", "delta_row": -1, "delta_col": 1},
+      {"role": "LB1", "delta_row": -2, "delta_col": 0},
+      {"role": "LB2", "delta_row": -2, "delta_col": 1},
+      {"role": "CB1", "delta_row": -1, "delta_col": -3},
+      {"role": "CB2", "delta_row": -1, "delta_col": 3},
+      {"role": "S1", "delta_row": -3, "delta_col": 0}
+    ]
+  },
+  {
+    "id": "def_34",
+    "name": "3-4 Base",
+    "side": "defense",
+    "description": "7v7 shell: 3 DL, 3 LB, 1 CB.",
+    "tags": ["34"],
+    "positions": [
+      {"role": "DL1", "delta_row": -1, "delta_col": -1},
+      {"role": "DL2", "delta_row": -1, "delta_col": 0},
+      {"role": "DL3", "delta_row": -1, "delta_col": 1},
+      {"role": "LB1", "delta_row": -2, "delta_col": -2},
+      {"role": "LB2", "delta_row": -2, "delta_col": -1},
+      {"role": "LB3", "delta_row": -2, "delta_col": 1},
+      {"role": "CB1", "delta_row": -1, "delta_col": -3}
+    ]
+  },
+  {
+    "id": "def_m2m",
+    "name": "Man Press",
+    "side": "defense",
+    "description": "7v7 shell: 3 DL, 2 LB, 2 CB.",
+    "tags": ["man", "press"],
+    "positions": [
+      {"role": "DL1", "delta_row": -1, "delta_col": -1},
+      {"role": "DL2", "delta_row": -1, "delta_col": 0},
+      {"role": "DL3", "delta_row": -1, "delta_col": 1},
+      {"role": "LB1", "delta_row": -2, "delta_col": -1},
+      {"role": "LB2", "delta_row": -2, "delta_col": 1},
+      {"role": "CB1", "delta_row": 0, "delta_col": -3},
+      {"role": "CB2", "delta_row": 0, "delta_col": 3}
+    ]
+  },
+  {
+    "id": "spe_spot_kick",
+    "name": "Spot Kick (FG/XP)",
+    "side": "special",
+    "description": "K, holder, 3 OL, 2 ST — 7v7 on field.",
+    "tags": ["spot_kick", "fg", "xp"],
+    "positions": [
+      {"role": "K", "delta_row": 0, "delta_col": 2},
+      {"role": "QB", "delta_row": 1, "delta_col": 1},
+      {"role": "OL1", "delta_row": 0, "delta_col": -1},
+      {"role": "OL2", "delta_row": 0, "delta_col": 0},
+      {"role": "OL3", "delta_row": 0, "delta_col": 1},
+      {"role": "ST1", "delta_row": -1, "delta_col": -2},
+      {"role": "ST2", "delta_row": -1, "delta_col": 2}
+    ]
+  },
+  {
+    "id": "spe_punt",
+    "name": "Punt Team",
+    "side": "special",
+    "description": "Punter, 3 OL, 3 ST — 7v7 on field.",
+    "tags": ["punt"],
+    "positions": [
+      {"role": "P", "delta_row": 0, "delta_col": 2},
+      {"role": "OL1", "delta_row": 0, "delta_col": -1},
+      {"role": "OL2", "delta_row": 0, "delta_col": 0},
+      {"role": "OL3", "delta_row": 0, "delta_col": 1},
+      {"role": "ST1", "delta_row": -1, "delta_col": -2},
+      {"role": "ST2", "delta_row": -1, "delta_col": 2},
+      {"role": "ST3", "delta_row": -2, "delta_col": 0}
+    ]
+  },
+  {
+    "id": "spe_fg_block",
+    "name": "FG/XP Block Rush",
+    "side": "defense",
+    "description": "7v7 rush shell: 3 DL, 2 LB, 1 CB, 1 S.",
+    "tags": ["block", "fg", "xp"],
+    "positions": [
+      {"role": "DL1", "delta_row": -1, "delta_col": -1},
+      {"role": "DL2", "delta_row": -1, "delta_col": 0},
+      {"role": "DL3", "delta_row": -1, "delta_col": 1},
+      {"role": "LB1", "delta_row": -2, "delta_col": -1},
+      {"role": "LB2", "delta_row": -2, "delta_col": 1},
+      {"role": "CB1", "delta_row": -2, "delta_col": -3},
+      {"role": "S1", "delta_row": -3, "delta_col": 0}
+    ]
+  },
+  {
+    "id": "spe_punt_return",
+    "name": "Punt Return",
+    "side": "defense",
+    "description": "7v7 return shell: RET1, 2 DL, 2 LB, 1 CB, 1 S.",
+    "tags": ["punt_return"],
+    "positions": [
+      {"role": "RET1", "delta_row": -2, "delta_col": 0},
+      {"role": "DL1", "delta_row": -1, "delta_col": -1},
+      {"role": "DL2", "delta_row": -1, "delta_col": 1},
+      {"role": "LB1", "delta_row": -2, "delta_col": -2},
+      {"role": "LB2", "delta_row": -2, "delta_col": 2},
+      {"role": "CB1", "delta_row": -1, "delta_col": -3},
+      {"role": "S1", "delta_row": -3, "delta_col": 1}
+    ]
+  },
+  {
+    "id": "spe_kickoff",
+    "name": "Kickoff",
+    "side": "special",
+    "description": "K plus 6 ST — 7v7 on field.",
+    "tags": ["kickoff"],
+    "positions": [
+      {"role": "K", "delta_row": 0, "delta_col": 0},
+      {"role": "ST1", "delta_row": -1, "delta_col": -2},
+      {"role": "ST2", "delta_row": -1, "delta_col": 2},
+      {"role": "ST3", "delta_row": -2, "delta_col": -1},
+      {"role": "ST4", "delta_row": -2, "delta_col": 0},
+      {"role": "ST5", "delta_row": -2, "delta_col": 1},
+      {"role": "ST6", "delta_row": -1, "delta_col": 0}
+    ]
+  },
+  {
+    "id": "spe_kickoff_return",
+    "name": "Kickoff Return",
+    "side": "defense",
+    "description": "7v7: primary returner plus 6 ST wall.",
+    "tags": ["kickoff_return"],
+    "positions": [
+      {"role": "RET1", "delta_row": -2, "delta_col": 0},
+      {"role": "ST1", "delta_row": -1, "delta_col": -2},
+      {"role": "ST2", "delta_row": -1, "delta_col": -1},
+      {"role": "ST3", "delta_row": -1, "delta_col": 1},
+      {"role": "ST4", "delta_row": -1, "delta_col": 2},
+      {"role": "ST5", "delta_row": -2, "delta_col": -1},
+      {"role": "ST6", "delta_row": -2, "delta_col": 1}
+    ]
+  }
+]

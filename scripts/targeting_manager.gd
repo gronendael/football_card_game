@@ -23,7 +23,7 @@ func get_valid_targets(card: Dictionary, context: Dictionary) -> Array[Dictionar
 			if staff.has(target_type):
 				targets.append({"type": "staff", "id": staff[target_type].get("id", ""), "role": target_type})
 		"play_type":
-			for play_type in ["run", "short_pass", "deep_pass", "field_goal"]:
+			for play_type in ["run", "short_pass", "deep_pass", "spot_kick"]:
 				targets.append({"type": "play_type", "id": play_type})
 		_:
 			targets.append({"type": "global", "id": "global"})

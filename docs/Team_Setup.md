@@ -11,8 +11,8 @@ Coordinator - A coach assigned as either the Offensive Coordinator (OC) or Defen
 -- 6 Core Plays always available:
 --- Kickoff
 --- Kickoff Return
---- FG
---- FG Block
+--- Spot kick (FG/XP; play id **`spot_kick`**)
+--- FG/XP block
 --- Punt
 --- Punt Return/Block
 -- 2 Offensive Plays (OC)
@@ -82,15 +82,10 @@ Positions - All of the positions that should be occupied by a player on the fiel
 
 ### PLAYS & FORMATIONS
 - Formations are Play-specific and are a map of which positions are on the field for the Play and which Tile each position starts the play on
-- Each Play is different and may have a different number of positions
--- OFF play may have for example: 
---- QB, RB, WR, WR, TE, OL, OL
---- QB, RB, WR, WR, OL, OL, OL
---- QB, RB, RB, TE, TE, OL, OL
--- DEF play may have for example:
---- DL, DL, LB, LB, CB, CB, S
---- DL, DL, DL, LB, CB, CB, S
---- DL, LB, LB, LB, CB, S, S
+- **7v7:** each formation on file has **exactly 7** spots; counts per role family must respect field caps below (QB 1; RB ≤2; WR ≤5; TE ≤2; OL ≤4; DL ≤4; LB ≤3; CB ≤3; S ≤2; K 1; P 1; RET ≤2; ST ≤6). Data: [data/formations.json](../data/formations.json).
+- Example shells (not exhaustive):
+-- OFF: QB, RB, WR, WR, OL, OL, OL
+-- DEF: DL, DL, LB, LB, CB, CB, S
 - Each position starts on a specific Tile on the field for the Play
 
 - Offensive Plays - Plays that can be run when the team is in possession of the ball
