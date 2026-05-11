@@ -134,6 +134,15 @@ anchors_preset = 0
 offset_right = 540.0
 offset_bottom = 960.0
 
+[node name="UserDownDistanceLabel" type="Label" parent="UserGroup/UserHUD" unique_id=1889011001]
+layout_mode = 0
+offset_left = 208.0
+offset_right = 327.0
+offset_bottom = 34.0
+theme_override_font_sizes/font_size = 24
+text = "1st and 10"
+vertical_alignment = 1
+
 [node name="UserTeamsScoresPanel" type="HBoxContainer" parent="UserGroup/UserHUD" unique_id=1835196771]
 layout_mode = 0
 offset_left = 8.0
@@ -207,13 +216,20 @@ horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="PlayClockValueLabel" type="Label" parent="UserGroup/UserHUD/UserTeamsScoresPanel/ClockPanel" unique_id=699685553]
+visible = false
 custom_minimum_size = Vector2(50, 50)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.023529412, 1, 1, 1)
 theme_override_font_sizes/font_size = 28
-text = "40"
+text = "10"
 horizontal_alignment = 1
 vertical_alignment = 1
+
+[node name="ActionTimerProgressBar" type="ProgressBar" parent="UserGroup/UserHUD/UserTeamsScoresPanel/ClockPanel" unique_id=699685554]
+custom_minimum_size = Vector2(50, 14)
+layout_mode = 2
+value = 100.0
+show_percentage = false
 
 [node name="Spacer2" type="Control" parent="UserGroup/UserHUD/UserTeamsScoresPanel" unique_id=373285737]
 layout_mode = 2
@@ -292,6 +308,10 @@ text = "Deep Pass"
 layout_mode = 2
 text = "Field Goal"
 
+[node name="UserPuntButton" type="Button" parent="UserGroup/UserHUD/UserPlayButtons" unique_id=1149738217]
+layout_mode = 2
+text = "Punt"
+
 [node name="UserExtraPointButton" type="Button" parent="UserGroup/UserHUD/UserPlayButtons" unique_id=1314709409]
 layout_mode = 2
 text = "Extra Point"
@@ -331,27 +351,28 @@ layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 8
 
-[node name="UserTimeoutsPanel" type="Control" parent="UserGroup/UserHUD" unique_id=1672479242]
-anchors_preset = 0
-offset_left = 448.0
-offset_top = 672.0
-offset_right = 448.0
-offset_bottom = 728.0
-
-[node name="UserTOsLabel" type="Label" parent="UserGroup/UserHUD/UserTimeoutsPanel" unique_id=202608609]
+[node name="UserTimeoutsPanel" type="HBoxContainer" parent="UserGroup/UserHUD" unique_id=1672479242]
 layout_mode = 0
-offset_right = 59.0
-offset_bottom = 45.0
+offset_left = 448.0
+offset_top = 670.0
+offset_right = 533.0
+offset_bottom = 770.0
+theme_override_constants/separation = 10
+
+[node name="UserTOsColumn" type="VBoxContainer" parent="UserGroup/UserHUD/UserTimeoutsPanel" unique_id=1889011002]
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_constants/separation = 2
+
+[node name="UserTOsLabel" type="Label" parent="UserGroup/UserHUD/UserTimeoutsPanel/UserTOsColumn" unique_id=202608609]
+layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.47843137, 0, 1)
 theme_override_font_sizes/font_size = 32
 text = "TOs"
 
-[node name="UserTOsPanel" type="Button" parent="UserGroup/UserHUD/UserTimeoutsPanel" unique_id=1343374615]
+[node name="UserTOsPanel" type="Button" parent="UserGroup/UserHUD/UserTimeoutsPanel/UserTOsColumn" unique_id=1343374615]
 custom_minimum_size = Vector2(48, 48)
-layout_mode = 0
-offset_top = 30.0
-offset_right = 48.0
-offset_bottom = 83.0
+layout_mode = 2
 tooltip_text = "Call Timeout"
 theme_override_colors/font_color = Color(1, 0.47843137, 0, 1)
 theme_override_font_sizes/font_size = 32
@@ -471,6 +492,10 @@ text = "Deep Pass"
 layout_mode = 2
 text = "Field Goal"
 
+[node name="OpponentPuntButton" type="Button" parent="OpponentGroup/OpponentHUD/OpponentPlayButtons" unique_id=1504513509]
+layout_mode = 2
+text = "Punt"
+
 [node name="OpponentReadyButton" type="Button" parent="OpponentGroup/OpponentHUD/OpponentPlayButtons" unique_id=1536603709]
 layout_mode = 2
 text = "Ready"
@@ -537,13 +562,13 @@ vertical_alignment = 1
 [node name="ZoneLabel" type="Label" parent="HUDGroup/GlobalHUD" unique_id=2136180461]
 layout_mode = 2
 theme_override_font_sizes/font_size = 16
-text = "Zone: StartZone"
+text = "Zone: Build Zone"
 vertical_alignment = 1
 
-[node name="DrivePointsLabel" type="Label" parent="HUDGroup/GlobalHUD" unique_id=1550221750]
+[node name="DownsLabel" type="Label" parent="HUDGroup/GlobalHUD" unique_id=1550221750]
 layout_mode = 2
 theme_override_font_sizes/font_size = 16
-text = "Drive Points: 6"
+text = "Downs: 1"
 vertical_alignment = 1
 
 [node name="PhaseLabel" type="Label" parent="HUDGroup/GlobalHUD" unique_id=1534667255]

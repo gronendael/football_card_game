@@ -105,7 +105,7 @@ SPECIALTIES (List of specialties the coach has which gives boosts to players, pl
 - Name
 - **Side**: `offense` | `defense` | `special` (special teams shells: spot kick, punt, kickoff, etc.)
 - Optional: description, tags (strings)
-- **Positions** (JSON array): each entry `{ "role", "delta_row", "delta_col" }` relative to the **ball at the LOS center tile** `(0,0)`. **Negative `delta_row`** = toward the offense’s **scoring end** (same direction as positive ball movement in sim). Multiple roles may share one tile; **even spacing within a tile is rendering-only**.
+- **Positions** (JSON array): each entry `{ "role", "delta_row", "delta_col" }` relative to the **ball at the LOS center tile** `(0,0)`. Engine: row **0** = scoring end; positive ball movement decreases row index. **`side: "offense"`:** use **`delta_row` ≥ 0** only (LOS row = 0, larger = backfield toward own end); negative `delta_row` would be past the LOS toward the goal and is rejected at load. **`side: "defense"` / `"special"`:** negative `delta_row` is allowed (toward the offense’s scoring end / into the offensive backfield from the LOS).
 - **7v7:** each formation lists **exactly 7** positions. Per-role counts must stay within global caps (see [docs/Team_Setup.md](Team_Setup.md)); [scripts/formations_catalog.gd](scripts/formations_catalog.gd) enforces count **== 7** and per-family maxima at load.
 - Data: [data/formations.json](data/formations.json); loader/validation: [scripts/formations_catalog.gd](scripts/formations_catalog.gd)
 - Role keys used in data include: `QB`, `RB1`…, `WR1`…, `OL1`…, `DL1`…, `LB1`…, `CB1`…, `S1`…, `K`, `P`, `RET1`/`RET2`, `ST1`…`ST6`
@@ -115,7 +115,7 @@ SPECIALTIES (List of specialties the coach has which gives boosts to players, pl
 - Name
 - Type (Run, Short Pass, Deep Pass, **Spot kick** (FG + XP), Kickoff, Punt)
 - **Formation ID** (references [data/formations.json](data/formations.json))
-- Data: [data/plays.json](data/plays.json) (no per-play tile min/max on advancement; resolver defines ranges)
+- Data: [data/plays.json](data/plays.json) (no per-play tile min/max on advancement; resolver defines ranges). Defense entries live in the same file with `side: "defense"` and ids such as `run_def`, `man_to_man`, `zone`, `fg_def` (aligned with engine play-type selection). Runtime lookup: [scripts/plays_catalog.gd](../scripts/plays_catalog.gd) (`formation_id_for`).
 - Run Path
 -- Tile path the RB will take for a Run Play
 - Routes (List of 3-5 routes)
@@ -133,7 +133,7 @@ SPECIALTIES (List of specialties the coach has which gives boosts to players, pl
 - Type (Run Defense, Short Pass Defense, Deep Pass Defense, **FG/XP block**, **Kickoff return**, **Punt return**)
 - Coverage Type (Man-to-Man, Zone)
 - Blitzing Positions (List of player positions blitzing)
-- Formation (List of 7 positions)
+- **Formation ID** (same `formation_id` pattern as offense; seven roles from [data/formations.json](data/formations.json) via the play row in [data/plays.json](data/plays.json))
 
 ### PLAYBOOKS
 - ID
@@ -171,12 +171,36 @@ SPECIALTIES (List of specialties the coach has which gives boosts to players, pl
 - Deck Minimum (number of cards)
 - List of Cards (manually added/removed by ther user)
 
+### FIELD ZONES (macro; `GameState` IDs 1–7)
+
+`current_zone` is stored for the **possession (offense) team**. **Card modifiers and data** should use this **numeric ID** (not display strings).
+
+| ID | Constant | Offense display | Defense display (same spot, defending team HUD) |
+|----|-----------|-----------------|---------------------------------------------------|
+| 1 | `ZONE_MY_END` | Defensive Endzone | Scoring Endzone |
+| 2 | `ZONE_START` | Build Zone | Contain Zone |
+| 3 | `ZONE_ADVANCE` | Advance Zone | Control Zone |
+| 4 | `ZONE_MIDFIELD` | Midfield Zone | Midfield Zone |
+| 5 | `ZONE_ATTACK` | Attack Zone | Pressure Zone |
+| 6 | `ZONE_RED` | Red Zone | Goal Line Zone |
+| 7 | `ZONE_END` | Scoring Endzone | Defensive Endzone |
+
+- In-game **Zone** HUD label uses **offense** names when the viewer’s team has the ball, **defense** names when the viewer’s team is on defense (`scripts/game_scene.gd`: `_zone_display_for_team`).
+- Event logs and resolver strings use **offense** names (`_zone_name`) as the canonical field description for the current possession. **Field goal** result lines: good `#66ff00`, missed `#ff6666` (then turnover text).
+
 ### GAME STATE (runtime / prototype)
 - `downs` — current down, **1–4**; resets to **1** on new possession and on each new first down
 - `first_down_chain_base_row_engine` / `first_down_target_row_engine` — engine tile row for LOS at chain start and yellow first-down line (**10 rows** toward the goal from base); `first_down_target_row_engine == -1` when **goal to go** (LOS within 10 rows of the scoring endzone — no first-down line; still 4 downs to score)
-- `current_zone` — macro field position (named zones in UI; FG range and modifiers may still be zone-based)
+- `current_zone` — macro field position (**1–7**; see FIELD ZONES above); FG range and modifiers use zone IDs
 - `current_los_row_engine` — authoritative LOS **engine tile row** (0 = top / scoring end); updated each play by `tile_delta`; `current_zone` is derived from this row (not reset from zone-only anchors between plays)
+- **`TOUCHBACK_LOS_ROW_ENGINE` (25)** — **all** receiving-team starts that use the touchback spot: **opening kickoff** (`start_game`), **halftime second-half start** (`force_halftime_now`), **post-conversion kickoff**, and **punt into endzone** (via `next_drive_los_row_engine` + `end_possession`). Build zone, 5th tile / one row from Advance. `start_possession(..., los_row_override)`; `next_drive_los_row_engine` for punt `end_possession` handoff.
+- User HUD **down & distance** text uses `downs` plus `max(0, current_los_row_engine - first_down_target_row_engine)` tile rows when `first_down_target_row_engine >= 0`; **goal to go** or `first_down_target_row_engine < 0` shows `… and Goal`
 - Ball spot / first-down logic use **`current_los_row_engine`**; standard-play **defense matchup** and OC **`standard_zone_bonus`** adjust `tile_delta` in **whole tile rows** (not ×5)
+
+### PUNT RETURN (resolver / `resolve_punt` modifier map)
+- **1 tile row ≈ 1 yd** of return gain. Tiered sampling (see `scripts/play_resolver.gd`); returner = `PlayerData.get_primary_return_candidate(receiving team)` (speed + agility + catching vs punter tackling + awareness for coverage bias).
+- Optional **`bonus` int keys** on `head_coach` / `def_coord` in [data/coaches.json](data/coaches.json) (receiving team): **`punt_return_bonus`** — shifts tier mass toward longer returns. (Punting team): **`punt_coverage_bonus`** — shifts mass toward short / zero returns.
+- **`card_return_bonus` / `card_coverage_bonus`** (ints, default **0** in `_build_punt_return_modifiers`) — reserved for queued card / effect hooks to nudge the same weights.
 
 ### SKILLS (for Players)
 - ID

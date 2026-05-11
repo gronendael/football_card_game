@@ -41,3 +41,16 @@ func get_best_kicker(team: String) -> Dictionary:
 			best_acc = acc
 			best = p
 	return best
+
+## Best punt-return profile on `team` by speed + agility (expand later with depth-chart PR).
+func get_primary_return_candidate(team: String) -> Dictionary:
+	var best: Dictionary = {}
+	var best_score := -1
+	for p in players:
+		if str(p.get("team", "")) != team:
+			continue
+		var sc := int(p.get("speed", 0)) + int(p.get("agility", 0))
+		if sc > best_score:
+			best_score = sc
+			best = p
+	return best

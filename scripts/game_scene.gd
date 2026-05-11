@@ -9,6 +9,7 @@ const PLAY_RUN := "run"
 const PLAY_SHORT_PASS := "short_pass"
 const PLAY_DEEP_PASS := "deep_pass"
 const PLAY_SPOT_KICK := "spot_kick"
+const PLAY_PUNT := "punt"
 const PHASE_CONVERSION := "conversion"
 const CONVERSION_XP := "xp"
 const CONVERSION_2PT := "2pt"
@@ -18,6 +19,10 @@ const DEF_RUN := "run_def"
 const DEF_MAN := "man_to_man"
 const DEF_ZONE := "zone"
 const DEF_FG := "fg_def"
+const DEF_PUNT_RETURN := "punt_return"
+
+const PREVIEW_MARKER_SIZE := Vector2(26, 26)
+const PREVIEW_MARKER_FONT := 9
 
 const CARD_TILE_SCENE := preload("res://scenes/card_tile.tscn")
 
@@ -32,9 +37,10 @@ const CARD_TILE_SCENE := preload("res://scenes/card_tile.tscn")
 
 @onready var game_clock_value_label: Label = get_node_or_null("UserGroup/UserHUD/UserTeamsScoresPanel/ClockPanel/GameClockValueLabel") as Label
 @onready var play_clock_value_label: Label = get_node_or_null("UserGroup/UserHUD/UserTeamsScoresPanel/ClockPanel/PlayClockValueLabel") as Label
+@onready var action_timer_progress_bar: ProgressBar = get_node_or_null("UserGroup/UserHUD/UserTeamsScoresPanel/ClockPanel/ActionTimerProgressBar") as ProgressBar
 @onready var half_label: Label = $HUDGroup/GlobalHUD/HalfLabel
 @onready var zone_label: Label = $HUDGroup/GlobalHUD/ZoneLabel
-@onready var drive_points_label: Label = $HUDGroup/GlobalHUD/DrivePointsLabel
+@onready var downs_label: Label = $HUDGroup/GlobalHUD/DownsLabel
 @onready var phase_label: Label = $HUDGroup/GlobalHUD/PhaseLabel
 @onready var result_text: RichTextLabel = $HUDGroup/PlayInfoHUD/ResultText
 @onready var opponent_momentum_value_label: Label = get_node_or_null("OpponentGroup/OpponentHUD/OpponentMomentumValueLabel") as Label
@@ -52,14 +58,13 @@ const CARD_TILE_SCENE := preload("res://scenes/card_tile.tscn")
 @onready var user_team_name_value_label: Label = %"UserTeamNameValueLabel"
 @onready var user_possession_icon_label: Label = %"UserPossessionHudIcon"
 @onready var user_score_value_label: Label = $UserGroup/UserHUD/UserTeamsScoresPanel/UserTeamMargin/UserTeamColumn/UserTeamRow/UserScoreValueLabel
-@onready var user_tos_button: Button = get_node_or_null("UserGroup/UserHUD/UserTimeoutsPanel/UserTOsPanel") as Button
+@onready var user_down_distance_label: Label = get_node_or_null("UserGroup/UserHUD/UserDownDistanceLabel") as Label
+@onready var user_tos_button: Button = get_node_or_null("UserGroup/UserHUD/UserTimeoutsPanel/UserTOsColumn/UserTOsPanel") as Button
 @onready var user_forfeit_button: Button = get_node_or_null("UserGroup/UserHUD/UserBottomUIPanel/UserForfeitButton") as Button
 @onready var user_hud: Control = get_node_or_null("UserGroup/UserHUD") as Control
 @onready var field_grid: Node = get_node_or_null("Field")
 @onready var field_background: ColorRect = $Field/FieldBackground
-@onready var ball_marker: ColorRect = $Field/BallMarker
-@onready var possession_arrow: Label = $Field/PossessionArrow
-@onready var possession_on_field_label: Label = $Field/PossessionOnFieldLabel
+@onready var ball_chip: Label = get_node_or_null("Field/BallChip") as Label
 @onready var player_details_panel: Control = get_node_or_null("PlayerDetailsPanel") as Control
 @onready var player_details_label: Label = get_node_or_null("PlayerDetailsPanel/PlayerDetailsLabel") as Label
 @onready var event_log_text: RichTextLabel = get_node_or_null("HUDGroup/EventLogPanel/EventLogText") as RichTextLabel
@@ -75,6 +80,7 @@ const CARD_TILE_SCENE := preload("res://scenes/card_tile.tscn")
 @onready var opponent_short_pass_button: Button = get_node_or_null("OpponentGroup/OpponentHUD/OpponentPlayButtons/OpponentShortPassButton") as Button
 @onready var opponent_deep_pass_button: Button = get_node_or_null("OpponentGroup/OpponentHUD/OpponentPlayButtons/OpponentDeepPassButton") as Button
 @onready var opponent_field_goal_button: Button = get_node_or_null("OpponentGroup/OpponentHUD/OpponentPlayButtons/OpponentFieldGoalButton") as Button
+@onready var opponent_punt_button: Button = get_node_or_null("OpponentGroup/OpponentHUD/OpponentPlayButtons/OpponentPuntButton") as Button
 @onready var opponent_ready_button: Button = get_node_or_null("OpponentGroup/OpponentHUD/OpponentPlayButtons/OpponentReadyButton") as Button
 @onready var opponent_extra_point_button: Button = get_node_or_null("OpponentGroup/OpponentHUD/OpponentPlayButtons/OpponentExtraPointButton") as Button
 @onready var opponent_two_point_button: Button = get_node_or_null("OpponentGroup/OpponentHUD/OpponentPlayButtons/OpponentTwoPointButton") as Button
@@ -84,6 +90,7 @@ const CARD_TILE_SCENE := preload("res://scenes/card_tile.tscn")
 @onready var user_short_pass_button: Button = get_node_or_null("UserGroup/UserHUD/UserPlayButtons/UserShortPassButton") as Button
 @onready var user_deep_pass_button: Button = get_node_or_null("UserGroup/UserHUD/UserPlayButtons/UserDeepPassButton") as Button
 @onready var user_field_goal_button: Button = get_node_or_null("UserGroup/UserHUD/UserPlayButtons/UserFieldGoalButton") as Button
+@onready var user_punt_button: Button = get_node_or_null("UserGroup/UserHUD/UserPlayButtons/UserPuntButton") as Button
 @onready var user_ready_button: Button = get_node_or_null("UserGroup/UserHUD/UserBottomUIPanel/UserReadyButton") as Button
 @onready var user_extra_point_button: Button = get_node_or_null("UserGroup/UserHUD/UserPlayButtons/UserExtraPointButton") as Button
 @onready var user_two_point_button: Button = get_node_or_null("UserGroup/UserHUD/UserPlayButtons/UserTwoPointButton") as Button
@@ -107,6 +114,8 @@ var _player_tokens: Dictionary = {}
 var _opponent_flat_def_mod: int = 10
 var _staff_data: Dictionary = {}
 var _formations_catalog: FormationsCatalog
+var _plays_catalog: PlaysCatalog
+var _formation_preview_root: Node2D
 var _skills_db: Dictionary = {}
 var _pending_target_card: Dictionary = {}
 var _turn_initialized: bool = false
@@ -168,11 +177,21 @@ var _manual_ready_pressed_away: bool = false
 var _last_play_clock_display_seconds: int = -1
 var _ready_miss_streak_home: int = 0
 var _ready_miss_streak_away: int = 0
-var _clock_paused_for_ready_wait: bool = false
-var _clock_running_before_ready_wait: bool = false
+var _turn_manual_play_home: bool = false
+var _turn_manual_play_away: bool = false
+var _play_down_at_snap: int = 1
+var _offense_play_tentative: String = GameState.PENDING_NONE
+var _defense_play_tentative: String = ""
+var _play_pick_window: String = "offense"
+var _current_action_window_duration: float = 10.0
+var _manual_pause_active: bool = false
+var _auto_pause_after_sim_stop: bool = false
+var _sim_tick_paused: bool = false
+var _game_clock_hold_after_rule_stop: bool = false
 var _abandoned_game: bool = false
 var _sim_presnap_runoff_applied: bool = false
-const TURN_ACTION_LIMIT_SECONDS := 40.0
+const ACTION_WINDOW_SECONDS := 10.0
+const DELAY_OF_GAME_HOLD_ROW := GameState.TILE_ROWS_TOTAL - 2
 const SIM_RUNOFF_MIN_SECONDS := 18
 const SIM_RUNOFF_MAX_SECONDS := 28
 const SIM_RUNOFF_HURRY_MIN_SECONDS := 8
@@ -191,21 +210,45 @@ var _away_team_id: String = DEFAULT_OPPONENT_TEAM_ID
 func _zone_name(zone: int) -> String:
 	match zone:
 		GameState.ZONE_MY_END:
-			return "MyEndZone"
+			return "Defensive Endzone"
 		GameState.ZONE_START:
-			return "StartZone"
+			return "Build Zone"
 		GameState.ZONE_ADVANCE:
-			return "AdvanceZone"
+			return "Advance Zone"
 		GameState.ZONE_MIDFIELD:
-			return "MidfieldZone"
+			return "Midfield Zone"
 		GameState.ZONE_ATTACK:
-			return "AttackZone"
+			return "Attack Zone"
 		GameState.ZONE_RED:
-			return "RedZone"
+			return "Red Zone"
 		GameState.ZONE_END:
-			return "EndZone"
+			return "Scoring Endzone"
 		_:
-			return "UnknownZone"
+			return "Unknown Zone"
+
+func _zone_name_defense(zone: int) -> String:
+	match zone:
+		GameState.ZONE_MY_END:
+			return "Scoring Endzone"
+		GameState.ZONE_START:
+			return "Contain Zone"
+		GameState.ZONE_ADVANCE:
+			return "Control Zone"
+		GameState.ZONE_MIDFIELD:
+			return "Midfield Zone"
+		GameState.ZONE_ATTACK:
+			return "Pressure Zone"
+		GameState.ZONE_RED:
+			return "Goal Line Zone"
+		GameState.ZONE_END:
+			return "Defensive Endzone"
+		_:
+			return "Unknown Zone"
+
+func _zone_display_for_team(zone: int, viewer_team: String) -> String:
+	if viewer_team == game_state.possession_team:
+		return _zone_name(zone)
+	return _zone_name_defense(zone)
 
 func _team_display_name(team: String) -> String:
 	var profile := _team_profile(team)
@@ -274,8 +317,8 @@ func _maybe_run_ai_inputs(include_user_autoplay: bool = false) -> void:
 	if game_state.phase == PHASE_CONVERSION and game_state.conversion_type.is_empty():
 		if _is_ai_controlled_team(game_state.conversion_team, include_user_autoplay):
 			_choose_conversion(_sim_pick_conversion())
-			_ai_think_lock = false
-			return
+		_ai_think_lock = false
+		return
 
 	if game_state.phase == PHASE_CARD_QUEUE:
 		var home_ai := _is_ai_controlled_team("home", include_user_autoplay)
@@ -301,15 +344,8 @@ func _maybe_run_ai_inputs(include_user_autoplay: bool = false) -> void:
 		var defense_ai := _is_ai_controlled_team(defense, include_user_autoplay)
 		if _is_ai_controlled_team(offense, include_user_autoplay) and game_state.pending_play_type == PLAY_NONE():
 			_on_select_play_for_team(offense, _pick_sim_play_type(), true)
-		if _is_ai_controlled_team(defense, include_user_autoplay) and not _defense_selected_explicit:
+		if _is_ai_controlled_team(defense, include_user_autoplay) and game_state.pending_play_type != PLAY_NONE() and not _defense_selected_explicit:
 			_on_select_play_for_team(defense, _pick_sim_defense_play_for_offense(game_state.pending_play_type), true)
-		if offense_ai and defense_ai and not _sim_presnap_runoff_applied:
-			_apply_sim_presnap_runoff()
-			_sim_presnap_runoff_applied = true
-		if offense_ai:
-			_on_ready_pressed_for_team(offense, true)
-		if defense_ai:
-			_on_ready_pressed_for_team(defense, true)
 
 	_ai_think_lock = false
 
@@ -321,6 +357,7 @@ func _play_buttons_for_team(team: String) -> Dictionary:
 			"short": opponent_short_pass_button,
 			"deep": opponent_deep_pass_button,
 			"fg": opponent_field_goal_button,
+			"punt": opponent_punt_button,
 			"ready": opponent_ready_button,
 			"xp": opponent_extra_point_button,
 			"two": opponent_two_point_button
@@ -331,6 +368,7 @@ func _play_buttons_for_team(team: String) -> Dictionary:
 		"short": user_short_pass_button,
 		"deep": user_deep_pass_button,
 		"fg": user_field_goal_button,
+		"punt": user_punt_button,
 		"ready": user_ready_button,
 		"xp": user_extra_point_button,
 		"two": user_two_point_button
@@ -347,6 +385,7 @@ func _ready() -> void:
 
 	# 1) Reset runtime state first (so start_game doesn't wipe loaded card state afterward)
 	game_state.start_game()
+	_append_touchback_event_log("(opening kickoff).")
 	_ready_miss_streak_home = 0
 	_ready_miss_streak_away = 0
 	_manual_ready_pressed_home = false
@@ -371,8 +410,6 @@ func _ready() -> void:
 	# 4) Start-of-turn setup + HUD refresh
 	_turn_initialized = false
 	_begin_turn_if_needed()
-	if not _turn_action_timer_active:
-		_start_turn_action_timer()
 	_append_phase_log("User=%s (%s), Opponent=%s" % [_team_display_name(_user_team), _user_team.capitalize(), _team_display_name("away" if _user_team == "home" else "home")], "start_game")
 	_update_ui()
 	_update_player_details("")
@@ -400,12 +437,9 @@ func _tick_turn_action_timer(_delta: float) -> void:
 		return
 	if game_state.phase != PHASE_PLAY_SELECTION and game_state.phase != PHASE_CARD_QUEUE:
 		return
-	# When game clock is running, play clock is decremented in _tick_game_clock_one_second()
-	# so both labels update on the same tick.
-	if _clock_running:
+	if _manual_pause_active:
 		return
-	var clock_rate := (_sim_speed if _sim_running else 1.0) * CLOCK_BASE_RATE
-	_turn_action_time_remaining = maxf(0.0, _turn_action_time_remaining - (_delta * clock_rate))
+	_turn_action_time_remaining = maxf(0.0, _turn_action_time_remaining - _delta)
 	var display_seconds := int(ceili(_turn_action_time_remaining))
 	if display_seconds != _last_play_clock_display_seconds:
 		_last_play_clock_display_seconds = display_seconds
@@ -414,10 +448,11 @@ func _tick_turn_action_timer(_delta: float) -> void:
 		_turn_action_timeout_handled = true
 		_handle_turn_action_timeout()
 
-func _start_turn_action_timer() -> void:
+func _start_turn_action_timer(duration: float = ACTION_WINDOW_SECONDS) -> void:
+	_current_action_window_duration = duration
 	_turn_action_timer_active = true
-	_turn_action_time_remaining = TURN_ACTION_LIMIT_SECONDS
-	_last_play_clock_display_seconds = int(ceili(TURN_ACTION_LIMIT_SECONDS))
+	_turn_action_time_remaining = duration
+	_last_play_clock_display_seconds = int(ceili(duration))
 	_turn_action_timeout_handled = false
 	_sim_presnap_runoff_applied = false
 	_turn_timed_out_home = false
@@ -446,14 +481,20 @@ func _handle_turn_action_timeout() -> void:
 	if game_state.phase != PHASE_PLAY_SELECTION and game_state.phase != PHASE_CARD_QUEUE:
 		return
 	_append_phase_subphase("turn_timeout_auto_ready")
-	var offense := game_state.possession_team
-	var defense := "away" if offense == "home" else "home"
-	if game_state.pending_play_type == PLAY_NONE():
-		_on_select_play_for_team(offense, _pick_sim_play_type(), true)
-		_mark_timed_out_team(offense)
-	if not _defense_selected_explicit:
-		_on_select_play_for_team(defense, _pick_sim_defense_play_for_offense(game_state.pending_play_type), true)
-		_mark_timed_out_team(defense)
+	if game_state.phase == PHASE_PLAY_SELECTION:
+		var offense := game_state.possession_team
+		var defense := "away" if offense == "home" else "home"
+		if _play_pick_window == "offense":
+			_apply_delay_of_game_penalty()
+			_offense_play_tentative = GameState.PENDING_NONE
+			_turn_action_time_remaining = ACTION_WINDOW_SECONDS
+			_turn_action_timeout_handled = false
+			_update_ui()
+			return
+		if _play_pick_window == "defense":
+			_on_select_play_for_team(defense, _pick_sim_defense_play_for_offense(game_state.pending_play_type), true)
+			_mark_timed_out_team(defense)
+			return
 	if game_state.phase != PHASE_CARD_QUEUE:
 		return
 	for team in ["home", "away"]:
@@ -538,6 +579,9 @@ func _tick_game_clock_one_second() -> void:
 			if game_state.game_time_remaining <= GameState.HALF_SECONDS:
 				_append_phase_subphase("halftime")
 				game_state.force_halftime_now()
+				_append_touchback_event_log("(halftime, second half).")
+				_after_force_halftime_second_half()
+				game_state.emit_signal("state_changed")
 				_update_ui()
 				return
 	else:
@@ -552,32 +596,66 @@ func _tick_game_clock_one_second() -> void:
 				_update_ui()
 				return
 
-	if _turn_action_timer_active and (game_state.phase == PHASE_PLAY_SELECTION or game_state.phase == PHASE_CARD_QUEUE):
-		_turn_action_time_remaining = maxf(0.0, _turn_action_time_remaining - 1.0)
-		var display_seconds := int(ceili(_turn_action_time_remaining))
-		if display_seconds != _last_play_clock_display_seconds:
-			_last_play_clock_display_seconds = display_seconds
-			_update_ui()
-		if _turn_action_time_remaining <= 0.0 and not _turn_action_timeout_handled:
-			_turn_action_timeout_handled = true
-			_handle_turn_action_timeout()
-
 	game_state.emit_signal("state_changed")
 
-func _stop_clock(reason: String) -> void:
+func _stop_clock(reason: String, apply_hold_after: bool = true) -> void:
 	if not _clock_running:
 		return
+	_manual_pause_active = false
 	_clock_running = false
 	_clock_accumulator = 0.0
+	if apply_hold_after:
+		_game_clock_hold_after_rule_stop = true
 	if not reason.is_empty():
 		_append_event_log("[color=#9aa0a6][i]Clock stopped: %s[/i][/color]" % reason)
 
-func _resume_clock_for_play() -> void:
-	if game_state.phase == GameState.PHASE_GAME_OVER:
+func _scrimmage_offense_selecting_window() -> bool:
+	if game_state.phase == GameState.PHASE_GAME_OVER or game_state.phase == GameState.PHASE_HALFTIME:
+		return false
+	if game_state.phase == PHASE_CONVERSION:
+		if game_state.conversion_type.is_empty():
+			return false
+		if game_state.conversion_type == CONVERSION_2PT:
+			return game_state.pending_play_type == PLAY_NONE() and _play_pick_window == "offense"
+		return false
+	if game_state.phase != PHASE_PLAY_SELECTION:
+		return false
+	return game_state.pending_play_type == PLAY_NONE() and _play_pick_window == "offense"
+
+
+func _sync_game_clock_scrimmage_policy() -> void:
+	if game_state.phase == GameState.PHASE_GAME_OVER or game_state.phase == GameState.PHASE_HALFTIME:
+		_clock_running = false
+		_clock_accumulator = 0.0
 		return
-	if not _clock_running:
-		_clock_running = true
-		_append_event_log("[color=#9aa0a6][i]Clock running[/i][/color]")
+	var want_run := _scrimmage_offense_selecting_window() and not _manual_pause_active and not _auto_pause_after_sim_stop and not _game_clock_hold_after_rule_stop
+	if want_run:
+		if not _clock_running:
+			_clock_running = true
+	else:
+		if _clock_running:
+			_clock_accumulator = 0.0
+		_clock_running = false
+
+
+func _release_sim_to_man_auto_pause_if_any() -> void:
+	if not _auto_pause_after_sim_stop:
+		return
+	_auto_pause_after_sim_stop = false
+	_manual_pause_active = false
+	_sync_game_clock_scrimmage_policy()
+
+
+func _after_force_halftime_second_half() -> void:
+	game_state.home_ready = false
+	game_state.away_ready = false
+	_selected_cards_home.clear()
+	_selected_cards_away.clear()
+	_sim_presnap_runoff_applied = false
+	_turn_initialized = false
+	_begin_turn_if_needed()
+	if _sim_running:
+		_maybe_run_ai_inputs(true)
 
 func _call_timeout(team: String) -> bool:
 	var remaining := game_state.timeouts_home if team == "home" else game_state.timeouts_away
@@ -588,16 +666,16 @@ func _call_timeout(team: String) -> bool:
 	else:
 		game_state.timeouts_away -= 1
 	_turn_action_timer_active = true
-	_turn_action_time_remaining = TURN_ACTION_LIMIT_SECONDS
-	_last_play_clock_display_seconds = int(ceili(TURN_ACTION_LIMIT_SECONDS))
+	_turn_action_time_remaining = ACTION_WINDOW_SECONDS
+	_last_play_clock_display_seconds = int(ceili(ACTION_WINDOW_SECONDS))
 	_turn_action_timeout_handled = false
-	_stop_clock("%s timeout" % team.capitalize())
+	_stop_clock("%s timeout" % team.capitalize(), false)
 	_append_event_log("[color=#ffd166][b](%s) TIMEOUT called - %d left[/b][/color]" % [team.capitalize(), remaining - 1])
 	_update_ui()
 	return true
 
 func _maybe_sim_call_timeouts() -> bool:
-	if not _clock_running:
+	if not _sim_running or _sim_tick_paused:
 		return false
 	var sec := game_state.game_time_remaining
 	var in_late_first := game_state.half == 1 and sec - GameState.HALF_SECONDS <= 30 and sec > GameState.HALF_SECONDS
@@ -619,6 +697,10 @@ func _load_data() -> void:
 		_formations_catalog = FormationsCatalog.new()
 	if not _formations_catalog.load_from_json("res://data/formations.json"):
 		push_error("formations.json failed to load or validate")
+	if _plays_catalog == null:
+		_plays_catalog = PlaysCatalog.new()
+	if not _plays_catalog.load_from_json("res://data/plays.json"):
+		push_error("plays.json failed to load")
 	player_data.load_from_json("res://data/players.json")
 	coach_data.load_from_json("res://data/coaches.json")
 	_load_skills_data()
@@ -692,6 +774,7 @@ func _wire_buttons() -> void:
 	var ashort: Button = opponent_buttons.get("short") as Button
 	var adeep: Button = opponent_buttons.get("deep") as Button
 	var afg: Button = opponent_buttons.get("fg") as Button
+	var apunt: Button = opponent_buttons.get("punt") as Button
 	var aready: Button = opponent_buttons.get("ready") as Button
 	var axp: Button = opponent_buttons.get("xp") as Button
 	var atwo: Button = opponent_buttons.get("two") as Button
@@ -703,9 +786,11 @@ func _wire_buttons() -> void:
 	if adeep:
 		adeep.pressed.connect(func(): _on_select_play_for_team(opponent_team, PLAY_DEEP_PASS))
 	if afg:
-		afg.pressed.connect(func(): _on_select_play_for_team(opponent_team, PLAY_SPOT_KICK))
+		afg.pressed.connect(func(): _on_special_play_button_for_team(opponent_team))
+	if apunt:
+		apunt.pressed.connect(func(): _on_select_play_for_team(opponent_team, PLAY_PUNT))
 	if aready:
-		aready.pressed.connect(func(): _on_ready_pressed_for_team(opponent_team))
+		aready.pressed.connect(func(): _on_primary_action_pressed_for_team(opponent_team))
 	if axp:
 		axp.pressed.connect(func(): _choose_conversion_for_team(opponent_team, CONVERSION_XP))
 	if atwo:
@@ -715,6 +800,7 @@ func _wire_buttons() -> void:
 	var hshort: Button = user_buttons.get("short") as Button
 	var hdeep: Button = user_buttons.get("deep") as Button
 	var hfg: Button = user_buttons.get("fg") as Button
+	var hpunt: Button = user_buttons.get("punt") as Button
 	var hready: Button = user_buttons.get("ready") as Button
 	var hxp: Button = user_buttons.get("xp") as Button
 	var htwo: Button = user_buttons.get("two") as Button
@@ -726,9 +812,11 @@ func _wire_buttons() -> void:
 	if hdeep:
 		hdeep.pressed.connect(func(): _on_select_play_for_team(_user_team, PLAY_DEEP_PASS))
 	if hfg:
-		hfg.pressed.connect(func(): _on_select_play_for_team(_user_team, PLAY_SPOT_KICK))
+		hfg.pressed.connect(func(): _on_special_play_button_for_team(_user_team))
+	if hpunt:
+		hpunt.pressed.connect(func(): _on_select_play_for_team(_user_team, PLAY_PUNT))
 	if hready:
-		hready.pressed.connect(func(): _on_ready_pressed_for_team(_user_team))
+		hready.pressed.connect(func(): _on_primary_action_pressed_for_team(_user_team))
 	if hxp:
 		hxp.pressed.connect(func(): _choose_conversion_for_team(_user_team, CONVERSION_XP))
 	if htwo:
@@ -754,7 +842,45 @@ func _wire_buttons() -> void:
 		sim_timer.timeout.connect(_on_sim_tick)
 	game_state.state_changed.connect(_update_ui)
 
+func _on_primary_action_pressed_for_team(team: String) -> void:
+	if game_state.phase == PHASE_CARD_QUEUE:
+		_on_ready_pressed_for_team(team)
+		return
+	if game_state.phase == PHASE_PLAY_SELECTION:
+		var offense := game_state.possession_team
+		var defense := "away" if offense == "home" else "home"
+		if team == offense:
+			_try_commit_offense_play_for_team(team)
+		elif team == defense:
+			_try_commit_defense_play_for_team(team)
+
+func _try_commit_offense_play_for_team(team: String) -> void:
+	if team != game_state.possession_team:
+		return
+	if _is_ai_controlled_team(team, false):
+		return
+	if _offense_play_tentative == PLAY_NONE():
+		result_text.text = "Select a play type first (Run, Short Pass, Deep Pass, or Field Goal)."
+		return
+	_commit_offense_play(_offense_play_tentative, true)
+
+func _try_commit_defense_play_for_team(team: String) -> void:
+	var offense := game_state.possession_team
+	var defense := "away" if offense == "home" else "home"
+	if team != defense:
+		return
+	if _is_ai_controlled_team(team, false):
+		return
+	if game_state.pending_play_type == PLAY_NONE():
+		return
+	if _defense_play_tentative.is_empty():
+		result_text.text = "Select a defensive play first (Run Def, Man-to-Man, Zone, or FG Def)."
+		return
+	_commit_defense_play(_defense_play_tentative, true)
+
 func _on_select_play_for_team(team: String, play_type: String, allow_ai: bool = false) -> void:
+	if not allow_ai and team == _user_team:
+		_release_sim_to_man_auto_pause_if_any()
 	if not allow_ai and _is_ai_controlled_team(team, false):
 		return
 	if not _is_phase_allowed_for_play():
@@ -767,19 +893,63 @@ func _on_select_play_for_team(team: String, play_type: String, allow_ai: bool = 
 	var offense := game_state.possession_team
 	var defense := "away" if offense == "home" else "home"
 	if team == offense:
-		_on_select_play(play_type)
+		_begin_turn_if_needed()
+		if allow_ai or _is_ai_controlled_team(offense, false):
+			_commit_offense_play(play_type, false)
+		else:
+			_offense_play_tentative = play_type
+		_update_ui()
 		return
 	if team == defense:
-		_selected_defense_play = _map_button_play_to_defense_play(play_type)
-		_defense_selected_explicit = true
-		if team == "home":
-			_play_ready_home = false
-		else:
-			_play_ready_away = false
+		if game_state.pending_play_type == PLAY_NONE():
+			return
+		var mapped_play := _map_button_play_to_defense_play(play_type)
+		if allow_ai:
+			_commit_defense_play(mapped_play, false)
+			return
+		_defense_play_tentative = mapped_play
 		_update_ui()
-		_maybe_begin_after_play_selection()
+		return
+
+func _on_special_play_button_for_team(team: String) -> void:
+	var offense := game_state.possession_team
+	var defense := "away" if offense == "home" else "home"
+	if team == defense and game_state.pending_play_type == PLAY_PUNT:
+		_on_select_play_for_team(team, PLAY_PUNT)
+		return
+	_on_select_play_for_team(team, PLAY_SPOT_KICK)
+
+func _commit_offense_play(play_type: String, from_manual: bool) -> void:
+	_begin_turn_if_needed()
+	_stop_turn_action_timer()
+	game_state.pending_play_type = play_type
+	_offense_play_tentative = GameState.PENDING_NONE
+	_defense_play_tentative = ""
+	if from_manual:
+		if game_state.possession_team == "home":
+			_turn_manual_play_home = true
+		else:
+			_turn_manual_play_away = true
+	_play_pick_window = "defense"
+	_start_turn_action_timer(ACTION_WINDOW_SECONDS)
+	_update_ui()
+
+func _commit_defense_play(play_type: String, from_manual: bool) -> void:
+	_selected_defense_play = play_type
+	_defense_play_tentative = ""
+	_defense_selected_explicit = true
+	if from_manual:
+		if game_state.possession_team == "home":
+			_turn_manual_play_away = true
+		else:
+			_turn_manual_play_home = true
+	_stop_turn_action_timer()
+	_update_ui()
+	_maybe_begin_after_play_selection()
 
 func _on_play_non_targeted_card_for_team(team: String) -> void:
+	if team == _user_team:
+		_release_sim_to_man_auto_pause_if_any()
 	if _is_ai_controlled_team(team, false):
 		return
 	if game_state.phase != PHASE_CARD_QUEUE:
@@ -789,6 +959,8 @@ func _on_play_non_targeted_card_for_team(team: String) -> void:
 	_on_play_non_targeted_card(team)
 
 func _on_ready_pressed_for_team(team: String, allow_ai: bool = false) -> void:
+	if not allow_ai and team == _user_team:
+		_release_sim_to_man_auto_pause_if_any()
 	if not allow_ai and _is_ai_controlled_team(team, false):
 		return
 	if not allow_ai:
@@ -799,44 +971,14 @@ func _on_ready_pressed_for_team(team: String, allow_ai: bool = false) -> void:
 	_on_ready_pressed(team)
 
 func _finalize_user_ready_activity_for_turn() -> void:
-	var home_tracked := not _is_ai_controlled_team("home", false)
-	var away_tracked := not _is_ai_controlled_team("away", false)
-	if _sim_running and _user_team == "home":
-		home_tracked = false
-	if _sim_running and _user_team == "away":
-		away_tracked = false
-
-	if home_tracked:
-		if _manual_ready_pressed_home:
-			_ready_miss_streak_home = 0
-		else:
-			_ready_miss_streak_home += 1
-			_append_event_log("[color=#ffb703][b]No Ready input (Home %d/%d)[/b][/color]" % [_ready_miss_streak_home, USER_READY_MISS_FORFEIT_TURNS])
-	if away_tracked:
-		if _manual_ready_pressed_away:
-			_ready_miss_streak_away = 0
-		else:
-			_ready_miss_streak_away += 1
-			_append_event_log("[color=#ffb703][b]No Ready input (Away %d/%d)[/b][/color]" % [_ready_miss_streak_away, USER_READY_MISS_FORFEIT_TURNS])
-
-	var home_forfeit := home_tracked and _ready_miss_streak_home >= USER_READY_MISS_FORFEIT_TURNS
-	var away_forfeit := away_tracked and _ready_miss_streak_away >= USER_READY_MISS_FORFEIT_TURNS
-	if home_forfeit and away_forfeit:
-		_apply_abandoned_game("ready_timeout_both")
-		return
-	if home_forfeit:
-		_apply_forfeit("home", "ready_timeout")
-		return
-	if away_forfeit:
-		_apply_forfeit("away", "ready_timeout")
-		return
+	pass
 
 func _apply_forfeit(team: String, reason: String = "forfeit") -> void:
 	if game_state.phase == GameState.PHASE_GAME_OVER:
 		return
 	var team_score := game_state.score_home if team == "home" else game_state.score_away
 	var opp_score := game_state.score_away if team == "home" else game_state.score_home
-	if reason == "ready_timeout":
+	if reason == "ready_timeout" or reason == "inaction_streak":
 		if team == "home":
 			game_state.score_home = 0
 			game_state.score_away = 7
@@ -858,11 +1000,15 @@ func _apply_forfeit(team: String, reason: String = "forfeit") -> void:
 		game_state.game_result = "tie"
 	game_state.phase = GameState.PHASE_GAME_OVER
 	_stop_turn_action_timer()
+	_manual_pause_active = false
+	_auto_pause_after_sim_stop = false
+	_sim_tick_paused = false
+	_game_clock_hold_after_rule_stop = false
 	_clock_running = false
 	_clock_accumulator = 0.0
 	if sim_timer:
 		sim_timer.stop()
-	var reason_text := "manual forfeit" if reason == "forfeit_button" else "forfeit: 3 turns without Ready"
+	var reason_text := "manual forfeit" if reason == "forfeit_button" else "forfeit: 3 turns without a manual play call and without cards played"
 	_append_event_log("[color=#ff4d6d][b]FORFEIT[/b][/color] %s (%s). Final: %s %d - %s %d." % [
 		_team_display_name(team), reason_text, _team_display_name("home"), game_state.score_home, _team_display_name("away"), game_state.score_away
 	])
@@ -879,11 +1025,15 @@ func _apply_abandoned_game(reason: String = "abandoned") -> void:
 	game_state.phase = GameState.PHASE_GAME_OVER
 	game_state.game_result = "abandoned"
 	_stop_turn_action_timer()
+	_manual_pause_active = false
+	_auto_pause_after_sim_stop = false
+	_sim_tick_paused = false
+	_game_clock_hold_after_rule_stop = false
 	_clock_running = false
 	_clock_accumulator = 0.0
 	if sim_timer:
 		sim_timer.stop()
-	var reason_text := "both teams missed Ready 3 times" if reason == "ready_timeout_both" else reason
+	var reason_text := "both teams missed Ready 3 times" if reason == "ready_timeout_both" else ("both teams: 3 turns without play+cards" if reason == "inaction_both" else reason)
 	_append_event_log("[color=#9aa0a6][b]ABANDONED[/b][/color] %s. Game not recorded." % reason_text)
 	result_text.text = "[center][color=#9aa0a6][b]GAME ABANDONED[/b][/color][/center]\nNo final result recorded."
 	game_state.emit_signal("state_changed")
@@ -893,6 +1043,8 @@ func _choose_conversion_for_team(team: String, conv_type: String) -> void:
 		return
 	if team != game_state.conversion_team:
 		return
+	if team == _user_team:
+		_release_sim_to_man_auto_pause_if_any()
 	_choose_conversion(conv_type)
 
 func _spawn_players() -> void:
@@ -920,22 +1072,18 @@ func _spawn_players() -> void:
 func _on_select_play(play_type: String) -> void:
 	if not _is_phase_allowed_for_play():
 		return
-
-	_begin_turn_if_needed()
-	var is_two_point_attempt := game_state.phase == PHASE_CONVERSION and game_state.conversion_type == CONVERSION_2PT
-	game_state.pending_play_type = play_type
-	if is_two_point_attempt:
-		_selected_defense_play = DEF_ZONE
-		_begin_after_defense_pick()
+	if game_state.phase != PHASE_CONVERSION or game_state.conversion_type != CONVERSION_2PT:
 		return
-	if game_state.possession_team == "home":
-		_play_ready_home = false
-	else:
-		_play_ready_away = false
-	_update_ui()
-	_maybe_begin_after_play_selection()
+	_release_sim_to_man_auto_pause_if_any()
+	_begin_turn_if_needed()
+	game_state.pending_play_type = play_type
+	_selected_defense_play = DEF_ZONE
+	_defense_selected_explicit = true
+	_begin_after_defense_pick()
 
 func _begin_after_defense_pick() -> void:
+	_stop_turn_action_timer()
+	_play_pick_window = "none"
 	if current_phase_level >= 3:
 		_start_card_queue_phase()
 	else:
@@ -953,6 +1101,8 @@ func _map_button_play_to_defense_play(play_type: String) -> String:
 		return DEF_RUN
 	if play_type == PLAY_SHORT_PASS:
 		return DEF_MAN
+	if play_type == PLAY_PUNT:
+		return DEF_PUNT_RETURN
 	if play_type == PLAY_SPOT_KICK:
 		return DEF_FG
 	return DEF_ZONE
@@ -969,12 +1119,70 @@ func _begin_turn_if_needed() -> void:
 	print("BEGIN TURN? init=", _turn_initialized, " phase=", game_state.phase, " level=", current_phase_level)
 	if _turn_initialized:
 		return
-	_turn_initialized = true
+	if _turn_counter > 0:
+		_evaluate_inaction_streaks_for_completed_turn()
+	if game_state.phase == GameState.PHASE_GAME_OVER:
+		_turn_initialized = true
+		return
+	_turn_manual_play_home = false
+	_turn_manual_play_away = false
+	_play_down_at_snap = clampi(game_state.downs, 1, 4)
 	_turn_counter += 1
+	_turn_initialized = true
+	_game_clock_hold_after_rule_stop = false
 	_append_phase_log("Half %d | Turn %d | Possession: %s Ball | Zone: %s" % [game_state.half, _turn_counter, _team_display_name(game_state.possession_team), _zone_name(game_state.current_zone)], "start_turn")
 	_append_phase_subphase("play_selection")
-	_start_turn_action_timer()
+	_offense_play_tentative = GameState.PENDING_NONE
+	_defense_play_tentative = ""
+	_play_pick_window = "offense"
+	_defense_selected_explicit = false
+	_selected_defense_play = DEF_ZONE
+	game_state.pending_play_type = GameState.PENDING_NONE
 	_advance_both_teams_resources()
+	_start_turn_action_timer(ACTION_WINDOW_SECONDS)
+	_sync_game_clock_scrimmage_policy()
+
+func _evaluate_inaction_streaks_for_completed_turn() -> void:
+	var home_tracked := not _is_ai_controlled_team("home", false)
+	var away_tracked := not _is_ai_controlled_team("away", false)
+	if _sim_running and _user_team == "home":
+		home_tracked = false
+	if _sim_running and _user_team == "away":
+		away_tracked = false
+	if home_tracked:
+		var had_manual_play := _turn_manual_play_home
+		var had_cards := game_state.card_played_this_play_home
+		if not had_manual_play and not had_cards:
+			_ready_miss_streak_home += 1
+			_append_event_log("[color=#ffb703][b]No play + no cards (Home %d/%d)[/b][/color]" % [_ready_miss_streak_home, USER_READY_MISS_FORFEIT_TURNS])
+		else:
+			_ready_miss_streak_home = 0
+	if away_tracked:
+		var had_manual_play_a := _turn_manual_play_away
+		var had_cards_a := game_state.card_played_this_play_away
+		if not had_manual_play_a and not had_cards_a:
+			_ready_miss_streak_away += 1
+			_append_event_log("[color=#ffb703][b]No play + no cards (Away %d/%d)[/b][/color]" % [_ready_miss_streak_away, USER_READY_MISS_FORFEIT_TURNS])
+		else:
+			_ready_miss_streak_away = 0
+	var home_forfeit := home_tracked and _ready_miss_streak_home >= USER_READY_MISS_FORFEIT_TURNS
+	var away_forfeit := away_tracked and _ready_miss_streak_away >= USER_READY_MISS_FORFEIT_TURNS
+	if home_forfeit and away_forfeit:
+		_apply_abandoned_game("inaction_both")
+		return
+	if home_forfeit:
+		_apply_forfeit("home", "inaction_streak")
+		return
+	if away_forfeit:
+		_apply_forfeit("away", "inaction_streak")
+		return
+
+func _apply_delay_of_game_penalty() -> void:
+	if game_state.current_los_row_engine < DELAY_OF_GAME_HOLD_ROW:
+		game_state.apply_ball_movement_tile_delta(-1)
+	game_state.sync_goal_to_go_first_down_after_play()
+	_append_event_log("[color=#ffb703][b]Delay of game[/b][/color] — offense. LOS back one tile row (toward own goal) where applicable.")
+	_append_phase_subphase("delay_of_game")
 
 func _advance_both_teams_resources() -> void:
 	if game_state.just_started_possession:
@@ -1001,6 +1209,7 @@ func _advance_both_teams_resources() -> void:
 func _resolve_play() -> void:
 	if game_state.pending_play_type == PLAY_NONE():
 		return
+	_stop_turn_action_timer()
 
 	game_state.phase = PHASE_RESOLVING
 	_append_phase_subphase("resolving")
@@ -1037,7 +1246,75 @@ func _resolve_play() -> void:
 		play_result["tile_delta"] = tile_delta
 		play_result["result_text"] = "%s: %+d tile rows toward goal." % [str(play_result.get("play_type", "")), tile_delta]
 
+	if game_state.pending_play_type == PLAY_PUNT:
+		var punter := _kicker_for_fg_attempt()
+		var return_called := _selected_defense_play == DEF_PUNT_RETURN
+		play_result = play_resolver.resolve_punt(game_state.current_zone, punter, return_called, _build_punt_return_modifiers())
+		play_result["breakdown"].append("Defense call: %s" % _selected_defense_play)
+		_apply_punt_result(play_result)
+		return
+
 	_apply_play_result(play_result)
+
+func _build_punt_return_modifiers() -> Dictionary:
+	var offense := game_state.possession_team
+	var defense := "away" if offense == "home" else "home"
+	var ret := player_data.get_primary_return_candidate(defense)
+	var punter := _kicker_for_fg_attempt()
+	var st_d: Dictionary = _staff_data.get(defense, {}) as Dictionary
+	var st_o: Dictionary = _staff_data.get(offense, {}) as Dictionary
+	var hc_d: Dictionary = st_d.get("head_coach", {}) as Dictionary
+	var dc_d: Dictionary = st_d.get("def_coord", {}) as Dictionary
+	var hc_o: Dictionary = st_o.get("head_coach", {}) as Dictionary
+	var dc_o: Dictionary = st_o.get("def_coord", {}) as Dictionary
+	var b_d_h: Dictionary = hc_d.get("bonus", {}) as Dictionary
+	var b_d_d: Dictionary = dc_d.get("bonus", {}) as Dictionary
+	var b_o_h: Dictionary = hc_o.get("bonus", {}) as Dictionary
+	var b_o_d: Dictionary = dc_o.get("bonus", {}) as Dictionary
+	var s_ret := int(b_d_h.get("punt_return_bonus", 0)) + int(b_d_d.get("punt_return_bonus", 0))
+	var s_cov := int(b_o_h.get("punt_coverage_bonus", 0)) + int(b_o_d.get("punt_coverage_bonus", 0))
+	return {
+		"return_speed": int(ret.get("speed", 65)),
+		"return_agility": int(ret.get("agility", 65)),
+		"return_catching": int(ret.get("catching", 60)),
+		"coverage_tackling": int(punter.get("tackling", 55)),
+		"coverage_awareness": int(punter.get("awareness", 65)),
+		"staff_return_bonus": s_ret,
+		"staff_coverage_bonus": s_cov,
+		"card_return_bonus": 0,
+		"card_coverage_bonus": 0
+	}
+
+
+func _apply_punt_result(result: Dictionary) -> void:
+	var offense_team_for_summary := game_state.possession_team
+	var defense_play_for_summary := _selected_defense_play
+	var summary_result_text := str(result.get("result_text", "Punt"))
+	var zone_before := game_state.current_zone
+	var zone_after_offense_view := int(result.get("zone_after_current_offense", clampi(zone_before + 1, 1, GameState.MAX_ZONE)))
+	var net_rows := int(result.get("net_rows", 5))
+	var punt_rows := int(result.get("punt_rows", net_rows))
+	var return_rows := int(result.get("return_rows", 0))
+	_game_plays += 1
+	game_state.plays_used_current_drive += 1
+	game_state.current_zone = zone_after_offense_view
+	game_state.current_los_row_engine = game_state.los_row_engine_from_zone(zone_after_offense_view)
+	game_state.next_drive_start_zone = _map_possession_start_zone(zone_after_offense_view)
+	if zone_after_offense_view >= GameState.ZONE_END:
+		game_state.next_drive_los_row_engine = GameState.TOUCHBACK_LOS_ROW_ENGINE
+	else:
+		game_state.next_drive_los_row_engine = -1
+	game_state.end_possession("punt", 0)
+	_stop_clock("punt")
+	_render_last_play_info(offense_team_for_summary, PLAY_PUNT, defense_play_for_summary, summary_result_text, -net_rows)
+	_append_event_log("[color=#4da3ff][b]PUNT[/b][/color] Punt %d tile rows, return %d tile rows, net %d. Opponent starts in %s." % [punt_rows, return_rows, net_rows, _zone_name(game_state.next_drive_start_zone)])
+	if zone_after_offense_view >= GameState.ZONE_END:
+		_append_touchback_event_log("(punt into endzone).")
+	game_state.pending_play_type = GameState.PENDING_NONE
+	_selected_defense_play = DEF_ZONE
+	_awaiting_defense_pick = false
+	_reset_next_turn_after_possession_change("punt")
+	game_state.emit_signal("state_changed")
 
 ## 0 = normal; 1 = turnover on downs + defensive TD (caller returns); 2 = turnover on downs, caller runs common footer
 func _apply_downs_and_first_down_after_play(
@@ -1096,6 +1373,9 @@ func _defense_modifier_for_play(offense_play: String, defense_play: String) -> i
 	elif offense_play == PLAY_SPOT_KICK:
 		if defense_play == DEF_FG:
 			return 6
+	elif offense_play == PLAY_PUNT:
+		if defense_play == DEF_PUNT_RETURN:
+			return 0
 	return 0
 
 func _apply_play_result(result: Dictionary) -> void:
@@ -1144,7 +1424,7 @@ func _apply_play_result(result: Dictionary) -> void:
 			proc_line = "\n[color=#ffd166][b]%s[/b][/color]" % _last_skill_proc_text
 		var turnover_text := str(turnover.get("text", "Possession changes."))
 		if defensive_td:
-			turnover_text = "Turnover forced in MyEndZone."
+			turnover_text = "Turnover forced in %s." % _zone_name(GameState.ZONE_MY_END)
 		result_text.text = "[center][color=#ff4444][b]TURNOVER![/b][/color][/center]\n%s%s" % [turnover_text, proc_line]
 		summary_result_text = turnover_text
 		_append_event_log("[color=#ff6666][b]TURNOVER[/b][/color] %s" % turnover_text)
@@ -1182,9 +1462,12 @@ func _apply_play_result(result: Dictionary) -> void:
 			return
 
 	var score_delta := score_delta_early
+	var skip_tile_row_event := false
 	if game_state.pending_play_type == PLAY_SPOT_KICK and score_delta > 0:
 		_game_fg_makes += 1
 		game_state.add_score(game_state.possession_team, 3)
+		_append_event_log("[color=#66ff00][b]Field goal good[/b][/color] +3 — %s." % _team_display_name(offense_team_for_summary))
+		skip_tile_row_event = true
 		game_state.next_drive_start_zone = _map_possession_start_zone(game_state.current_zone)
 		game_state.end_possession("field_goal", 3)
 		_stop_clock("field goal")
@@ -1194,7 +1477,9 @@ func _apply_play_result(result: Dictionary) -> void:
 		_stop_clock("missed FG turnover")
 		result_text.text = "[center][color=#ff4444][b]TURNOVER![/b][/color][/center]\nMissed FG. Opponent starts in %s." % _zone_name(game_state.next_drive_start_zone)
 		summary_result_text = "Missed Field Goal (Turnover)"
+		_append_event_log("[color=#ff6666][b]Field goal missed[/b][/color] — %s." % _team_display_name(offense_team_for_summary))
 		_append_event_log("[color=#ff6666][b]TURNOVER[/b][/color] Missed FG. Opponent starts in %s." % _zone_name(game_state.next_drive_start_zone))
+		skip_tile_row_event = true
 	elif game_state.is_touchdown():
 		_game_tds += 1
 		game_state.add_score(game_state.possession_team, 6)
@@ -1219,12 +1504,13 @@ func _apply_play_result(result: Dictionary) -> void:
 	_awaiting_defense_pick = false
 	game_state.sync_goal_to_go_first_down_after_play()
 	_render_last_play_info(offense_team_for_summary, offense_play_for_summary, defense_play_for_summary, summary_result_text, tile_rows_toward_goal)
-	_append_event_log("%s (%s): [b]%+d tile rows[/b] toward goal." % [
-		_team_display_name(offense_team_for_summary),
-		_friendly_play_name(offense_play_for_summary, false),
-		tile_rows_toward_goal
-	])
-	if had_first_down:
+	if not skip_tile_row_event:
+		_append_event_log("%s (%s): [b]%+d tile rows[/b] toward goal." % [
+			_team_display_name(offense_team_for_summary),
+			_friendly_play_name(offense_play_for_summary, false),
+			tile_rows_toward_goal
+		])
+	if had_first_down and not skip_tile_row_event:
 		_append_event_log("[color=#2dd4bf][b]First down[/b][/color] — %s." % _team_display_name(offense_team_for_summary))
 
 	if game_state.phase == GameState.PHASE_GAME_OVER:
@@ -1234,7 +1520,8 @@ func _apply_play_result(result: Dictionary) -> void:
 	if game_state.should_force_halftime_now() and game_state.phase != GameState.PHASE_GAME_OVER:
 		_append_phase_subphase("halftime")
 		game_state.force_halftime_now()
-		_turn_initialized = false
+		_append_touchback_event_log("(halftime, second half).")
+		_after_force_halftime_second_half()
 		game_state.emit_signal("state_changed")
 		return
 	
@@ -1506,15 +1793,26 @@ func _update_ui() -> void:
 	var display_zone := game_state.current_zone
 	if game_state.conversion_pending and game_state.phase == PHASE_CONVERSION:
 		display_zone = GameState.ZONE_END
-	zone_label.text = "Zone: %s" % _zone_name(display_zone)
+	zone_label.text = "Zone: %s" % _zone_display_for_team(display_zone, _user_team)
 	if game_state.is_goal_to_go():
-		drive_points_label.text = "Goal to go | Down: %d" % game_state.downs
+		downs_label.text = "Goal to go | Downs: %d" % game_state.downs
 	else:
-		drive_points_label.text = "Down: %d" % game_state.downs
+		downs_label.text = "Downs: %d" % game_state.downs
+	if user_down_distance_label:
+		user_down_distance_label.text = _format_down_and_distance_for_hud()
+	var offense_team := game_state.possession_team
+	var defense_team := "away" if offense_team == "home" else "home"
 	phase_label.text = "Phase: %s (P%d)" % [game_state.phase, current_phase_level]
-	var play_clock_visible := _turn_action_timer_active
+	var bar_phase := game_state.phase == PHASE_PLAY_SELECTION or game_state.phase == PHASE_CARD_QUEUE
+	var play_clock_visible := _turn_action_timer_active and bar_phase
 	if play_clock_value_label:
-		play_clock_value_label.text = "%d" % int(ceili(_turn_action_time_remaining)) if play_clock_visible else "-"
+		play_clock_value_label.visible = false
+	if action_timer_progress_bar:
+		action_timer_progress_bar.visible = play_clock_visible
+		if play_clock_visible and _current_action_window_duration > 0.0:
+			action_timer_progress_bar.value = clampf(_turn_action_time_remaining / _current_action_window_duration, 0.0, 1.0) * action_timer_progress_bar.max_value
+		elif play_clock_visible:
+			action_timer_progress_bar.value = 0.0
 
 	var user_team := _user_team
 	var opponent_team := "away" if user_team == "home" else "home"
@@ -1561,12 +1859,17 @@ func _update_ui() -> void:
 		user_queued_label.text = "Selected (%d)" % user_selected_n
 	_rebuild_user_card_tiles()
 	if game_state.phase == PHASE_CARD_QUEUE:
-		phase_label.text = "Phase: %s (simultaneous queue)" % game_state.phase
-
-	var offense_team := game_state.possession_team
-	var defense_team := "away" if offense_team == "home" else "home"
-	if game_state.phase == PHASE_PLAY_SELECTION and game_state.pending_play_type == PLAY_NONE():
-		phase_label.text = "Phase: play_selection (simultaneous)"
+		phase_label.text = "Phase: %s (cards — 10s)" % game_state.phase
+	elif game_state.phase == PHASE_PLAY_SELECTION:
+		if game_state.pending_play_type == PLAY_NONE():
+			phase_label.text = "Phase: play_selection (offense — 10s)"
+		else:
+			phase_label.text = "Phase: play_selection (defense — 10s)"
+	elif game_state.phase == PHASE_CONVERSION:
+		if game_state.conversion_type.is_empty():
+			phase_label.text = "Phase: conversion (choose XP or 2PT)"
+		else:
+			phase_label.text = "Phase: conversion (%s)" % game_state.conversion_type
 
 	for team in ["away", "home"]:
 		var row := _play_buttons_for_team(team)
@@ -1575,6 +1878,7 @@ func _update_ui() -> void:
 		var row_short: Button = row.get("short") as Button
 		var row_deep: Button = row.get("deep") as Button
 		var row_fg: Button = row.get("fg") as Button
+		var row_punt: Button = row.get("punt") as Button
 		var row_ready: Button = row.get("ready") as Button
 		var row_xp: Button = row.get("xp") as Button
 		var row_two: Button = row.get("two") as Button
@@ -1584,7 +1888,9 @@ func _update_ui() -> void:
 		var ai_controls_now: bool = _is_ai_controlled_team(team, true)
 		var in_play_selection: bool = game_state.phase == PHASE_PLAY_SELECTION
 		var in_two_point_play_pick: bool = game_state.phase == PHASE_CONVERSION and game_state.conversion_type == CONVERSION_2PT
-		var can_choose_play: bool = (in_play_selection and (is_offense_row or is_defense_row)) or (in_two_point_play_pick and is_offense_row)
+		var can_offense_pick := in_play_selection and is_offense_row
+		var can_defense_pick := in_play_selection and is_defense_row and game_state.pending_play_type != PLAY_NONE()
+		var can_choose_play: bool = (can_offense_pick or can_defense_pick) or (in_two_point_play_pick and is_offense_row)
 
 		if row_run:
 			row_run.text = "Run Def" if is_defense_row else "Run"
@@ -1596,7 +1902,10 @@ func _update_ui() -> void:
 			row_deep.text = "Zone" if is_defense_row else "Deep Pass"
 			row_deep.disabled = not can_choose_play
 		if row_fg:
-			row_fg.text = "FG Def" if is_defense_row else "Field Goal"
+			if is_defense_row and game_state.pending_play_type == PLAY_PUNT:
+				row_fg.text = "Punt Return"
+			else:
+				row_fg.text = "FG Def" if is_defense_row else "Field Goal"
 			if is_defense_row:
 				row_fg.disabled = not can_choose_play
 			elif can_choose_play:
@@ -1605,13 +1914,34 @@ func _update_ui() -> void:
 					row_fg.disabled = true
 			else:
 				row_fg.disabled = true
+		if row_punt:
+			row_punt.text = "Punt"
+			row_punt.visible = not is_defense_row
+			row_punt.disabled = not (in_play_selection and is_offense_row)
 
 		var row_is_ready: bool = game_state.home_ready if team == "home" else game_state.away_ready
-		var can_queue_for_row: bool = game_state.phase == PHASE_CARD_QUEUE and not row_is_ready
 		if row_ready:
 			if game_state.phase == PHASE_CARD_QUEUE:
-				row_ready.text = "Ready" if row_is_ready else "Ready"
-				row_ready.disabled = not can_queue_for_row
+				row_ready.text = "Ready"
+				row_ready.disabled = ai_controls_now or row_is_ready
+			elif game_state.phase == PHASE_CONVERSION and game_state.conversion_type == CONVERSION_XP and team == game_state.conversion_team:
+				row_ready.text = "Call Play"
+				row_ready.disabled = true
+			elif game_state.phase == PHASE_PLAY_SELECTION:
+				if team == offense_team or team == defense_team:
+					row_ready.text = "Call Play"
+					var has_tentative := false
+					if team == offense_team:
+						has_tentative = _offense_play_tentative != GameState.PENDING_NONE
+					else:
+						has_tentative = not _defense_play_tentative.is_empty()
+					if team == offense_team:
+						row_ready.disabled = ai_controls_now or not has_tentative
+					else:
+						row_ready.disabled = ai_controls_now or game_state.pending_play_type == PLAY_NONE() or not has_tentative
+				else:
+					row_ready.text = "Ready"
+					row_ready.disabled = true
 			else:
 				row_ready.text = "Ready"
 				row_ready.disabled = true
@@ -1630,6 +1960,8 @@ func _update_ui() -> void:
 				row_deep.disabled = true
 			if row_fg:
 				row_fg.disabled = true
+			if row_punt:
+				row_punt.disabled = true
 			if row_ready:
 				row_ready.disabled = true
 			if row_xp:
@@ -1641,7 +1973,9 @@ func _update_ui() -> void:
 		card_panel.visible = false
 	_update_staff_ui()
 	_update_field_ball_marker()
+	_refresh_formation_preview()
 	_update_token_visuals()
+	_sync_game_clock_scrimmage_policy()
 	_update_sim_ui()
 	_maybe_run_ai_inputs(_sim_running)
 
@@ -1736,16 +2070,54 @@ func _update_player_details(player_id: String) -> void:
 		frozen_rope_bonus
 	]
 
+func _format_down_and_distance_for_hud() -> String:
+	if game_state.phase == GameState.PHASE_GAME_OVER or game_state.phase == GameState.PHASE_HALFTIME:
+		return "—"
+	if game_state.phase == PHASE_CONVERSION and game_state.conversion_type.is_empty():
+		return "—"
+	if game_state.phase == PHASE_CONVERSION and game_state.conversion_type == CONVERSION_XP:
+		return "Extra point"
+	var d := clampi(game_state.downs, 1, 4)
+	var ord := "1st"
+	if d == 2:
+		ord = "2nd"
+	elif d == 3:
+		ord = "3rd"
+	elif d == 4:
+		ord = "4th"
+	if game_state.is_goal_to_go() or game_state.first_down_target_row_engine < 0:
+		return "%s and Goal" % ord
+	var rows_left := game_state.current_los_row_engine - game_state.first_down_target_row_engine
+	return "%s and %d" % [ord, maxi(0, rows_left)]
+
+func _format_down_label(down: int) -> String:
+	var n := clampi(down, 1, 4)
+	if n == 1:
+		return "1st Down"
+	if n == 2:
+		return "2nd Down"
+	if n == 3:
+		return "3rd Down"
+	return "4th Down"
+
 func _append_event_log(message: String) -> void:
 	if message.is_empty():
 		return
 	var ts := _format_time(game_state.game_time_remaining)
 	var team_label := _team_display_name(game_state.possession_team)
-	_event_log_lines.append("[%s] (%s) %s" % [ts, team_label, message])
+	var down_prefix := ""
+	if _turn_initialized and game_state.phase != GameState.PHASE_GAME_OVER and game_state.phase != GameState.PHASE_HALFTIME:
+		down_prefix = "[%s] " % _format_down_label(_play_down_at_snap)
+	_event_log_lines.append("[%s] (%s) %s%s" % [ts, team_label, down_prefix, message])
 	if _event_log_lines.size() > MAX_EVENT_LOG_LINES:
 		_event_log_lines = _event_log_lines.slice(_event_log_lines.size() - MAX_EVENT_LOG_LINES, _event_log_lines.size())
 	if event_log_text:
 		event_log_text.text = "\n".join(_event_log_lines)
+
+
+func _append_touchback_event_log(suffix: String) -> void:
+	_append_event_log("[color=#4da3ff][b]Touchback[/b][/color] %s" % suffix)
+
 
 func _append_phase_log(message: String, marker: String = "") -> void:
 	var line := message
@@ -1795,6 +2167,9 @@ func _reset_next_turn_after_possession_change(reason: String = "") -> void:
 	_awaiting_defense_pick = false
 	_play_ready_home = false
 	_play_ready_away = false
+	_offense_play_tentative = GameState.PENDING_NONE
+	_defense_play_tentative = ""
+	_play_pick_window = "offense"
 	_turn_initialized = false
 	_append_phase_subphase("change_of_possession", reason)
 	_begin_turn_if_needed()
@@ -1854,6 +2229,208 @@ func _update_staff_ui() -> void:
 	if opponent_tos_button:
 		opponent_tos_button.add_theme_color_override("font_color", opp_secondary)
 
+
+func _ensure_formation_preview_layer() -> void:
+	if _formation_preview_root != null:
+		return
+	if field_grid == null:
+		return
+	_formation_preview_root = Node2D.new()
+	_formation_preview_root.name = "FormationPreview"
+	_formation_preview_root.z_index = 40
+	(field_grid as Node).add_child(_formation_preview_root)
+
+
+func _preview_los_engine_row() -> int:
+	var r := game_state.current_los_row_engine
+	if game_state.conversion_pending and game_state.phase == PHASE_CONVERSION:
+		r = game_state.los_row_engine_from_zone(GameState.ZONE_END)
+	return r
+
+
+func _preview_visible_play_ids_for_viewer(viewer_team: String) -> Dictionary:
+	var offense_play := ""
+	var defense_play := ""
+	var offense_team := game_state.possession_team
+	var defense_team := "away" if offense_team == "home" else "home"
+	if game_state.phase == PHASE_RESOLVING:
+		if game_state.pending_play_type != GameState.PENDING_NONE:
+			offense_play = game_state.pending_play_type
+		if _defense_selected_explicit:
+			defense_play = _selected_defense_play
+		return {"offense_play": offense_play, "defense_play": defense_play}
+	if game_state.phase == PHASE_CONVERSION and game_state.conversion_type == CONVERSION_2PT:
+		if game_state.pending_play_type != GameState.PENDING_NONE:
+			offense_play = game_state.pending_play_type
+		if _defense_selected_explicit:
+			defense_play = _selected_defense_play
+		return {"offense_play": offense_play, "defense_play": defense_play}
+	if game_state.phase != PHASE_PLAY_SELECTION and game_state.phase != PHASE_CARD_QUEUE:
+		return {"offense_play": "", "defense_play": ""}
+	if game_state.pending_play_type != GameState.PENDING_NONE:
+		offense_play = game_state.pending_play_type
+	elif viewer_team == offense_team and _offense_play_tentative != GameState.PENDING_NONE:
+		offense_play = _offense_play_tentative
+	if _defense_selected_explicit:
+		defense_play = _selected_defense_play
+	elif viewer_team == defense_team and not _defense_play_tentative.is_empty():
+		defense_play = _defense_play_tentative
+	return {"offense_play": offense_play, "defense_play": defense_play}
+
+func _should_show_formation_preview() -> bool:
+	if field_grid == null:
+		return false
+	if game_state.phase == GameState.PHASE_GAME_OVER or game_state.phase == GameState.PHASE_HALFTIME:
+		return false
+	if game_state.phase == PHASE_CONVERSION and game_state.conversion_type.is_empty():
+		return false
+	var visible := _preview_visible_play_ids_for_viewer(_user_team)
+	return not str(visible.get("offense_play", "")).is_empty() or not str(visible.get("defense_play", "")).is_empty()
+
+
+func _preview_display_row_for_defense(global_row: int, offense_is_home: bool) -> int:
+	var d := int(field_grid.call("perspective_row", global_row, offense_is_home))
+	var user_on_offense := _user_team == game_state.possession_team
+	var adj := -1 if user_on_offense else 1
+	return clampi(d + adj, 0, FieldGrid.TOTAL_ROWS - 1)
+
+
+func _formation_marker_specs_from_play(play_id: String, los_eng: int, offense_home: bool) -> Array[Dictionary]:
+	var out: Array[Dictionary] = []
+	if play_id.is_empty() or _plays_catalog == null or _formations_catalog == null or field_grid == null:
+		return out
+	var fid := _plays_catalog.formation_id_for(play_id)
+	if fid.is_empty():
+		return out
+	var f: Dictionary = _formations_catalog.get_by_id(fid)
+	if f.is_empty():
+		return out
+	var pos_arr: Variant = f.get("positions", [])
+	if typeof(pos_arr) != TYPE_ARRAY:
+		return out
+	var side := str(f.get("side", "offense"))
+	var is_sq := side == "defense"
+	for p in pos_arr:
+		if typeof(p) != TYPE_DICTIONARY:
+			continue
+		var pd: Dictionary = p
+		var role := str(pd.get("role", ""))
+		var drow := int(pd.get("delta_row", 0))
+		var dcol := int(pd.get("delta_col", 0))
+		var td: Dictionary = field_grid.call("tile_data_from_los", los_eng, drow, dcol, 3) as Dictionary
+		var g_row := int(td.get("global_row", 0))
+		var g_col := int(td.get("col", 0))
+		var disp_r: int
+		if is_sq:
+			disp_r = _preview_display_row_for_defense(g_row, offense_home)
+		else:
+			disp_r = int(field_grid.call("perspective_row", g_row, offense_home))
+			disp_r = clampi(disp_r, 0, FieldGrid.TOTAL_ROWS - 1)
+		var w: Vector2 = field_grid.call("world_pos_from_tile", disp_r, g_col) as Vector2
+		out.append({"world": w, "sq": is_sq, "role": role, "dr": disp_r, "gc": g_col})
+	return out
+
+
+func _apply_intragroup_fanout(specs: Array[Dictionary]) -> void:
+	var groups: Dictionary = {}
+	for i in range(specs.size()):
+		var m: Dictionary = specs[i]
+		var k := "%d:%d:%s" % [int(m["dr"]), int(m["gc"]), "d" if bool(m["sq"]) else "o"]
+		if not groups.has(k):
+			groups[k] = []
+		(groups[k] as Array).append(i)
+	for k in groups.keys():
+		var idxs: Array = groups[k] as Array
+		if idxs.size() <= 1:
+			continue
+		var step := 9.0
+		var start := -0.5 * step * float(idxs.size() - 1)
+		for j in range(idxs.size()):
+			var ii := int(idxs[j])
+			var mm: Dictionary = specs[ii]
+			var wv: Vector2 = mm["world"]
+			mm["world"] = wv + Vector2(start + step * float(j), 0.0)
+
+
+func _separate_offense_defense(specs: Array[Dictionary]) -> void:
+	for _iter in range(6):
+		var changed := false
+		for i in range(specs.size()):
+			var di: Dictionary = specs[i]
+			if not bool(di["sq"]):
+				continue
+			for j in range(specs.size()):
+				var oj: Dictionary = specs[j]
+				if bool(oj["sq"]):
+					continue
+				var dv: Vector2 = di["world"]
+				var ov: Vector2 = oj["world"]
+				if dv.distance_to(ov) >= 22.0:
+					continue
+				var push: Vector2 = dv - ov
+				if push.length_squared() < 0.0001:
+					push = Vector2(1, 0)
+				else:
+					push = push.normalized()
+				di["world"] = dv + push * 4.5
+				changed = true
+		if not changed:
+			break
+
+
+func _make_preview_marker_ui(world_center: Vector2, role: String, is_square: bool) -> void:
+	var p := Panel.new()
+	p.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	p.custom_minimum_size = PREVIEW_MARKER_SIZE
+	p.size = PREVIEW_MARKER_SIZE
+	p.position = world_center - PREVIEW_MARKER_SIZE * 0.5
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = Color(1, 1, 1, 0.92) if not is_square else Color(0.82, 0.12, 0.12, 0.92)
+	if is_square:
+		sb.set_corner_radius_all(2)
+	else:
+		sb.set_corner_radius_all(13)
+	p.add_theme_stylebox_override("panel", sb)
+	var lbl := Label.new()
+	lbl.text = role
+	lbl.custom_minimum_size = PREVIEW_MARKER_SIZE
+	lbl.size = PREVIEW_MARKER_SIZE
+	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	lbl.add_theme_font_size_override("font_size", PREVIEW_MARKER_FONT)
+	lbl.add_theme_color_override("font_color", Color(0.05, 0.05, 0.05, 1.0) if not is_square else Color(1, 1, 1, 1))
+	p.add_child(lbl)
+	_formation_preview_root.add_child(p)
+
+
+func _refresh_formation_preview() -> void:
+	_ensure_formation_preview_layer()
+	if _formation_preview_root == null:
+		return
+	for c in _formation_preview_root.get_children():
+		c.queue_free()
+	if not _should_show_formation_preview():
+		return
+	if _formations_catalog == null or _plays_catalog == null or field_grid == null:
+		return
+	var los_eng := _preview_los_engine_row()
+	var offense_home := game_state.possession_team == "home"
+	var specs: Array[Dictionary] = []
+	var visible := _preview_visible_play_ids_for_viewer(_user_team)
+	var offense_play := str(visible.get("offense_play", ""))
+	var defense_play := str(visible.get("defense_play", ""))
+	if not offense_play.is_empty():
+		specs.append_array(_formation_marker_specs_from_play(offense_play, los_eng, offense_home))
+	if not defense_play.is_empty():
+		specs.append_array(_formation_marker_specs_from_play(defense_play, los_eng, offense_home))
+	if specs.is_empty():
+		return
+	_apply_intragroup_fanout(specs)
+	_separate_offense_defense(specs)
+	for m in specs:
+		_make_preview_marker_ui(m["world"] as Vector2, str(m["role"]), bool(m["sq"]))
+
+
 func _format_time(seconds_total: int) -> String:
 	var m := seconds_total / 60
 	var s := seconds_total % 60
@@ -1884,10 +2461,14 @@ func _update_field_ball_marker() -> void:
 	var field_h: float = field_background.size.y
 	var field_w: float = field_background.size.x
 	var offense_is_home := game_state.possession_team == "home"
+	var chip_half := Vector2(20, 20)
+	if ball_chip:
+		chip_half = ball_chip.custom_minimum_size * 0.5
 	if field_grid != null:
 		var los_disp: int = int(field_grid.call("perspective_row", los_eng, offense_is_home))
 		var ball_center: Vector2 = field_grid.call("world_pos_from_tile", los_disp, 3)
-		ball_marker.position = ball_center - (ball_marker.size * 0.5)
+		if ball_chip:
+			ball_chip.position = ball_center - chip_half
 		if game_state.conversion_pending and game_state.phase == PHASE_CONVERSION:
 			field_grid.call("set_field_line_display_rows", los_disp, -1, -1, -1, -1)
 		elif game_state.is_goal_to_go():
@@ -1911,17 +2492,12 @@ func _update_field_ball_marker() -> void:
 		var center_y: float = field_h - (float(index_from_bottom) + 0.5) * zone_h
 		if game_state.possession_team != _user_team:
 			center_y = field_h - center_y
-		ball_marker.position = Vector2(field_w * 0.5 - ball_marker.size.x * 0.5, center_y - ball_marker.size.y * 0.5)
+		if ball_chip:
+			ball_chip.position = Vector2(field_w * 0.5 - chip_half.x, center_y - chip_half.y)
 
-	var is_home := game_state.possession_team == "home"
-	ball_marker.color = Color(0.2, 0.5, 1.0, 1.0) if is_home else Color(1.0, 0.3, 0.3, 1.0)
-	possession_arrow.text = "▶"
-	possession_arrow.modulate = ball_marker.color
-	possession_arrow.position = Vector2(ball_marker.position.x - 28.0, ball_marker.position.y + 8.0)
-
-	possession_on_field_label.text = "%s Ball" % _team_display_name(game_state.possession_team)
-	possession_on_field_label.modulate = ball_marker.color
-	possession_on_field_label.position = Vector2(ball_marker.position.x + ball_marker.size.x + 8.0, ball_marker.position.y + 8.0)
+	if ball_chip:
+		var is_home := game_state.possession_team == "home"
+		ball_chip.modulate = Color(0.2, 0.5, 1.0, 1.0) if is_home else Color(1.0, 0.3, 0.3, 1.0)
 
 func _update_sim_ui() -> void:
 	if sim_status_label:
@@ -1932,33 +2508,48 @@ func _update_sim_ui() -> void:
 		var shown_speed := str(int(_sim_speed)) if is_equal_approx(_sim_speed, round(_sim_speed)) else str(_sim_speed)
 		speed_label.text = "x%s" % shown_speed
 	if pause_button:
-		pause_button.text = "⏸️" if _clock_running else "▶️"
+		var show_pause_icon := (_sim_running and not _sim_tick_paused) or (not _sim_running and _scrimmage_offense_selecting_window() and not _manual_pause_active and not _auto_pause_after_sim_stop)
+		pause_button.text = "⏸️" if show_pause_icon else "▶️"
 	_update_sim_stats_ui()
 
 func _on_start_sim_pressed() -> void:
 	_sim_running = not _sim_running
 	if _sim_running:
+		_manual_pause_active = false
+		_auto_pause_after_sim_stop = false
+		_sim_tick_paused = false
 		_apply_sim_timer_speed()
 		if sim_timer and sim_timer.is_stopped():
 			sim_timer.start()
 		_maybe_run_ai_inputs(true)
-	elif sim_timer:
-		sim_timer.stop()
+	else:
+		_auto_pause_after_sim_stop = true
+		_manual_pause_active = true
+		if sim_timer:
+			sim_timer.stop()
+	_sync_game_clock_scrimmage_policy()
 	_update_ui()
 
 func _on_pause_sim_pressed() -> void:
-	_clock_running = not _clock_running
-	if sim_timer:
-		if _sim_running and _clock_running:
-			_apply_sim_timer_speed()
-			if sim_timer.is_stopped():
-				sim_timer.start()
-		else:
-			sim_timer.stop()
+	if _sim_running:
+		_sim_tick_paused = not _sim_tick_paused
+		if sim_timer:
+			if _sim_running and not _sim_tick_paused:
+				_apply_sim_timer_speed()
+				if sim_timer.is_stopped():
+					sim_timer.start()
+			else:
+				sim_timer.stop()
+	else:
+		_manual_pause_active = not _manual_pause_active
+		if not _manual_pause_active:
+			_auto_pause_after_sim_stop = false
+		_sync_game_clock_scrimmage_policy()
 	_update_ui()
 
 func _on_restart_pressed() -> void:
 	_sim_running = false
+	_sim_tick_paused = false
 	_clock_running = false
 	_clock_accumulator = 0.0
 	_awaiting_defense_pick = false
@@ -1969,7 +2560,7 @@ func _on_restart_pressed() -> void:
 	_cached_user_hand_sig = ""
 	_cached_user_queue_sig = ""
 	_turn_action_timer_active = false
-	_turn_action_time_remaining = TURN_ACTION_LIMIT_SECONDS
+	_turn_action_time_remaining = ACTION_WINDOW_SECONDS
 	_turn_action_timeout_handled = false
 	_turn_timed_out_home = false
 	_turn_timed_out_away = false
@@ -1977,8 +2568,9 @@ func _on_restart_pressed() -> void:
 	_manual_ready_pressed_away = false
 	_ready_miss_streak_home = 0
 	_ready_miss_streak_away = 0
-	_clock_paused_for_ready_wait = false
-	_clock_running_before_ready_wait = false
+	_manual_pause_active = false
+	_auto_pause_after_sim_stop = false
+	_game_clock_hold_after_rule_stop = false
 	_abandoned_game = false
 	_phase_log_lines.clear()
 	_phase_log_end_recorded = false
@@ -1986,13 +2578,14 @@ func _on_restart_pressed() -> void:
 	if sim_timer:
 		sim_timer.stop()
 	game_state.start_game()
+	_append_touchback_event_log("(opening kickoff).")
 	_begin_new_game_stats()
 	_assign_user_team_random()
 	_load_data()
 	_turn_initialized = false
+	_offense_play_tentative = GameState.PENDING_NONE
+	_play_pick_window = "offense"
 	_begin_turn_if_needed()
-	if not _turn_action_timer_active:
-		_start_turn_action_timer()
 	_append_phase_log("User=%s (%s), Opponent=%s" % [_team_display_name(_user_team), _user_team.capitalize(), _team_display_name("away" if _user_team == "home" else "home")], "start_game")
 	result_text.text = "Ready."
 	_update_ui()
@@ -2033,14 +2626,16 @@ func _apply_sim_timer_speed() -> void:
 	if not sim_timer:
 		return
 	sim_timer.wait_time = 1.0 / _sim_speed
-	if _sim_running and sim_timer.is_stopped():
+	if _sim_running and not _sim_tick_paused and sim_timer.is_stopped():
 		sim_timer.start()
 
 func _on_sim_tick() -> void:
-	if not _sim_running:
+	if not _sim_running or _sim_tick_paused:
 		return
 	if game_state.phase == GameState.PHASE_GAME_OVER:
-		_on_pause_sim_pressed()
+		_sim_tick_paused = true
+		if sim_timer:
+			sim_timer.stop()
 		return
 	if _maybe_sim_call_timeouts():
 		return
@@ -2052,7 +2647,9 @@ func _pick_sim_defense_play_for_offense(offense_play: String) -> String:
 	if offense_play == PLAY_SHORT_PASS or offense_play == PLAY_DEEP_PASS:
 		return PLAY_SHORT_PASS
 	if offense_play == PLAY_SPOT_KICK:
-		return DEF_FG
+		return PLAY_SPOT_KICK
+	if offense_play == PLAY_PUNT:
+		return PLAY_PUNT
 	return PLAY_DEEP_PASS
 
 func _pick_sim_play_type() -> String:
@@ -2063,6 +2660,8 @@ func _pick_sim_play_type() -> String:
 		if roll2 < 0.85:
 			return PLAY_SHORT_PASS
 		return PLAY_DEEP_PASS
+	if _sim_should_call_punt():
+		return PLAY_PUNT
 	if current_phase_level >= 2 and _can_attempt_field_goal_from_current_zone() and randf() < 0.2:
 		return PLAY_SPOT_KICK
 	var roll := randf()
@@ -2071,6 +2670,39 @@ func _pick_sim_play_type() -> String:
 	if roll < 0.8:
 		return PLAY_SHORT_PASS
 	return PLAY_DEEP_PASS
+
+func _sim_seconds_left_in_current_half() -> int:
+	if game_state.half == 1:
+		return max(game_state.game_time_remaining - GameState.HALF_SECONDS, 0)
+	return game_state.game_time_remaining
+
+func _sim_should_call_punt() -> bool:
+	if game_state.phase == PHASE_CONVERSION:
+		return false
+	var zone := game_state.current_zone
+	var down := game_state.downs
+	var team := game_state.possession_team
+	var opp := "away" if team == "home" else "home"
+	var team_score := game_state.score_home if team == "home" else game_state.score_away
+	var opp_score := game_state.score_home if opp == "home" else game_state.score_away
+	var diff := team_score - opp_score
+	var sec_left := _sim_seconds_left_in_current_half()
+	var fg_range := current_phase_level >= 2 and _can_attempt_field_goal_from_current_zone()
+	if down >= 4:
+		if fg_range:
+			return false
+		if zone <= GameState.ZONE_MIDFIELD:
+			if diff < 0 and sec_left <= 20:
+				return false
+			return true
+		if zone == GameState.ZONE_ATTACK:
+			return diff > 0 and sec_left <= 60
+		return false
+	if down == 3 and zone <= GameState.ZONE_ADVANCE and diff >= 0 and sec_left <= 30:
+		return randf() < 0.35
+	if down <= 2 and zone == GameState.ZONE_MY_END and diff >= 8 and sec_left <= 60:
+		return randf() < 0.15
+	return false
 
 
 func _sim_should_hurry_up(team: String) -> bool:
@@ -2114,6 +2746,8 @@ func _apply_sim_presnap_runoff() -> void:
 		_last_play_clock_display_seconds = int(ceili(_turn_action_time_remaining))
 	if game_state.half == 1 and game_state.game_time_remaining <= GameState.HALF_SECONDS and game_state.phase != GameState.PHASE_HALFTIME:
 		game_state.force_halftime_now()
+		_append_touchback_event_log("(halftime, second half).")
+		_after_force_halftime_second_half()
 	if game_state.game_time_remaining <= 0:
 		game_state.game_time_remaining = 0
 		game_state.end_game_if_time_up()
@@ -2153,8 +2787,9 @@ func _sim_pick_conversion() -> String:
 func _begin_post_td_conversion(team: String) -> void:
 	game_state.phase = PHASE_CONVERSION
 	game_state.conversion_type = ""
+	game_state.conversion_team = team
 	game_state.possession_team = team
-	_append_event_log("[color=#66ff66][b]Touchdown![/b][/color] %s +6." % _team_display_name(team))
+	_append_event_log("[color=#66ff00][b]Touchdown![/b][/color] %s +6." % _team_display_name(team))
 	_append_phase_subphase("conversion_choice")
 	_stop_clock("conversion")
 	if _sim_running:
@@ -2162,8 +2797,9 @@ func _begin_post_td_conversion(team: String) -> void:
 	elif _is_ai_controlled_team(team, false):
 		_choose_conversion(_sim_pick_conversion())
 	else:
-		result_text.text = "[b]Touchdown![/b]\nChoose conversion: Extra Point or 2-Point."
+		result_text.text = "[b]Touchdown![/b]\nChoose Extra Point (auto from kicker stats) or 2-Point (normal play)."
 		_append_event_log("Awaiting conversion: Extra Point or 2-point.")
+	_update_ui()
 
 func _choose_conversion(conv_type: String) -> void:
 	if game_state.phase != PHASE_CONVERSION:
@@ -2175,12 +2811,15 @@ func _choose_conversion(conv_type: String) -> void:
 	_append_phase_subphase("conversion_attempt", "type=%s" % conv_type)
 	if conv_type == CONVERSION_XP:
 		_append_event_log("Extra Point attempt from %s." % _zone_name(GameState.ZONE_ATTACK))
+		_update_ui()
 		_run_extra_point_attempt()
 		return
 	game_state.current_zone = GameState.ZONE_RED
 	game_state.current_los_row_engine = game_state.los_row_engine_from_zone(game_state.current_zone)
+	game_state.reset_first_down_chain_from_current_zone()
 	game_state.downs = 1
 	game_state.pending_play_type = PENDING_NONE()
+	_play_pick_window = "offense"
 	result_text.text = "[b]2-Point Conversion[/b]\nSelect Run or Pass play."
 	_append_event_log("2-Point attempt from %s." % _zone_name(GameState.ZONE_RED))
 	_update_ui()
@@ -2211,9 +2850,10 @@ func _finish_conversion(ended_by: String, made: bool) -> void:
 	game_state.conversion_team = ""
 	game_state.next_drive_start_zone = _map_possession_start_zone(GameState.ZONE_END)
 	var next_team := "away" if scoring_team == "home" else "home"
-	game_state.start_possession(next_team, game_state.next_drive_start_zone)
+	game_state.start_possession(next_team, game_state.next_drive_start_zone, GameState.TOUCHBACK_LOS_ROW_ENGINE)
 	_append_event_log("[color=#4da3ff][b]CHANGE OF POSSESSION[/b][/color]")
-	_append_event_log("Kickoff: %s starts in %s." % [next_team.capitalize(), _zone_name(game_state.next_drive_start_zone)])
+	_append_event_log("Kickoff: %s — Build zone LOS row %d (%s)." % [next_team.capitalize(), GameState.TOUCHBACK_LOS_ROW_ENGINE, _zone_name(game_state.current_zone)])
+	_append_touchback_event_log("(kickoff after TD).")
 	_reset_next_turn_after_possession_change("conversion:%s" % ended_by)
 
 func PENDING_NONE() -> String:
@@ -2337,6 +2977,8 @@ func _start_card_queue_phase() -> void:
 	_selected_cards_home.clear()
 	_selected_cards_away.clear()
 
+	_start_turn_action_timer(ACTION_WINDOW_SECONDS)
+	_sync_game_clock_scrimmage_policy()
 	_update_ui()
 
 
@@ -2369,6 +3011,8 @@ func _is_card_selected(team: String, card_id: String) -> bool:
 
 
 func _toggle_selected_card_for_team(team: String, card_id: String) -> bool:
+	if team == _user_team:
+		_release_sim_to_man_auto_pause_if_any()
 	if card_id.is_empty():
 		return false
 	if game_state.phase != PHASE_CARD_QUEUE:
@@ -2454,33 +3098,11 @@ func _set_team_ready(team: String, ready: bool) -> void:
 	else:
 		game_state.away_ready = ready
 
-	if game_state.phase == PHASE_CARD_QUEUE and ready:
-		var offense := game_state.possession_team
-		var defense := "away" if offense == "home" else "home"
-		var offense_ready := _team_is_ready(offense)
-		var defense_ready := _team_is_ready(defense)
-		if team == offense and offense_ready and not defense_ready and not _clock_paused_for_ready_wait:
-			_clock_running_before_ready_wait = _clock_running
-			if _clock_running:
-				_clock_running = false
-			_clock_paused_for_ready_wait = true
-		elif team == defense and offense_ready and defense_ready and _clock_paused_for_ready_wait:
-			if _clock_running_before_ready_wait:
-				_clock_running = true
-			_clock_paused_for_ready_wait = false
-			_clock_running_before_ready_wait = false
-
 	_update_ui()
 
 	if game_state.home_ready and game_state.away_ready:
 		_build_queued_from_selected("home")
 		_build_queued_from_selected("away")
-		if _clock_paused_for_ready_wait:
-			if _clock_running_before_ready_wait:
-				_clock_running = true
-			_clock_paused_for_ready_wait = false
-			_clock_running_before_ready_wait = false
-		_resume_clock_for_play()
 		_finalize_user_ready_activity_for_turn()
 		if game_state.phase == GameState.PHASE_GAME_OVER:
 			return
@@ -2542,10 +3164,12 @@ func _execute_queued_card(entry: Dictionary) -> void:
 		game_state.momentum_home = max(game_state.momentum_home - cost, 0)
 		game_state.discard_home.append(card)
 		_resolved_cards_home.append(str(card.get("name", "Card")))
+		game_state.card_played_this_play_home = true
 	else:
 		game_state.momentum_away = max(game_state.momentum_away - cost, 0)
 		game_state.discard_away.append(card)
 		_resolved_cards_away.append(str(card.get("name", "Card")))
+		game_state.card_played_this_play_away = true
 
 	effect_manager.add_effect({
 		"effect_data": card.get("effect_data", {}),
@@ -2661,6 +3285,8 @@ func _friendly_play_name(play: String, is_defense: bool = false) -> String:
 				return "Zone"
 			DEF_FG:
 				return "FG Def"
+			DEF_PUNT_RETURN:
+				return "Punt Return"
 			_:
 				return "-"
 	match play:
@@ -2672,6 +3298,8 @@ func _friendly_play_name(play: String, is_defense: bool = false) -> String:
 			return "Deep Pass"
 		PLAY_SPOT_KICK:
 			return "Spot kick"
+		PLAY_PUNT:
+			return "Punt"
 		_:
 			return "-"
 

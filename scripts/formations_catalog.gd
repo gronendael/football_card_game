@@ -73,6 +73,10 @@ func _validate_formation(f: Dictionary) -> bool:
 		if not pd.has("delta_row") or not pd.has("delta_col"):
 			push_error("Formation %s: position %s missing delta_row/delta_col" % [fid, pd.get("role")])
 			return false
+		var drow := int(pd.get("delta_row", 0))
+		if side == "offense" and drow < 0:
+			push_error("Formation %s: offense position %s must not use negative delta_row (past LOS toward goal)" % [fid, pd.get("role")])
+			return false
 		var fam := _role_family(str(pd.get("role", "")))
 		if fam.is_empty():
 			push_error("Formation %s: unknown role prefix for %s" % [fid, pd.get("role")])

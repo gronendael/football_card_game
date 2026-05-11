@@ -49,5 +49,25 @@
 	"name": "Kickoff return",
 	"formation_id": "spe_kickoff_return",
 	"side": "defense"
+  },
+  "run_def": {
+	"name": "Run defense",
+	"formation_id": "def_43",
+	"side": "defense"
+  },
+  "man_to_man": {
+	"name": "Man-to-man",
+	"formation_id": "def_nickel",
+	"side": "defense"
+  },
+  "zone": {
+	"name": "Zone",
+	"formation_id": "def_34",
+	"side": "defense"
+  },
+  "fg_def": {
+	"name": "FG/XP block defense",
+	"formation_id": "spe_fg_block",
+	"side": "defense"
   }
 }

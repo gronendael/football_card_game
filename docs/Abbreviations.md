@@ -24,14 +24,8 @@ G2G - Goal to go (within 10 tile rows of scoring endzone; no first-down line; fu
 FG - Field Goal (scoring); offensive play id in data is **`spot_kick`** (FG and XP)
 XP - Extra Point
 2P - 2-point Conversion
-SAF - Safety (scoring play when Offensive player is tackled in their own Endzone)
-MEZ - My Endzone
-Z1 - Build Zone
-Z2 - Advance Zone
-Z3 - Midfield Zone
-Z4 - Attacking Zone
-Z5 - Red Zone
-EZ - Endzone
+SAF - Safety (scoring play when offense is tackled in **Defensive Endzone**, zone ID 1)
+Z1–Z7 - Field zone IDs (`current_zone`); offense vs defense **display** names in [Properties.md](Properties.md) FIELD ZONES (e.g. ID 2 offense **Build Zone** / defense **Contain Zone**)
 FUM - Fumble
 INT - Interception
 SUB - Substitution (When a team removes a player from the team on the field and puts in another player from the Player Bench)

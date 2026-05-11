@@ -19,25 +19,24 @@ START GAME
 
 PLAY LOOP
 PRE-SNAP PLAY SELECTION (Off = TEAM IN POSSESSION; Def = TEAM NOT IN POSSESSION)
-- Play Clock is running; Game Clock may be Paused or Unpaused depending on factors listed in the Game Clock section
-- Both teams select a Play from their Playbook based on the Playbook that is currently equipped for their team
-- Both teams select Cards from their Deck based on the Deck that is currently equipped for their team (Cards act as modifiers which may adjust percentage chance of success or failure, adding/substracting stats to players/coordinatores/teams, effects to playbooks/decks, effects to Game Clock/Play Clock, effects to Momentum, effects to Downs, and more.
-- Both teams select Ready button when they are ready for the play to execute
-- When a team selects a Play:
--- AI selects the Players for each position based on the Team's setup (see TEAM SETUP & PRE-GAME SETUP section)
+- A **10s real-time** action bar (HUD progress bar) runs per window; it is not the numeric Play Clock label.
+- **Offense first:** offense chooses a play type (Run / Short Pass / Deep Pass / Field Goal where allowed) so it becomes **tentative**, then presses **Call Play** to lock (**Call Play** stays disabled until a tentative play exists). If time expires before lock: **Delay of game** — LOS moves **back one tile row** toward the offense’s own goal (no move when already on the last playable row before the own goal line); a new **10s** offense window starts.
+- **Defense second:** after offense locks, defense may see **offensive formation only** (from `formation_id`; no routes or other offensive play details). Defense chooses a defensive call (tentative), then presses **Call Play** to lock (**disabled** until tentative). Defense has **10s**; if time expires before defense calls, **AI** selects and locks the recommended defensive call.
+- In SIM/autoplay, AI uses situational punt logic (down, zone/field position, score differential, and time left in the current half/game) when choosing offense play type.
+- **Private tentative previews before Call Play:** while a team has selected a play but not pressed **Call Play**, only that team sees its tentative formation. Opponent visibility starts only after the play is called.
+- **Card phase:** after both plays are set, both teams have **10s** (same bar, reset) to queue cards and press **Ready** (**Ready** is not blocked by playing zero cards; disabled only when already readied, AI-controlled, or the phase disallows it); if time expires, teams not ready are auto-readied with **empty** queues.
 
 PLAY EXECUTION & RESOLUTION
-- After both Teams have pressed Ready button the current Play executes and resolves (or AI presses the Ready button)
-- Pause/Unpause the Game Clock if appropriate (Game Clock does NOT Unpause for Extra Points or 2-point Conversions)
+- After both teams are Ready in the card phase (or after auto-ready), queued cards execute then the play resolves
+- Game clock follows **GAME CLOCK** (offense-only scrimmage rule; conversions / dead ball per that section)
 - Based on the Plays & Cards selected modifiers are applied to players, cards, plays, coordinatores, etc.
 - The Offense may progress zones, regress zones, or end up in the same zone based on the Play Resolution
 - A Change of Possession may occur due to a Turnover, Running out of Downs (Turnover on Downs), 1st Half ends, Punt play, Kickoff Play
 - Plays that start before the Game Clock expires in the 1st or 2nd half resolve completely even if the Game Clock expires during the play
 - The Play resolves while visually displaying Player movements, ball movement from player to player, blocks, tackles, passes, runs, interceptions, fumbles, scoring, etc.
-- The in-game **event log** records each offensive play’s **tile rows gained toward the goal** (from LOS before vs after the play); when a new first down is earned, a separate **First down** line appears in teal (`#2dd4bf`), a color not used for other log highlights.
-- Play Loop resets allowing Teams to select their next Play and Cards
-- Play Clock resets
-- Game Clock may be Paused or Unpaused depending on factors listed in the Game Clock section
+- The in-game **event log** records each offensive play’s **tile rows gained toward the goal** (from LOS before vs after the play) and includes the **down at snap** tag (`1st Down`, `2nd Down`, etc.) for play-cycle entries; when a new first down is earned, a separate **First down** line appears in teal (`#2dd4bf`), a color not used for other log highlights. **Field goals:** **good** logs as `[color=#66ff00]Field goal good +3[/color]` (no duplicate generic tile-row line); **missed** logs **Field goal missed** then the turnover line (no duplicate tile-row line).
+- Play Loop resets allowing teams to run the next offense → defense → card windows (10s bar resets each window)
+- Game clock behavior: see **GAME CLOCK** (offense-only scrimmage rule)
 
 SCORING PLAYS, TURNOVERS, HALFTIME
 - Game Clock is paused
@@ -45,6 +44,7 @@ SCORING PLAYS, TURNOVERS, HALFTIME
 
 HALFTIME
 - Game Clock pauses
+- **Prototype:** whenever the engine applies second-half kickoff (`force_halftime_now`), the game scene re-initializes the scrimmage turn and clears stale ready/card-queue flags so Sim mode cannot sit idle with the clock running.
 - Teams may:
 -- Review stats
 -- Adjust Deck
@@ -86,28 +86,24 @@ DOWNS
 CLOCKS
 
 GAME CLOCK
-- Pauses on:
--- Game Start
--- Halftime Start
--- Change of Possession
--- Extra Points
--- 2-point Conversions
--- Timeouts
-- Unpauses on:
--- When Game Clock is Paused, Unpause after both teams click Ready for the next play before the Play executes (except for Extra Points and 2-point Conversions)
+- **Scrimmage (prototype):** runs **only** while the offense is in **play selection** with no offensive call locked yet (`pending_play_type` unset, offense pick window). When offense presses **Call Play**, the game clock **stops** through defense play selection, the card queue (both **Ready**), and play resolution / dead-ball; it **starts again** on the next snap’s offense play-selection window (`_sync_game_clock_scrimmage_policy` in `game_scene.gd`). **Sim** autopilot uses `_sim_tick_paused` for the pause button so the sim tick can run while the game clock is off during defense/cards.
+- Still **off** for: game start until first offense window, conversion choice / XP attempt, halftime, game over, and other `_stop_clock(..., apply_hold_after=true)` outcomes (hold cleared when a new turn begins via `_begin_turn_if_needed`). **Timeouts** use `_stop_clock(..., false)` so the offense window can tick again after a timeout.
+- **Manual HUD Pause** / **Sim → Man** still gate the clock via `_manual_pause_active` / `_auto_pause_after_sim_stop` on top of the rule above.
 
-PLAY CLOCK
-- Normal play loop = 40 in-game seconds
-- KO, XP, or 2P plays = 20 in-game seconds
-- Amount of time players have to select a Play, select Cards, and press the Ready button
-- If the Play Clock expires, AI chooses a Play for the team but does NOT play any Cards for the team and then presses the Ready button
-- If the Play Clock expires on 3 consecutive plays, the team Forfeits the game
-- Resets after each Play is resolved
+ACTION TIMER (replaces legacy Play Clock for scrimmage plays)
+- **10 real seconds** per window: offense play pick → defense play pick → simultaneous card queue (bar resets each time).
+- Offense expiration: delay of game (LOS back one tile row when allowed), then new 10s for offense.
+- Defense expiration: AI picks the recommended defense.
+- Card window expiration: auto-ready with **no** cards queued for teams not ready.
+- **Forfeit (per team):** if the same team finishes **3 consecutive turns** with **no manual offensive/defensive play call** for their role **and** **no cards played** that turn, that team forfeits (tracked per human-controlled side; sim autoplay suppresses this tracking).
+- Bar uses **wall time** (not game-clock seconds).
+- **Manual mode HUD Pause:** **Pause** toggles `_manual_pause_active`; the action bar stops while that flag is set. **Sim** mode: **Pause** toggles `_sim_tick_paused` (sim AI tick), separate from the offense-only game clock.
+- **Sim → Man:** leaving **Sim** auto-pauses the game clock and action bar until **Pause** resumes the clock or the user acts (play pick, conversion choice, card selection / Ready / play card).
 
 TIMEOUTS
 - A Timeout is called when a Team presses their Timeout button
-- Game Clock pauses and restarts after both Team press the Ready button before the next play executes
-- Play Clock resets
+- Game clock stops for the timeout call, then may run again during the **offense** play-selection window under the scrimmage rule above (not tied to both teams **Ready** on the prior play).
+- Action timer resets for the timeout window
 
 PLAYS
 OFFENSIVE PLAYS
@@ -129,10 +125,10 @@ KICKOFF PLAYS
 
 PUNTING PLAYS
 - The Punting Team punts the ball to the Receiving Team.
-- Punt distance and landing zone are determined by the Punter’s stats and modifiers.
-- Punts may be blocked by the Defense.
-- The Receiving Team may attempt a return based on Returner ability, blocking, coverage, cards, and modifiers.
-- Punt returns are resolved at the **tile** level, with large returns and touchdowns being uncommon.
+- **Punt** is available on offense buttons on all downs.
+- Defense can choose **Punt Return** only when offense selected Punt.
+- **Punt distance** (tile rows) uses kicker stats (randomized range + power/consistency). **If defense does not call Punt Return**, return is **0** tile rows — receiving team spots the ball at punt distance only (no return roll). **If defense calls Punt Return**, return length uses **tiered tile-row bands** (1 row ≈ 1 yd): **0** | **1–5** (most common) | **6–19** | **20–29** | **30–34** (field-capped “splash”), with base weights tuned NFL-ish (~10–15% mass in the **20+**-row tiers combined, **40+ yd** analogue in the top tier at low base weight). **Player stats** (returner speed/agility/catching vs punter tackling/awareness), **coach bonuses** (`punt_return_bonus` / `punt_coverage_bonus` on head coach or DC `bonus` maps), and **card hooks** (`card_return_bonus` / `card_coverage_bonus` in code, default 0) **shift tier weights** before the roll. **Net** = punt rows minus return rows (minimum net enforced in resolver); that drives opponent starting field position after possession switch. Resolver `breakdown` can list the adjusted tier weights; event log records punt, return, and net tile rows.
+- **Punt touchback:** If resolved punt position reaches the **scoring endzone** (zone ≥ endzone on the punting offense resolution), the receiving team starts at **`TOUCHBACK_LOS_ROW_ENGINE` (25)** — **5th tile of Build zone** (one engine row into Build from Advance). The **event log** adds a separate **Touchback** line after the punt summary.
 
 SCORING
 TOUCHDOWN
@@ -151,18 +147,10 @@ SAFETY
 - 2 points for DEF
 
 TOUCHDOWNS
-- After a TD is scored by either team, the Game Clock pauses, the Play Clock resets to 20 and runs
-- The team that scored the TD chooses a play FIRST; the opponent is notified as to what type of play the scoring team selected (XP or 2P)
-
-- Scoring team:
--- Selects either XP or 2P (may add FAKE XP plays later), Cards, and presses Ready, the Play Clock resets to 20 to allow the non-scoring team to select a play
-
-- Non-Scoring Team
--- Can see the type of play (XP or 2P) selected by the Scoring team before selecting their play
--- If the scoring team selected XP, may select a standard DEF play or XP Block play
--- If the scoring team selected 2P, may select a standard DEF play
-
-- XP or 2P play is resolved
+- After a TD, the Game Clock pauses. The **scoring team** chooses **Extra Point** or **2-Point Conversion**.
+- **Extra Point:** after the user (or AI) selects XP, the attempt **auto-resolves** from kicker stats via `resolve_extra_point` (no separate offensive play call). The shared primary button shows **Call Play** **disabled** for the scoring team during the XP attempt (no action).
+- **2-Point:** selecting 2PT enters the normal scrimmage play flow (play selection / cards per phase level), then resolves like a regular play.
+- After the conversion attempt finishes, **kickoff** / change of possession: receiving team starts at **touchback** LOS row **25** (`TOUCHBACK_LOS_ROW_ENGINE`). **Opening kickoff** (game start) and **halftime second-half** receiving possession use the same row **25** spot (prototype: no kick return resolution yet). The **event log** adds a **Touchback** line for opening kickoff, halftime, post-TD kickoff, and punt-in-endzone (suffix text distinguishes the case).
 
 INJURIES
 - There is a chance that individual players may be injured based on their Toughness stat
@@ -173,14 +161,14 @@ INJURIES
 
 FORFEIT
 - Occurs when:
--- Team does not press the Ready button for 3 consecutive plays
+-- **Per team:** that team finishes **3 consecutive turns** with **no manual play call** (offense “Call Play” / defense call) **and** **no cards played** that turn (simulated auto-picks do not count as manual)
 -- Team presses the Forfeit button
 - Team that Forfeits loses the game
 -- If the Team winning Forfeits, the Game is considered a Loss for that team 
 --- Recorded as a Forfeit Loss in the Team History for the Forfeiting team and a Forfeit Win in the Team History for the team that did not Forfeit; The current score of the game is recorded for both teams; if the score is 0-0, the game is Abandoned and nothing is recorded in Team Histories; Rewards for the non-Forfeiting team are still awarded
 -- If the Team losing Forfeits, the Game is considered a Loss for that team 
 --- Recorded as a Forfeit Loss in the Team History for the Forfeiting team and a Forfeit Win in the Team History for the team that did not Forfeit; The current score of the game is recorded for both teams; if the score is 0-0, the game is Abandoned and nothing is recorded in Team Histories; Rewards for the non-Forfeiting team are still awarded
-- If both teams Forfeit simultaneously due to not pressing the Ready button for 3 consecutive turns OR they press the Forfeit button on the same turn, the Game is considered abandoned and no stats are recorded; It's as if the Game never happened; No Rewards are awarded for either team
+- If both teams forfeit simultaneously (e.g. both hit the 3-turn inaction threshold together) **or** they press the Forfeit button on the same turn, the game is **abandoned** and no stats are recorded; no rewards for either team
 
 CHANGES OF POSSESSION
 - Turnover on downs (offense on down 4 does not earn a new first down and does not otherwise lose possession on that play)
@@ -216,13 +204,9 @@ BASE PLAY TYPE SUCCESS/RESOLUTION
 
 
 ZONES
-- My Endzone - The team's own Endzone they are defending; If the Off is tackled in this zone, the opponent is awarded a Safety (2 points)
-- Build Zone - 1st Zone furthest from the Endzone the team is Attacking
-- Advance Zone - 2nd Zone 
-- Midfield Zone - 3rd Zone in the middle of the field
-- Attack Zone - 4th Zone on the opponent's side of the field
-- Red Zone - 5th Zone on the opponent's side of the field closest to the Endzone they are Attacking
-- Endzone - Final Zone which scores a TD (6 points) and has the opportunity to kick and XP or go for a 2P
+- Numeric **zone ID** `current_zone` (1–7) is authoritative for rules and **card modifiers** (see [docs/Properties.md](Properties.md) FIELD ZONES).
+- **Offense** (possession team) display names: **Defensive Endzone** (own end; safety if offense tackled here) → **Build Zone** → **Advance Zone** → **Midfield Zone** → **Attack Zone** → **Red Zone** → **Scoring Endzone** (TD).
+- **Defense** display names (same ID, defending team’s HUD): **Scoring Endzone** → **Contain Zone** → **Control Zone** → **Midfield Zone** → **Pressure Zone** → **Goal Line Zone** → **Defensive Endzone**.
 
 REWARDS (To be fleshed out later)
 - In-game currency
@@ -425,6 +409,7 @@ Encourage strategic planning and player recognition over time.
 FIELD STRUCTURE
 LOCAL FIELD VIEW
 - The simulation uses one shared engine orientation; the **on-field view mirrors** when you are assigned **Away** so **your offense always advances toward the top** of the screen (same seat as Home). Future multiplayer uses the same rule per client.
+- **Formation preview:** field markers come from play `formation_id` (relative to LOS). Before call: selecting team sees only its tentative formation (defense also keeps the called offense view once offense is called). After call: both sides can see called formations as phase rules allow. Offense chips are white/rounded, defense chips red/near-square, with same-tile fan-out and a one-row perspective shift for defense readability.
 ZONES
 Zones represent major field progression.
 Zones are used for:
@@ -443,7 +428,7 @@ Tiles are primarily used for:
 GAMEPLAY PRIORITY
 Gameplay uses zones for macro field position and resolution; **first downs** use the **tile row grid** (10 rows toward the goal per chain).
 FIRST DOWNS
-First downs are measured in **tile rows** (10 rows gained toward the opponent’s goal from the current chain’s line of scrimmage row). When **not** goal to go, the HUD/field highlights the target row in yellow. In **goal to go** (LOS within 10 tile rows of the scoring endzone), there is no first-down marker; the **full scoring endzone** is highlighted in yellow instead.
+First downs are measured in **tile rows** (10 rows gained toward the opponent’s goal from the current chain’s line of scrimmage row). When **not** goal to go, the HUD/field highlights the target row in yellow. In **goal to go** (LOS within 10 tile rows of the scoring endzone), there is no first-down marker; the **full scoring endzone** is highlighted in yellow instead. The **user** HUD shows **down and distance** (tile rows to first down or TD) via `UserDownDistanceLabel`, e.g. `1st and 10`, `3rd and Goal`.
 PLAY RESOLUTION
 Plays may gain or lose Tiles.
 Tile progress converts naturally into Zone advancement.

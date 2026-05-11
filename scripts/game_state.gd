@@ -38,6 +38,8 @@ const PHASE_CARD_QUEUE := "card_queue"
 const TILE_ROWS_PER_ZONE := 5
 const TILE_ROWS_TOTAL := MAX_ZONE * TILE_ROWS_PER_ZONE
 const FIRST_DOWN_TILE_ROWS := 10
+## Receiving possession LOS for touchback-style spots — Build zone row **25** (5th tile of Build / 1 row from Advance at row 24; engine row 0 = scoring end). Used: game start, halftime 2nd half, post-conversion kickoff, punt-into-endzone.
+const TOUCHBACK_LOS_ROW_ENGINE := 25
 
 var game_time_remaining: int = MAX_CLOCK_SECONDS
 var half: int = 1
@@ -56,6 +58,8 @@ var current_zone: int = DEFAULT_START_ZONE
 ## Current down (1–4). First down resets to 1; turnover on downs after 4th without a new first down.
 var downs: int = 1
 var next_drive_start_zone: int = DEFAULT_START_ZONE
+## If `>= 0`, next `start_possession` from `end_possession` uses this engine LOS row (touchback). Otherwise use `los_row_engine_from_zone(start_zone)`.
+var next_drive_los_row_engine: int = -1
 var plays_used_current_drive: int = 0
 var drive_start_zone: int = DEFAULT_START_ZONE
 ## Authoritative LOS engine tile row (0 = top / scoring end). `current_zone` is derived from this after moves.
@@ -110,6 +114,7 @@ func start_game() -> void:
 	home_possessions = 0
 	away_possessions = 0
 	next_drive_start_zone = DEFAULT_START_ZONE
+	next_drive_los_row_engine = -1
 	drive_summaries.clear()
 	_just_switched_for_halftime = false
 	momentum_home = 0
@@ -130,13 +135,18 @@ func start_game() -> void:
 	conversion_type = ""
 	timeouts_home = 3
 	timeouts_away = 3
-	start_possession(possession_team, next_drive_start_zone)
+	start_possession(possession_team, next_drive_start_zone, TOUCHBACK_LOS_ROW_ENGINE)
 
-func start_possession(team: String, start_zone: int) -> void:
+func start_possession(team: String, start_zone: int, los_row_override: int = -1) -> void:
 	possession_team = team
-	current_zone = clampi(start_zone, 1, MAX_ZONE)
-	current_los_row_engine = los_row_engine_from_zone(current_zone)
+	if los_row_override >= 0:
+		current_los_row_engine = clampi(los_row_override, 0, TILE_ROWS_TOTAL - 1)
+		current_zone = zone_from_engine_row(current_los_row_engine)
+	else:
+		current_zone = clampi(start_zone, 1, MAX_ZONE)
+		current_los_row_engine = los_row_engine_from_zone(current_zone)
 	drive_start_zone = current_zone
+	next_drive_los_row_engine = -1
 	downs = 1
 	plays_used_current_drive = 0
 	selected_player_id = ""
@@ -239,13 +249,14 @@ func end_possession(ended_by: String, points_scored: int = 0) -> void:
 		return
 
 	var next_team := "away" if possession_team == "home" else "home"
-	var keep_turnover_spot := ended_by == "turnover_on_downs" or ended_by == "fumble_recovery" or ended_by == "interception" or ended_by == "missed_field_goal"
+	var keep_turnover_spot := ended_by == "turnover_on_downs" or ended_by == "fumble_recovery" or ended_by == "interception" or ended_by == "missed_field_goal" or ended_by == "punt"
 	if points_scored <= 0 and not keep_turnover_spot:
 		next_drive_start_zone = DEFAULT_START_ZONE
+		next_drive_los_row_engine = -1
 	if phase == PHASE_GAME_OVER:
 		return
 	if not _just_switched_for_halftime:
-		start_possession(next_team, next_drive_start_zone)
+		start_possession(next_team, next_drive_start_zone, next_drive_los_row_engine)
 	_just_switched_for_halftime = false
 
 func end_game_if_time_up() -> void:
@@ -272,4 +283,4 @@ func force_halftime_now() -> void:
 
 	var second_half_starter := "away" if first_half_starting_team == "home" else "home"
 	next_drive_start_zone = DEFAULT_START_ZONE
-	start_possession(second_half_starter, next_drive_start_zone)
+	start_possession(second_half_starter, next_drive_start_zone, TOUCHBACK_LOS_ROW_ENGINE)

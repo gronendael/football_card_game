@@ -83,19 +83,14 @@ offset_top = 477.0
 offset_right = 450.0
 offset_bottom = 483.0
 
-[node name="BallMarker" type="ColorRect" parent="."]
+[node name="BallChip" type="Label" parent="."]
+custom_minimum_size = Vector2(40, 40)
 offset_right = 40.0
 offset_bottom = 40.0
-
-[node name="PossessionArrow" type="Label" parent="."]
-offset_right = 40.0
-offset_bottom = 23.0
-scale = Vector2(2, 2)
-
-[node name="PossessionOnFieldLabel" type="Label" parent="."]
-offset_right = 40.0
-offset_bottom = 23.0
-scale = Vector2(2.5, 2.5)
+theme_override_font_sizes/font_size = 28
+text = "🏈"
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="TileLayer" type="Node2D" parent="."]
 script = ExtResource("2_field_grid_overlay")

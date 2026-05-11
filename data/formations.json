@@ -27,8 +27,8 @@
       {"role": "OL1", "delta_row": 0, "delta_col": -1},
       {"role": "OL2", "delta_row": 0, "delta_col": 0},
       {"role": "OL3", "delta_row": 0, "delta_col": 1},
-      {"role": "WR1", "delta_row": -1, "delta_col": -3},
-      {"role": "WR2", "delta_row": -1, "delta_col": 3}
+      {"role": "WR1", "delta_row": 0, "delta_col": -3},
+      {"role": "WR2", "delta_row": 0, "delta_col": 3}
     ]
   },
   {
@@ -58,9 +58,9 @@
       {"role": "OL1", "delta_row": 0, "delta_col": -1},
       {"role": "OL2", "delta_row": 0, "delta_col": 0},
       {"role": "OL3", "delta_row": 0, "delta_col": 1},
-      {"role": "WR1", "delta_row": -1, "delta_col": -3},
+      {"role": "WR1", "delta_row": 0, "delta_col": -3},
       {"role": "WR2", "delta_row": 0, "delta_col": -2},
-      {"role": "WR3", "delta_row": -1, "delta_col": 3}
+      {"role": "WR3", "delta_row": 0, "delta_col": 3}
     ]
   },
   {
@@ -76,7 +76,7 @@
       {"role": "OL2", "delta_row": 0, "delta_col": 0},
       {"role": "OL3", "delta_row": 0, "delta_col": 1},
       {"role": "WR1", "delta_row": 0, "delta_col": -3},
-      {"role": "WR2", "delta_row": -1, "delta_col": 2}
+      {"role": "WR2", "delta_row": 0, "delta_col": 2}
     ]
   },
   {
