@@ -102,6 +102,7 @@ ACTION TIMER (replaces legacy Play Clock for scrimmage plays)
 - Bar uses **wall time** (not game-clock seconds).
 - **Manual mode HUD Pause:** **Pause** toggles `_manual_pause_active`; the action bar stops while that flag is set. **Sim** mode: **Pause** toggles `_sim_tick_paused` (sim AI tick), separate from the offense-only game clock.
 - **Sim → Man:** leaving **Sim** auto-pauses the game clock and action bar until **Pause** resumes the clock or the user acts (play pick, conversion choice, card selection / Ready / play card).
+- **Sim — one play at a time:** `HUDGroup/SimStepPanel` below **`SpeedPanel`**: check **1 play at a time** to pause the sim tick (`_sim_tick_paused` + `SimTimer` stop) after each resolved scrimmage/punt, after **XP** resolution, and after **2PT** resolution (`_sim_try_pause_step_after_play` in `game_scene.gd`); **Next** resumes the sim tick until the following resolution. Pause is applied **before** `state_changed` so `_update_ui` → `_maybe_run_ai_inputs` does not advance AI until you press **Next**; while paused, `_maybe_run_ai_inputs` returns early when `_sim_running` and `_sim_tick_paused`. While waiting for **Next** (`_sim_step_waiting_for_next()`), **game clock** and **play clock** (`_sync_game_clock_scrimmage_policy`, `_tick_turn_action_timer`) do not advance.
 
 TIMEOUTS
 - A Timeout is called when a Team presses their Timeout button

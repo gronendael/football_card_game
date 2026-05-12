@@ -27,8 +27,8 @@ BIO
 - First Name
 - Last Name
 - Age
-- College
-- Hometown (City, State, Country)
+- College (can give synergies with others from same college)
+- Hometown (City, State, Country) (can give synergies with others from same Hometown)
 - Current Team ID
 - Picture/Image
 - Jersey Number
@@ -36,7 +36,8 @@ BIO
 - Weight
 - Experience (Number of years played or Rookie)
 - XP/Level
-
+- Archetypes (List of archtypes that can give small bonuses or synergies; Power Back RB + Run Blocking OL, Ball Hawk CB + Pass Rush DL, Deep Threat WR + Gunslinger QB)
+- Traits (List of traits that can give small bonuses or synergies'; Deep Threat WR + Spread Offense OC, Pass Rush DL + Blitz Heavy DC)
 
 CORE (1-100)
 - Speed
@@ -49,7 +50,7 @@ CORE (1-100)
 
 OFFENSE (1-100)
 - Passing
-- Ball Handling
+- Ball Security
 - Blocking
 - Route Running
 
@@ -188,6 +189,7 @@ SPECIALTIES (List of specialties the coach has which gives boosts to players, pl
 - **`GlobalHUD` / `PlayCountLabel`:** **`Plays: n`** — **n** = `_game_plays` (increment at start of `_apply_play_result` / `_apply_punt_result`; reset in `_begin_new_game_stats`).
 - Event logs and resolver strings use **offense** names (`_zone_name`) as the canonical field description for the current possession. **Field goal** result lines: good `#66ff00`, missed `#ff6666` (then turnover text).
 - **Event log situation prefix** (`game_scene.gd`): on scrimmage (`_apply_play_result`, non-2PT) and punt (`_apply_punt_result`), lines may open with `[Nth & X from R⬇️/⬆️] ` where **Nth** is down at snap, **X** is `max(0, snap_los_engine - snap_fd_target)` tile rows or **Goal** when goal-to-go / no FD row, **R** = `FieldGrid.perspective_row(snap_los_engine, possession_team == "home")`, arrow **⬇️** if `R > FieldGrid.TOTAL_ROWS / 2` else **⬆️**. Prefix is cleared before post-TD conversion flows so TD/XP/2PT-style lines do not carry scrimmage spot context.
+- **Sim step HUD** (`HUDGroup/SimStepPanel`): **`SimStepAfterPlayToggle`** + **`SimStepNextButton`** — when Sim is on and the toggle is pressed, `_sim_try_pause_step_after_play()` sets `_sim_tick_paused` and stops `SimTimer` **before** `state_changed` (so `_update_ui` → `_maybe_run_ai_inputs` does not advance AI while paused); **Next** clears pause and restarts the timer (`_on_sim_step_next_pressed`). While `_sim_tick_paused`, `_maybe_run_ai_inputs` returns immediately. While **`_sim_step_waiting_for_next()`** (sim + toggle + tick paused), **game clock** and **10s play clock** are frozen (`_sync_game_clock_scrimmage_policy`, `_tick_turn_action_timer`).
 
 ### GAME STATE (runtime / prototype)
 - `momentum_home` / `momentum_away` — per-team banks (**≥ 0**, no upper cap); **persist across possession changes** (`start_possession` does not reset them). Gain **+1** each to both after most resolved plays (`_advance_both_teams_resources`); spending cards reduces the bank. `start_game` sets both to **1** before the opening `start_possession` (restart / new game).

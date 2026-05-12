@@ -10,7 +10,8 @@
 [ext_resource type="Script" uid="uid://culivsr7t6exs" path="res://scripts/coach_data.gd" id="9_5ay1a"]
 [ext_resource type="Script" uid="uid://cpmi625jppg7l" path="res://scripts/team_data.gd" id="11_team"]
 [ext_resource type="PackedScene" uid="uid://dnhyqxmvkb71" path="res://scenes/field.tscn" id="12_field"]
-[ext_resource type="Texture2D" uid="uid://c5q0cgdxduw07" path="res://assets/ui/timeout_clock.svg" id="timeout_clock"]
+[ext_resource type="Script" uid="uid://hj2rmcil1m82" path="res://scripts/debug_menu.gd" id="12_rvs2r"]
+[ext_resource type="Texture2D" uid="uid://c6iu2ugndgths" path="res://assets/ui/stopwatch.png" id="12_tqxxy"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_rvs2r"]
 content_margin_left = 0.0
@@ -70,11 +71,43 @@ color = Color(0.16470589, 0, 0, 0.43529412)
 
 [node name="QuitButton" type="Button" parent="." unique_id=875355186]
 layout_mode = 0
-offset_left = 1344.0
-offset_right = 1419.0
+offset_left = 1696.0
+offset_right = 1771.0
 offset_bottom = 75.0
 theme_override_font_sizes/font_size = 32
 text = "Quit"
+
+[node name="DebugMenu" type="PanelContainer" parent="." unique_id=46109527]
+layout_mode = 0
+offset_left = 1808.0
+offset_top = 8.0
+offset_right = 1954.0
+offset_bottom = 179.0
+script = ExtResource("12_rvs2r")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="DebugMenu" unique_id=254363725]
+layout_mode = 2
+size_flags_vertical = 0
+
+[node name="EventLog" type="CheckBox" parent="DebugMenu/VBoxContainer" unique_id=778289683]
+layout_mode = 2
+text = "Event Log"
+
+[node name="PlayLog" type="CheckBox" parent="DebugMenu/VBoxContainer" unique_id=1755011912]
+layout_mode = 2
+text = "Play Log"
+
+[node name="PhaseLog" type="CheckBox" parent="DebugMenu/VBoxContainer" unique_id=477646665]
+layout_mode = 2
+text = "Phase Log"
+
+[node name="PlayCalcLog" type="CheckBox" parent="DebugMenu/VBoxContainer" unique_id=2034369414]
+layout_mode = 2
+text = "Play Calc Log"
+
+[node name="OppHUD" type="CheckBox" parent="DebugMenu/VBoxContainer" unique_id=1799391259]
+layout_mode = 2
+text = "Opponent HUD"
 
 [node name="GameManagers" type="Node" parent="." unique_id=35103829]
 
@@ -304,6 +337,7 @@ horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="UserPlayButtons" type="HFlowContainer" parent="UserGroup/UserHUD/UserPlayButtonsRow" unique_id=1947600908]
+visible = false
 layout_mode = 2
 size_flags_horizontal = 3
 
@@ -311,13 +345,9 @@ size_flags_horizontal = 3
 layout_mode = 2
 text = "Run"
 
-[node name="UserShortPassButton" type="Button" parent="UserGroup/UserHUD/UserPlayButtonsRow/UserPlayButtons" unique_id=1114373608]
+[node name="UserPassButton" type="Button" parent="UserGroup/UserHUD/UserPlayButtonsRow/UserPlayButtons" unique_id=1328968402]
 layout_mode = 2
-text = "Short Pass"
-
-[node name="UserDeepPassButton" type="Button" parent="UserGroup/UserHUD/UserPlayButtonsRow/UserPlayButtons" unique_id=395435213]
-layout_mode = 2
-text = "Deep Pass"
+text = "Pass"
 
 [node name="UserFieldGoalButton" type="Button" parent="UserGroup/UserHUD/UserPlayButtonsRow/UserPlayButtons" unique_id=1149738216]
 layout_mode = 2
@@ -410,11 +440,15 @@ layout_mode = 2
 custom_minimum_size = Vector2(50, 48)
 layout_mode = 2
 tooltip_text = "Call Timeout"
+theme_override_colors/font_color = Color(0.875, 0.875, 0.875, 1)
+theme_override_colors/font_pressed_color = Color(1, 1, 0, 1)
+theme_override_colors/icon_normal_color = Color(1, 1, 1, 1)
+theme_override_colors/icon_pressed_color = Color(1, 1, 0, 1)
 theme_override_constants/h_separation = 8
 theme_override_constants/icon_max_width = 32
 theme_override_font_sizes/font_size = 28
 text = "(3)"
-icon = ExtResource("timeout_clock")
+icon = ExtResource("12_tqxxy")
 flat = true
 alignment = 0
 
@@ -447,6 +481,7 @@ text = "Ready"
 [node name="OpponentGroup" type="Node" parent="." unique_id=756280709]
 
 [node name="OpponentHUD" type="Control" parent="OpponentGroup" unique_id=1850213906]
+visible = false
 layout_mode = 3
 anchors_preset = 0
 offset_left = 544.0
@@ -455,6 +490,7 @@ offset_right = 1134.0
 offset_bottom = 380.0
 
 [node name="OpponentMomentumValueLabel" type="Label" parent="OpponentGroup/OpponentHUD" unique_id=171919186]
+visible = false
 layout_mode = 0
 offset_left = 472.0
 offset_top = 148.0
@@ -467,6 +503,7 @@ horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="OpponentTimeoutsPanel" type="Control" parent="OpponentGroup/OpponentHUD" unique_id=1672479243]
+visible = false
 anchors_preset = 0
 offset_left = 272.0
 offset_top = 196.0
@@ -496,6 +533,7 @@ disabled = true
 text = "3"
 
 [node name="OpponentPlayButtons" type="HBoxContainer" parent="OpponentGroup/OpponentHUD" unique_id=35939323]
+visible = false
 layout_mode = 0
 offset_left = 8.0
 offset_top = 72.999985
@@ -503,38 +541,42 @@ offset_right = 629.0
 offset_bottom = 112.999985
 
 [node name="OpponentRunButton" type="Button" parent="OpponentGroup/OpponentHUD/OpponentPlayButtons" unique_id=2077301709]
+visible = false
 layout_mode = 2
 text = "Run"
 
-[node name="OpponentShortPassButton" type="Button" parent="OpponentGroup/OpponentHUD/OpponentPlayButtons" unique_id=1568332844]
+[node name="OpponentPassButton" type="Button" parent="OpponentGroup/OpponentHUD/OpponentPlayButtons" unique_id=1568332844]
+visible = false
 layout_mode = 2
-text = "Short Pass"
-
-[node name="OpponentDeepPassButton" type="Button" parent="OpponentGroup/OpponentHUD/OpponentPlayButtons" unique_id=318575843]
-layout_mode = 2
-text = "Deep Pass"
+text = "Pass"
 
 [node name="OpponentFieldGoalButton" type="Button" parent="OpponentGroup/OpponentHUD/OpponentPlayButtons" unique_id=1504513508]
+visible = false
 layout_mode = 2
 text = "Field Goal"
 
 [node name="OpponentPuntButton" type="Button" parent="OpponentGroup/OpponentHUD/OpponentPlayButtons" unique_id=1504513509]
+visible = false
 layout_mode = 2
 text = "Punt"
 
 [node name="OpponentReadyButton" type="Button" parent="OpponentGroup/OpponentHUD/OpponentPlayButtons" unique_id=1536603709]
+visible = false
 layout_mode = 2
 text = "Ready"
 
 [node name="OpponentExtraPointButton" type="Button" parent="OpponentGroup/OpponentHUD/OpponentPlayButtons" unique_id=1732787514]
+visible = false
 layout_mode = 2
 text = "Extra Point"
 
 [node name="OpponentTwoPointButton" type="Button" parent="OpponentGroup/OpponentHUD/OpponentPlayButtons" unique_id=1344702792]
+visible = false
 layout_mode = 2
 text = "2-Point"
 
 [node name="OpponentHandPanel" type="Panel" parent="OpponentGroup/OpponentHUD" unique_id=292743716]
+visible = false
 custom_minimum_size = Vector2(200, 100)
 layout_mode = 0
 offset_left = 8.0
@@ -543,6 +585,7 @@ offset_right = 358.0
 offset_bottom = 316.0
 
 [node name="OpponentHandLabel" type="Label" parent="OpponentGroup/OpponentHUD/OpponentHandPanel" unique_id=1574796013]
+visible = false
 layout_mode = 0
 offset_left = 8.0
 offset_top = 8.0
@@ -552,6 +595,7 @@ text = "Hand"
 vertical_alignment = 1
 
 [node name="OpponentHandScroll" type="ScrollContainer" parent="OpponentGroup/OpponentHUD/OpponentHandPanel" unique_id=189760666]
+visible = false
 custom_minimum_size = Vector2(0, 128)
 layout_mode = 0
 offset_left = 8.0
@@ -561,6 +605,7 @@ offset_bottom = 186.0
 vertical_scroll_mode = 0
 
 [node name="OpponentHandCards" type="HBoxContainer" parent="OpponentGroup/OpponentHUD/OpponentHandPanel/OpponentHandScroll" unique_id=189760667]
+visible = false
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 8
@@ -568,10 +613,10 @@ theme_override_constants/separation = 8
 [node name="HUDGroup" type="Node" parent="." unique_id=425902874]
 
 [node name="GlobalHUD" type="VBoxContainer" parent="HUDGroup" unique_id=713179604]
-offset_left = 1176.0
-offset_top = 103.99999
-offset_right = 1476.0
-offset_bottom = 259.42856
+offset_left = 552.00006
+offset_top = 172.0
+offset_right = 852.00006
+offset_bottom = 330.0
 scale = Vector2(1.25, 1.25)
 
 [node name="UserTeamLabel" type="Label" parent="HUDGroup/GlobalHUD" unique_id=1163176269]
@@ -677,11 +722,29 @@ text = "x2"
 layout_mode = 2
 text = "x10"
 
+[node name="SimStepPanel" type="VBoxContainer" parent="HUDGroup" unique_id=454203760]
+offset_left = 896.0
+offset_top = 86.0
+offset_right = 1063.0
+offset_bottom = 152.0
+scale = Vector2(1.5, 1.5)
+theme_override_constants/separation = 4
+
+[node name="SimStepAfterPlayToggle" type="CheckButton" parent="HUDGroup/SimStepPanel" unique_id=454203761]
+layout_mode = 2
+tooltip_text = "While Sim is on, pause after each resolved scrimmage/punt/XP/2PT so you can read logs; press Next to continue."
+text = "1 play at a time"
+
+[node name="SimStepNextButton" type="Button" parent="HUDGroup/SimStepPanel" unique_id=454203762]
+layout_mode = 2
+disabled = true
+text = "Next"
+
 [node name="PlayInfoHUD" type="Panel" parent="HUDGroup" unique_id=1248807706]
-offset_left = 1173.0
-offset_top = 316.0
-offset_right = 1773.0
-offset_bottom = 640.0
+offset_left = 1792.0
+offset_top = 193.0
+offset_right = 2392.0
+offset_bottom = 517.0
 
 [node name="PlayLog" type="Label" parent="HUDGroup/PlayInfoHUD" unique_id=1471580771]
 layout_mode = 0
@@ -702,6 +765,116 @@ theme_override_font_sizes/italics_font_size = 18
 theme_override_font_sizes/mono_font_size = 18
 bbcode_enabled = true
 text = "Ready."
+
+[node name="CalcLogPanel" type="Panel" parent="HUDGroup" unique_id=501100000]
+offset_left = 1168.0
+offset_top = 153.0
+offset_right = 1768.0
+offset_bottom = 928.0
+
+[node name="CalcLogVBox" type="VBoxContainer" parent="HUDGroup/CalcLogPanel" unique_id=501100001]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 8.0
+offset_top = -62.0
+offset_right = -8.0
+offset_bottom = 124.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 6
+
+[node name="CalcLogTitle" type="Label" parent="HUDGroup/CalcLogPanel/CalcLogVBox" unique_id=501100002]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "Play calc log"
+
+[node name="CalcFilterGrid" type="GridContainer" parent="HUDGroup/CalcLogPanel/CalcLogVBox" unique_id=501100003]
+layout_mode = 2
+theme_override_constants/h_separation = 8
+theme_override_constants/v_separation = 4
+columns = 2
+
+[node name="CalcFilterResolver" type="CheckButton" parent="HUDGroup/CalcLogPanel/CalcLogVBox/CalcFilterGrid" unique_id=501100004]
+layout_mode = 2
+button_pressed = true
+text = "Resolver"
+
+[node name="CalcFilterPost" type="CheckButton" parent="HUDGroup/CalcLogPanel/CalcLogVBox/CalcFilterGrid" unique_id=501100005]
+layout_mode = 2
+button_pressed = true
+text = "Matchup"
+
+[node name="CalcFilterOutcome" type="CheckButton" parent="HUDGroup/CalcLogPanel/CalcLogVBox/CalcFilterGrid" unique_id=501100006]
+layout_mode = 2
+button_pressed = true
+text = "Outcome"
+
+[node name="CalcFilterTurnover" type="CheckButton" parent="HUDGroup/CalcLogPanel/CalcLogVBox/CalcFilterGrid" unique_id=501100007]
+layout_mode = 2
+button_pressed = true
+text = "Turnover"
+
+[node name="CalcFilterCards" type="CheckButton" parent="HUDGroup/CalcLogPanel/CalcLogVBox/CalcFilterGrid" unique_id=501100008]
+layout_mode = 2
+button_pressed = true
+text = "Cards"
+
+[node name="CalcFilterSkills" type="CheckButton" parent="HUDGroup/CalcLogPanel/CalcLogVBox/CalcFilterGrid" unique_id=501100009]
+layout_mode = 2
+button_pressed = true
+text = "Skills"
+
+[node name="CalcFilterSpecial" type="CheckButton" parent="HUDGroup/CalcLogPanel/CalcLogVBox/CalcFilterGrid" unique_id=501100010]
+layout_mode = 2
+button_pressed = true
+text = "Special"
+
+[node name="CalcFilterConversion" type="CheckButton" parent="HUDGroup/CalcLogPanel/CalcLogVBox/CalcFilterGrid" unique_id=501100011]
+layout_mode = 2
+button_pressed = true
+text = "Conversion"
+
+[node name="CalcFilterClock" type="CheckButton" parent="HUDGroup/CalcLogPanel/CalcLogVBox/CalcFilterGrid" unique_id=501100012]
+layout_mode = 2
+button_pressed = true
+text = "Clock"
+
+[node name="CalcNavRow" type="HBoxContainer" parent="HUDGroup/CalcLogPanel/CalcLogVBox" unique_id=501100013]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="CalcLogPrev" type="Button" parent="HUDGroup/CalcLogPanel/CalcLogVBox/CalcNavRow" unique_id=501100014]
+layout_mode = 2
+text = "Prev"
+
+[node name="CalcLogIndexLabel" type="Label" parent="HUDGroup/CalcLogPanel/CalcLogVBox/CalcNavRow" unique_id=501100015]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "— / —"
+horizontal_alignment = 1
+
+[node name="CalcLogNextNav" type="Button" parent="HUDGroup/CalcLogPanel/CalcLogVBox/CalcNavRow" unique_id=501100016]
+layout_mode = 2
+text = "Next"
+
+[node name="CalcLogScroll" type="ScrollContainer" parent="HUDGroup/CalcLogPanel/CalcLogVBox" unique_id=501100017]
+custom_minimum_size = Vector2(0, 200)
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="CalcLogText" type="RichTextLabel" parent="HUDGroup/CalcLogPanel/CalcLogVBox/CalcLogScroll" unique_id=501100018]
+custom_minimum_size = Vector2(540, 120)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_font_sizes/normal_font_size = 14
+theme_override_font_sizes/bold_font_size = 14
+bbcode_enabled = true
+text = "No entries yet."
+fit_content = true
 
 [node name="EventLogPanel" type="Panel" parent="HUDGroup" unique_id=565045101]
 clip_contents = true
@@ -734,10 +907,10 @@ scroll_following = true
 
 [node name="PhaseLogPanel" type="Panel" parent="HUDGroup" unique_id=1411194701]
 clip_contents = true
-offset_left = 1173.0
-offset_top = 660.0
-offset_right = 1773.0
-offset_bottom = 932.0
+offset_left = 1800.0
+offset_top = 536.0
+offset_right = 2400.0
+offset_bottom = 808.0
 
 [node name="PhaseLogTitle" type="Label" parent="HUDGroup/PhaseLogPanel" unique_id=1411194702]
 layout_mode = 0
@@ -788,3 +961,9 @@ offset_bottom = 220.0
 [node name="TargetingLabel" type="Label" parent="TargetingPanel" unique_id=892904634]
 layout_mode = 2
 text = "Targeting"
+
+[connection signal="toggled" from="DebugMenu/VBoxContainer/EventLog" to="DebugMenu" method="_on_event_log_toggled"]
+[connection signal="toggled" from="DebugMenu/VBoxContainer/PlayLog" to="DebugMenu" method="_on_play_log_toggled"]
+[connection signal="toggled" from="DebugMenu/VBoxContainer/PhaseLog" to="DebugMenu" method="_on_phase_log_toggled"]
+[connection signal="toggled" from="DebugMenu/VBoxContainer/PlayCalcLog" to="DebugMenu" method="_on_play_calc_log_toggled"]
+[connection signal="toggled" from="DebugMenu/VBoxContainer/OppHUD" to="DebugMenu" method="_on_opp_hud_toggled"]
