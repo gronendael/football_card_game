@@ -17,10 +17,10 @@ const PHASE_TARGETING := "targeting"
 const PHASE_CONVERSION := "conversion"
 
 const PENDING_NONE := "none"
-const PLAY_RUN := "run"
-const PLAY_SHORT_PASS := "short_pass"
-const PLAY_DEEP_PASS := "deep_pass"
-const PLAY_SPOT_KICK := "spot_kick"
+## `pending_play_type` holds a catalog **play id** (e.g. run_01). Use PlaysCatalog.bucket() for run/pass/kick buckets.
+const BUCKET_RUN := "run"
+const BUCKET_PASS := "pass"
+const BUCKET_SPOT_KICK := "spot_kick"
 
 const MAX_CLOCK_SECONDS := 300
 const HALF_SECONDS := 150

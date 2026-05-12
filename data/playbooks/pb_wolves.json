@@ -1,0 +1,21 @@
+{
+  "id": "pb_wolves",
+  "team_id": "wolves",
+  "max_slots": 14,
+  "play_ids": [
+    "kickoff_03",
+    "kickoff_ret_03",
+    "punt_01",
+    "punt_ret_03",
+    "fg_01",
+    "fg_xp_def_01",
+    "pass_04",
+    "pass_01",
+    "run_02",
+    "pass_02",
+    "pass_def_01",
+    "run_def_04",
+    "pass_def_02",
+    "run_def_03"
+  ]
+}

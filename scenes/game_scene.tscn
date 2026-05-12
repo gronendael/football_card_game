@@ -10,6 +10,7 @@
 [ext_resource type="Script" uid="uid://culivsr7t6exs" path="res://scripts/coach_data.gd" id="9_5ay1a"]
 [ext_resource type="Script" uid="uid://cpmi625jppg7l" path="res://scripts/team_data.gd" id="11_team"]
 [ext_resource type="PackedScene" uid="uid://dnhyqxmvkb71" path="res://scenes/field.tscn" id="12_field"]
+[ext_resource type="Texture2D" uid="uid://c5q0cgdxduw07" path="res://assets/ui/timeout_clock.svg" id="timeout_clock"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_rvs2r"]
 content_margin_left = 0.0
@@ -69,10 +70,10 @@ color = Color(0.16470589, 0, 0, 0.43529412)
 
 [node name="QuitButton" type="Button" parent="." unique_id=875355186]
 layout_mode = 0
-offset_left = 1181.0
-offset_top = 12.0
-offset_right = 1231.0
-offset_bottom = 62.0
+offset_left = 1344.0
+offset_right = 1419.0
+offset_bottom = 75.0
+theme_override_font_sizes/font_size = 32
 text = "Quit"
 
 [node name="GameManagers" type="Node" parent="." unique_id=35103829]
@@ -285,40 +286,76 @@ text = "Cavs"
 horizontal_alignment = 2
 vertical_alignment = 1
 
-[node name="UserPlayButtons" type="HFlowContainer" parent="UserGroup/UserHUD" unique_id=1947600908]
+[node name="UserPlayButtonsRow" type="HBoxContainer" parent="UserGroup/UserHUD" unique_id=1947600907]
 layout_mode = 0
 offset_left = 8.0
 offset_top = 688.0
-offset_right = 258.0
+offset_right = 532.0
 offset_bottom = 754.0
+theme_override_constants/separation = 8
 
-[node name="UserRunButton" type="Button" parent="UserGroup/UserHUD/UserPlayButtons" unique_id=278693041]
+[node name="UserPlayRowPossessionIcon" type="Label" parent="UserGroup/UserHUD/UserPlayButtonsRow" unique_id=1947600906]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(40, 44)
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+text = "🏈"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="UserPlayButtons" type="HFlowContainer" parent="UserGroup/UserHUD/UserPlayButtonsRow" unique_id=1947600908]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="UserRunButton" type="Button" parent="UserGroup/UserHUD/UserPlayButtonsRow/UserPlayButtons" unique_id=278693041]
 layout_mode = 2
 text = "Run"
 
-[node name="UserShortPassButton" type="Button" parent="UserGroup/UserHUD/UserPlayButtons" unique_id=1114373608]
+[node name="UserShortPassButton" type="Button" parent="UserGroup/UserHUD/UserPlayButtonsRow/UserPlayButtons" unique_id=1114373608]
 layout_mode = 2
 text = "Short Pass"
 
-[node name="UserDeepPassButton" type="Button" parent="UserGroup/UserHUD/UserPlayButtons" unique_id=395435213]
+[node name="UserDeepPassButton" type="Button" parent="UserGroup/UserHUD/UserPlayButtonsRow/UserPlayButtons" unique_id=395435213]
 layout_mode = 2
 text = "Deep Pass"
 
-[node name="UserFieldGoalButton" type="Button" parent="UserGroup/UserHUD/UserPlayButtons" unique_id=1149738216]
+[node name="UserFieldGoalButton" type="Button" parent="UserGroup/UserHUD/UserPlayButtonsRow/UserPlayButtons" unique_id=1149738216]
 layout_mode = 2
 text = "Field Goal"
 
-[node name="UserPuntButton" type="Button" parent="UserGroup/UserHUD/UserPlayButtons" unique_id=1149738217]
+[node name="UserPuntButton" type="Button" parent="UserGroup/UserHUD/UserPlayButtonsRow/UserPlayButtons" unique_id=1149738217]
 layout_mode = 2
 text = "Punt"
 
-[node name="UserExtraPointButton" type="Button" parent="UserGroup/UserHUD/UserPlayButtons" unique_id=1314709409]
+[node name="UserExtraPointButton" type="Button" parent="UserGroup/UserHUD/UserPlayButtonsRow/UserPlayButtons" unique_id=1314709409]
 layout_mode = 2
 text = "Extra Point"
 
-[node name="UserTwoPointButton" type="Button" parent="UserGroup/UserHUD/UserPlayButtons" unique_id=67731116]
+[node name="UserTwoPointButton" type="Button" parent="UserGroup/UserHUD/UserPlayButtonsRow/UserPlayButtons" unique_id=67731116]
 layout_mode = 2
 text = "2-Point"
+
+[node name="UserPhasePromptPanel" type="MarginContainer" parent="UserGroup/UserHUD/UserPlayButtonsRow" unique_id=1999888777]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(236, 0)
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_constants/margin_left = 6
+theme_override_constants/margin_top = 2
+theme_override_constants/margin_right = 2
+theme_override_constants/margin_bottom = 2
+
+[node name="UserPhasePromptLabel" type="Label" parent="UserGroup/UserHUD/UserPlayButtonsRow/UserPhasePromptPanel" unique_id=1999888778]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.86, 0.35, 1)
+theme_override_colors/font_outline_color = Color(0.05, 0.04, 0.02, 0.92)
+theme_override_constants/outline_size = 6
+theme_override_font_sizes/font_size = 21
+text = "Select Play"
+horizontal_alignment = 2
+vertical_alignment = 1
+uppercase = true
 
 [node name="UserHandPanel" type="Panel" parent="UserGroup/UserHUD" unique_id=292743715]
 custom_minimum_size = Vector2(200, 100)
@@ -351,33 +388,6 @@ layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 8
 
-[node name="UserTimeoutsPanel" type="HBoxContainer" parent="UserGroup/UserHUD" unique_id=1672479242]
-layout_mode = 0
-offset_left = 448.0
-offset_top = 670.0
-offset_right = 533.0
-offset_bottom = 770.0
-theme_override_constants/separation = 10
-
-[node name="UserTOsColumn" type="VBoxContainer" parent="UserGroup/UserHUD/UserTimeoutsPanel" unique_id=1889011002]
-layout_mode = 2
-size_flags_vertical = 4
-theme_override_constants/separation = 2
-
-[node name="UserTOsLabel" type="Label" parent="UserGroup/UserHUD/UserTimeoutsPanel/UserTOsColumn" unique_id=202608609]
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.47843137, 0, 1)
-theme_override_font_sizes/font_size = 32
-text = "TOs"
-
-[node name="UserTOsPanel" type="Button" parent="UserGroup/UserHUD/UserTimeoutsPanel/UserTOsColumn" unique_id=1343374615]
-custom_minimum_size = Vector2(48, 48)
-layout_mode = 2
-tooltip_text = "Call Timeout"
-theme_override_colors/font_color = Color(1, 0.47843137, 0, 1)
-theme_override_font_sizes/font_size = 32
-text = "3"
-
 [node name="UserBottomUIPanel" type="HBoxContainer" parent="UserGroup/UserHUD" unique_id=2102560086]
 layout_mode = 0
 offset_top = 896.0
@@ -393,12 +403,28 @@ theme_override_styles/normal = SubResource("StyleBoxFlat_tcjrq")
 text = "Forfeit"
 
 [node name="Spacer" type="Control" parent="UserGroup/UserHUD/UserBottomUIPanel" unique_id=1073093776]
+custom_minimum_size = Vector2(20, 0)
 layout_mode = 2
-size_flags_horizontal = 3
+
+[node name="UserTimeoutButton" type="Button" parent="UserGroup/UserHUD/UserBottomUIPanel" unique_id=1672479242]
+custom_minimum_size = Vector2(50, 48)
+layout_mode = 2
+tooltip_text = "Call Timeout"
+theme_override_constants/h_separation = 8
+theme_override_constants/icon_max_width = 32
+theme_override_font_sizes/font_size = 28
+text = "(3)"
+icon = ExtResource("timeout_clock")
+flat = true
+alignment = 0
+
+[node name="Spacer2" type="Control" parent="UserGroup/UserHUD/UserBottomUIPanel" unique_id=758249523]
+custom_minimum_size = Vector2(20, 0)
+layout_mode = 2
 
 [node name="UserMomentumValueLabel" type="Label" parent="UserGroup/UserHUD/UserBottomUIPanel" unique_id=1505117762]
+custom_minimum_size = Vector2(50, 0)
 layout_mode = 2
-size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0, 0, 1, 1)
 theme_override_font_sizes/font_size = 32
 theme_override_styles/normal = SubResource("StyleBoxFlat_tqxxy")
@@ -406,9 +432,9 @@ text = "0"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="Spacer2" type="Control" parent="UserGroup/UserHUD/UserBottomUIPanel" unique_id=758249523]
+[node name="Spacer3" type="Control" parent="UserGroup/UserHUD/UserBottomUIPanel" unique_id=1406693949]
+custom_minimum_size = Vector2(20, 0)
 layout_mode = 2
-size_flags_horizontal = 3
 
 [node name="UserReadyButton" type="Button" parent="UserGroup/UserHUD/UserBottomUIPanel" unique_id=404468002]
 layout_mode = 2
@@ -609,12 +635,21 @@ text = "Pause"
 layout_mode = 2
 text = "Restart"
 
+[node name="ShowActionTimerBarToggle" type="CheckButton" parent="HUDGroup" unique_id=2109876501]
+offset_left = 536.0
+offset_top = 96.0
+offset_right = 820.0
+offset_bottom = 136.0
+scale = Vector2(1.15, 1.15)
+tooltip_text = "When off, no play-selection time limit (no auto-ready / delay of game from timer)."
+button_pressed = true
+text = "Play clock (10s)"
+
 [node name="SpeedPanel" type="HBoxContainer" parent="HUDGroup" unique_id=1238859256]
 offset_left = 936.0
-offset_right = 1046.0
+offset_right = 1120.0
 offset_bottom = 40.0
 scale = Vector2(2, 2)
-alignment = 2
 
 [node name="-" type="Button" parent="HUDGroup/SpeedPanel" unique_id=1905762627]
 layout_mode = 2
@@ -627,6 +662,14 @@ text = "  +  "
 [node name="SpeedLabel" type="Label" parent="HUDGroup/SpeedPanel" unique_id=1002611365]
 layout_mode = 2
 text = "  x1  "
+
+[node name="SpeedX2" type="Button" parent="HUDGroup/SpeedPanel" unique_id=1905762628]
+layout_mode = 2
+text = "x2"
+
+[node name="SpeedX10" type="Button" parent="HUDGroup/SpeedPanel" unique_id=1905762629]
+layout_mode = 2
+text = "x10"
 
 [node name="PlayInfoHUD" type="Panel" parent="HUDGroup" unique_id=1248807706]
 offset_left = 1173.0

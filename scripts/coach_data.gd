@@ -1,22 +1,30 @@
 extends Node
 class_name CoachData
 
-var coaches: Dictionary = {}
+## coach id -> coach Dictionary (from coaches_catalog.json)
+var coaches_by_id: Dictionary = {}
 
-func load_from_json(path: String) -> void:
+
+func load_catalog(path: String) -> void:
+	coaches_by_id.clear()
 	if not FileAccess.file_exists(path):
-		coaches = {}
+		push_warning("Coaches catalog missing: %s" % path)
 		return
-	var text := FileAccess.get_file_as_string(path)
-	var parsed = JSON.parse_string(text)
-	if typeof(parsed) == TYPE_DICTIONARY:
-		coaches = parsed
-	else:
-		coaches = {}
+	var parsed = JSON.parse_string(FileAccess.get_file_as_string(path))
+	if typeof(parsed) != TYPE_DICTIONARY:
+		return
+	var arr: Variant = parsed.get("coaches", [])
+	if typeof(arr) != TYPE_ARRAY:
+		return
+	for item in arr:
+		if typeof(item) != TYPE_DICTIONARY:
+			continue
+		var cid := str(item.get("id", ""))
+		if cid.is_empty():
+			continue
+		coaches_by_id[cid] = item
 
-func get_team_staff(team: String) -> Dictionary:
-	return coaches.get(team, {
-		"head_coach": {"id": "none", "name": "None", "bonus": {}},
-		"off_coord": {"id": "none", "name": "None", "bonus": {}},
-		"def_coord": {"id": "none", "name": "None", "bonus": {}}
-	})
+
+func get_coach(coach_id: String) -> Dictionary:
+	var d: Variant = coaches_by_id.get(coach_id, {})
+	return d if typeof(d) == TYPE_DICTIONARY else {}

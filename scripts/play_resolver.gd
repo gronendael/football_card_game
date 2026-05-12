@@ -1,10 +1,9 @@
 extends Node
 class_name PlayResolver
 
-const PLAY_RUN := "run"
-const PLAY_SHORT_PASS := "short_pass"
-const PLAY_DEEP_PASS := "deep_pass"
-const PLAY_SPOT_KICK := "spot_kick"
+const BUCKET_RUN := "run"
+const BUCKET_PASS := "pass"
+const BUCKET_SPOT_KICK := "spot_kick"
 const PLAY_PUNT := "punt"
 const ZONE_MIDFIELD := 4
 const ZONE_ATTACK := 5
@@ -33,33 +32,32 @@ func _zone_name(zone: int) -> String:
 		_:
 			return "Unknown Zone"
 
-func resolve_standard_play(play_type: String, selected_player_id: String, current_zone: int) -> Dictionary:
+func resolve_standard_play(play_id: String, play_row: Dictionary, selected_player_id: String, _current_zone: int) -> Dictionary:
+	var bucket := str(play_row.get("play_type", ""))
+	var tmin := int(play_row.get("tile_delta_min", 0))
+	var tmax := int(play_row.get("tile_delta_max", 10))
 	var tile_delta := 0
-	match play_type:
-		PLAY_RUN:
-			tile_delta = randi_range(0, 10)
-		PLAY_SHORT_PASS:
-			tile_delta = randi_range(0, 10)
-		PLAY_DEEP_PASS:
-			tile_delta = randi_range(0, 15)
+	match bucket:
+		BUCKET_RUN, BUCKET_PASS:
+			tile_delta = randi_range(tmin, tmax)
 		_:
 			tile_delta = 0
 
 	var success := tile_delta > 0
 	var breakdown := [
-		"Play type: %s" % play_type,
+		"Play: %s (%s)" % [play_id, bucket],
 		"Selected player: %s" % selected_player_id,
 		"Tile rows toward goal: +%d" % tile_delta
 	]
 	return {
-		"play_type": play_type,
+		"play_type": play_id,
 		"selected_player_id": selected_player_id,
 		"success": success,
 		"tile_delta": tile_delta,
 		"score_delta": 0,
 		"possession_switch": false,
 		"clock_seconds_used": 0,
-		"result_text": "%s: %+d tile rows toward goal." % [play_type, tile_delta],
+		"result_text": "%s: %+d tile rows toward goal." % [play_id, tile_delta],
 		"breakdown": breakdown
 	}
 
@@ -76,7 +74,7 @@ func resolve_spot_kick(selected_player_id: String, current_zone: int, kick_stats
 		base_chance = 35
 	else:
 		return {
-			"play_type": PLAY_SPOT_KICK,
+			"play_type": BUCKET_SPOT_KICK,
 			"selected_player_id": selected_player_id,
 			"success": false,
 			"tile_delta": 0,
@@ -91,7 +89,7 @@ func resolve_spot_kick(selected_player_id: String, current_zone: int, kick_stats
 	var roll := randi_range(1, 100)
 	var success := roll <= target
 	return {
-		"play_type": PLAY_SPOT_KICK,
+		"play_type": BUCKET_SPOT_KICK,
 		"selected_player_id": selected_player_id,
 		"success": success,
 		"tile_delta": 0,
@@ -123,7 +121,7 @@ func resolve_extra_point(selected_player_id: String, kick_stats: Dictionary, opp
 	var roll := randi_range(1, 100)
 	var success := roll <= target
 	return {
-		"play_type": PLAY_SPOT_KICK,
+		"play_type": BUCKET_SPOT_KICK,
 		"selected_player_id": selected_player_id,
 		"success": success,
 		"tile_delta": 0,
@@ -238,8 +236,8 @@ func resolve_punt(current_zone: int, kick_stats: Dictionary, defense_called_retu
 		return_meta = _punt_return_tile_rows_from_modifiers(return_modifiers)
 		return_rows = int(return_meta.get("rows", 0))
 		return_rows = clampi(return_rows, 0, _PUNT_RETURN_ROWS_MAX)
-	var net_rows := maxi(punt_rows - return_rows, 3)
-	var zone_delta := maxi(int(round(float(net_rows) / 5.0)), 1)
+	var net_rows := punt_rows - return_rows
+	var zone_delta := int(round(float(net_rows) / 5.0))
 	var zone_after_offense_view := clampi(current_zone + zone_delta, 1, 7)
 	var return_line := ("Return: %d tile rows" % return_rows) if defense_called_return else "Return: 0 tile rows (no Punt Return)"
 	var bd: Array = [

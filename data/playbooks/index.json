@@ -1,0 +1,14 @@
+{
+  "playbooks": [
+    "pb_bees",
+    "pb_cavs",
+    "pb_hawks",
+    "pb_wolves",
+    "pb_tigers",
+    "pb_sharks",
+    "pb_knights",
+    "pb_pirates",
+    "pb_storm",
+    "pb_falcons"
+  ]
+}

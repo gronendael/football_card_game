@@ -1,0 +1,21 @@
+{
+  "id": "pb_storm",
+  "team_id": "storm",
+  "max_slots": 14,
+  "play_ids": [
+    "kickoff_03",
+    "kickoff_ret_01",
+    "punt_03",
+    "punt_ret_03",
+    "fg_02",
+    "fg_xp_def_01",
+    "run_01",
+    "pass_04",
+    "run_04",
+    "pass_01",
+    "pass_def_01",
+    "pass_def_03",
+    "run_def_03",
+    "run_def_02"
+  ]
+}

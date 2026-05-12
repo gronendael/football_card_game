@@ -1,0 +1,484 @@
+{
+  "coaches": [
+    {
+      "id": "coach_01",
+      "name": "Jordan Blake",
+      "bonus_offense": {
+        "standard_zone_bonus": 1
+      },
+      "bonus_defense": {
+        "defense_mod": 0
+      },
+      "max_playbook_offense_slots": 4,
+      "max_playbook_defense_slots": 4,
+      "attached_required_candidates": [
+        "kickoff_02",
+        "kickoff_ret_02",
+        "punt_03",
+        "punt_ret_03",
+        "fg_02",
+        "fg_xp_def_02"
+      ],
+      "attached_offense_candidates": [
+        "pass_02",
+        "run_04",
+        "run_03",
+        "pass_04",
+        "pass_03",
+        "run_01",
+        "run_02",
+        "pass_01"
+      ],
+      "attached_defense_candidates": [
+        "pass_def_01",
+        "pass_def_04",
+        "pass_def_03",
+        "run_def_04",
+        "run_def_01",
+        "run_def_02",
+        "run_def_03",
+        "pass_def_02"
+      ]
+    },
+    {
+      "id": "coach_02",
+      "name": "Riley Carter",
+      "bonus_offense": {
+        "standard_zone_bonus": 2
+      },
+      "bonus_defense": {
+        "defense_mod": 0
+      },
+      "max_playbook_offense_slots": 4,
+      "max_playbook_defense_slots": 4,
+      "attached_required_candidates": [
+        "kickoff_03",
+        "kickoff_ret_01",
+        "punt_03",
+        "punt_ret_03",
+        "fg_02",
+        "fg_xp_def_01"
+      ],
+      "attached_offense_candidates": [
+        "pass_03",
+        "pass_02",
+        "run_04",
+        "pass_04",
+        "run_02",
+        "run_01",
+        "pass_01",
+        "run_03"
+      ],
+      "attached_defense_candidates": [
+        "pass_def_03",
+        "run_def_02",
+        "pass_def_02",
+        "pass_def_04",
+        "run_def_03",
+        "run_def_04",
+        "run_def_01",
+        "pass_def_01"
+      ]
+    },
+    {
+      "id": "coach_03",
+      "name": "Sam Ortiz",
+      "bonus_offense": {
+        "standard_zone_bonus": 0
+      },
+      "bonus_defense": {
+        "defense_mod": 0
+      },
+      "max_playbook_offense_slots": 4,
+      "max_playbook_defense_slots": 4,
+      "attached_required_candidates": [
+        "kickoff_03",
+        "kickoff_ret_02",
+        "punt_03",
+        "punt_ret_01",
+        "fg_02",
+        "fg_xp_def_01"
+      ],
+      "attached_offense_candidates": [
+        "run_02",
+        "run_03",
+        "pass_01",
+        "pass_03",
+        "pass_02",
+        "pass_04",
+        "run_04",
+        "run_01"
+      ],
+      "attached_defense_candidates": [
+        "pass_def_03",
+        "run_def_01",
+        "run_def_02",
+        "run_def_03",
+        "pass_def_04",
+        "run_def_04",
+        "pass_def_02",
+        "pass_def_01"
+      ]
+    },
+    {
+      "id": "coach_04",
+      "name": "Taylor Morgan",
+      "bonus_offense": {
+        "standard_zone_bonus": 2
+      },
+      "bonus_defense": {
+        "defense_mod": 0
+      },
+      "max_playbook_offense_slots": 4,
+      "max_playbook_defense_slots": 4,
+      "attached_required_candidates": [
+        "kickoff_03",
+        "kickoff_ret_03",
+        "punt_01",
+        "punt_ret_03",
+        "fg_01",
+        "fg_xp_def_01"
+      ],
+      "attached_offense_candidates": [
+        "pass_01",
+        "pass_02",
+        "run_04",
+        "run_03",
+        "run_02",
+        "pass_03",
+        "pass_04",
+        "run_01"
+      ],
+      "attached_defense_candidates": [
+        "run_def_02",
+        "pass_def_02",
+        "pass_def_01",
+        "run_def_01",
+        "pass_def_03",
+        "pass_def_04",
+        "run_def_03",
+        "run_def_04"
+      ]
+    },
+    {
+      "id": "coach_05",
+      "name": "Casey Nguyen",
+      "bonus_offense": {
+        "standard_zone_bonus": 2
+      },
+      "bonus_defense": {
+        "defense_mod": 2
+      },
+      "max_playbook_offense_slots": 4,
+      "max_playbook_defense_slots": 4,
+      "attached_required_candidates": [
+        "kickoff_03",
+        "kickoff_ret_02",
+        "punt_03",
+        "punt_ret_02",
+        "fg_01",
+        "fg_xp_def_01"
+      ],
+      "attached_offense_candidates": [
+        "pass_03",
+        "run_04",
+        "pass_01",
+        "pass_02",
+        "run_03",
+        "pass_04",
+        "run_01",
+        "run_02"
+      ],
+      "attached_defense_candidates": [
+        "run_def_02",
+        "run_def_04",
+        "pass_def_03",
+        "pass_def_04",
+        "run_def_03",
+        "pass_def_02",
+        "run_def_01",
+        "pass_def_01"
+      ]
+    },
+    {
+      "id": "coach_06",
+      "name": "Jamie Foster",
+      "bonus_offense": {
+        "standard_zone_bonus": 1
+      },
+      "bonus_defense": {
+        "defense_mod": 1
+      },
+      "max_playbook_offense_slots": 4,
+      "max_playbook_defense_slots": 4,
+      "attached_required_candidates": [
+        "kickoff_02",
+        "kickoff_ret_03",
+        "punt_02",
+        "punt_ret_03",
+        "fg_01",
+        "fg_xp_def_01"
+      ],
+      "attached_offense_candidates": [
+        "pass_04",
+        "pass_03",
+        "pass_01",
+        "run_03",
+        "run_02",
+        "pass_02",
+        "run_01",
+        "run_04"
+      ],
+      "attached_defense_candidates": [
+        "pass_def_03",
+        "run_def_02",
+        "pass_def_02",
+        "pass_def_04",
+        "pass_def_01",
+        "run_def_03",
+        "run_def_04",
+        "run_def_01"
+      ]
+    },
+    {
+      "id": "coach_07",
+      "name": "Alex Rivera",
+      "bonus_offense": {
+        "standard_zone_bonus": 2
+      },
+      "bonus_defense": {
+        "defense_mod": 2
+      },
+      "max_playbook_offense_slots": 4,
+      "max_playbook_defense_slots": 4,
+      "attached_required_candidates": [
+        "kickoff_02",
+        "kickoff_ret_02",
+        "punt_02",
+        "punt_ret_01",
+        "fg_01",
+        "fg_xp_def_01"
+      ],
+      "attached_offense_candidates": [
+        "pass_02",
+        "pass_01",
+        "run_01",
+        "pass_04",
+        "run_02",
+        "run_04",
+        "pass_03",
+        "run_03"
+      ],
+      "attached_defense_candidates": [
+        "pass_def_01",
+        "pass_def_02",
+        "pass_def_03",
+        "run_def_04",
+        "run_def_03",
+        "run_def_01",
+        "run_def_02",
+        "pass_def_04"
+      ]
+    },
+    {
+      "id": "coach_08",
+      "name": "Morgan Ellis",
+      "bonus_offense": {
+        "standard_zone_bonus": 1
+      },
+      "bonus_defense": {
+        "defense_mod": 1
+      },
+      "max_playbook_offense_slots": 4,
+      "max_playbook_defense_slots": 4,
+      "attached_required_candidates": [
+        "kickoff_01",
+        "kickoff_ret_01",
+        "punt_01",
+        "punt_ret_01",
+        "fg_01",
+        "fg_xp_def_01"
+      ],
+      "attached_offense_candidates": [
+        "run_03",
+        "run_04",
+        "pass_01",
+        "pass_04",
+        "pass_02",
+        "run_01",
+        "run_02",
+        "pass_03"
+      ],
+      "attached_defense_candidates": [
+        "run_def_02",
+        "pass_def_01",
+        "run_def_03",
+        "pass_def_02",
+        "run_def_04",
+        "pass_def_04",
+        "pass_def_03",
+        "run_def_01"
+      ]
+    },
+    {
+      "id": "coach_09",
+      "name": "Drew Patterson",
+      "bonus_offense": {
+        "standard_zone_bonus": 1
+      },
+      "bonus_defense": {
+        "defense_mod": 1
+      },
+      "max_playbook_offense_slots": 4,
+      "max_playbook_defense_slots": 4,
+      "attached_required_candidates": [
+        "kickoff_02",
+        "kickoff_ret_03",
+        "punt_03",
+        "punt_ret_03",
+        "fg_01",
+        "fg_xp_def_01"
+      ],
+      "attached_offense_candidates": [
+        "run_03",
+        "pass_04",
+        "run_04",
+        "run_01",
+        "run_02",
+        "pass_03",
+        "pass_02",
+        "pass_01"
+      ],
+      "attached_defense_candidates": [
+        "run_def_02",
+        "run_def_01",
+        "run_def_03",
+        "run_def_04",
+        "pass_def_03",
+        "pass_def_02",
+        "pass_def_04",
+        "pass_def_01"
+      ]
+    },
+    {
+      "id": "coach_10",
+      "name": "Chris Vaughn",
+      "bonus_offense": {
+        "standard_zone_bonus": 0
+      },
+      "bonus_defense": {
+        "defense_mod": 0
+      },
+      "max_playbook_offense_slots": 4,
+      "max_playbook_defense_slots": 4,
+      "attached_required_candidates": [
+        "kickoff_01",
+        "kickoff_ret_02",
+        "punt_03",
+        "punt_ret_02",
+        "fg_02",
+        "fg_xp_def_02"
+      ],
+      "attached_offense_candidates": [
+        "run_04",
+        "pass_04",
+        "pass_03",
+        "run_02",
+        "run_03",
+        "pass_01",
+        "run_01",
+        "pass_02"
+      ],
+      "attached_defense_candidates": [
+        "pass_def_03",
+        "run_def_04",
+        "run_def_03",
+        "pass_def_02",
+        "pass_def_04",
+        "pass_def_01",
+        "run_def_02",
+        "run_def_01"
+      ]
+    },
+    {
+      "id": "coach_11",
+      "name": "Pat Kim",
+      "bonus_offense": {
+        "standard_zone_bonus": 0
+      },
+      "bonus_defense": {
+        "defense_mod": 0
+      },
+      "max_playbook_offense_slots": 4,
+      "max_playbook_defense_slots": 4,
+      "attached_required_candidates": [
+        "kickoff_01",
+        "kickoff_ret_03",
+        "punt_03",
+        "punt_ret_02",
+        "fg_01",
+        "fg_xp_def_02"
+      ],
+      "attached_offense_candidates": [
+        "pass_02",
+        "run_03",
+        "run_01",
+        "run_02",
+        "pass_04",
+        "pass_03",
+        "pass_01",
+        "run_04"
+      ],
+      "attached_defense_candidates": [
+        "run_def_02",
+        "pass_def_01",
+        "pass_def_02",
+        "pass_def_03",
+        "pass_def_04",
+        "run_def_04",
+        "run_def_03",
+        "run_def_01"
+      ]
+    },
+    {
+      "id": "coach_12",
+      "name": "Robin Hayes",
+      "bonus_offense": {
+        "standard_zone_bonus": 0
+      },
+      "bonus_defense": {
+        "defense_mod": 1
+      },
+      "max_playbook_offense_slots": 4,
+      "max_playbook_defense_slots": 4,
+      "attached_required_candidates": [
+        "kickoff_02",
+        "kickoff_ret_03",
+        "punt_01",
+        "punt_ret_02",
+        "fg_02",
+        "fg_xp_def_01"
+      ],
+      "attached_offense_candidates": [
+        "pass_02",
+        "run_03",
+        "run_02",
+        "run_04",
+        "pass_03",
+        "pass_01",
+        "run_01",
+        "pass_04"
+      ],
+      "attached_defense_candidates": [
+        "pass_def_04",
+        "run_def_02",
+        "run_def_04",
+        "run_def_01",
+        "pass_def_02",
+        "pass_def_03",
+        "pass_def_01",
+        "run_def_03"
+      ]
+    }
+  ]
+}

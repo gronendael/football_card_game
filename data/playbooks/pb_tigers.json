@@ -1,0 +1,21 @@
+{
+  "id": "pb_tigers",
+  "team_id": "tigers",
+  "max_slots": 14,
+  "play_ids": [
+    "kickoff_01",
+    "kickoff_ret_02",
+    "punt_03",
+    "punt_ret_02",
+    "fg_01",
+    "fg_xp_def_01",
+    "run_01",
+    "run_04",
+    "pass_04",
+    "run_02",
+    "pass_def_01",
+    "run_def_04",
+    "run_def_02",
+    "pass_def_02"
+  ]
+}

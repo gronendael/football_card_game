@@ -1,73 +1,518 @@
 {
-  "run": {
-	"name": "Run",
+  "run_01": {
+	"name": "Run Concept 1",
 	"formation_id": "off_i",
-	"side": "offense"
+	"side": "offense",
+	"play_type": "run",
+	"tile_delta_min": 0,
+	"tile_delta_max": 10,
+	"description": "Gap run; blocking determines lane."
   },
-  "short_pass": {
-	"name": "Short Pass",
+  "run_02": {
+	"name": "Run Concept 2",
 	"formation_id": "off_shotgun",
-	"side": "offense"
+	"side": "offense",
+	"play_type": "run",
+	"tile_delta_min": 0,
+	"tile_delta_max": 10,
+	"description": "Gap run; blocking determines lane."
   },
-  "deep_pass": {
-	"name": "Deep Pass",
+  "run_03": {
+	"name": "Run Concept 3",
 	"formation_id": "off_empty",
-	"side": "offense"
+	"side": "offense",
+	"play_type": "run",
+	"tile_delta_min": 0,
+	"tile_delta_max": 10,
+	"description": "Gap run; blocking determines lane."
   },
-  "spot_kick": {
-	"name": "Spot kick",
+  "run_04": {
+	"name": "Run Concept 4",
+	"formation_id": "off_singleback",
+	"side": "offense",
+	"play_type": "run",
+	"tile_delta_min": 0,
+	"tile_delta_max": 10,
+	"description": "Gap run; blocking determines lane."
+  },
+  "run_05": {
+	"name": "Run Concept 5",
+	"formation_id": "off_pro",
+	"side": "offense",
+	"play_type": "run",
+	"tile_delta_min": 0,
+	"tile_delta_max": 10,
+	"description": "Gap run; blocking determines lane."
+  },
+  "run_06": {
+	"name": "Run Concept 6",
+	"formation_id": "off_i",
+	"side": "offense",
+	"play_type": "run",
+	"tile_delta_min": 0,
+	"tile_delta_max": 10,
+	"description": "Gap run; blocking determines lane."
+  },
+  "run_07": {
+	"name": "Run Concept 7",
+	"formation_id": "off_shotgun",
+	"side": "offense",
+	"play_type": "run",
+	"tile_delta_min": 0,
+	"tile_delta_max": 10,
+	"description": "Gap run; blocking determines lane."
+  },
+  "run_08": {
+	"name": "Run Concept 8",
+	"formation_id": "off_empty",
+	"side": "offense",
+	"play_type": "run",
+	"tile_delta_min": 0,
+	"tile_delta_max": 10,
+	"description": "Gap run; blocking determines lane."
+  },
+  "run_09": {
+	"name": "Run Concept 9",
+	"formation_id": "off_singleback",
+	"side": "offense",
+	"play_type": "run",
+	"tile_delta_min": 0,
+	"tile_delta_max": 10,
+	"description": "Gap run; blocking determines lane."
+  },
+  "run_10": {
+	"name": "Run Concept 10",
+	"formation_id": "off_pro",
+	"side": "offense",
+	"play_type": "run",
+	"tile_delta_min": 0,
+	"tile_delta_max": 10,
+	"description": "Gap run; blocking determines lane."
+  },
+  "run_11": {
+	"name": "Run Concept 11",
+	"formation_id": "off_i",
+	"side": "offense",
+	"play_type": "run",
+	"tile_delta_min": 0,
+	"tile_delta_max": 10,
+	"description": "Gap run; blocking determines lane."
+  },
+  "run_12": {
+	"name": "Run Concept 12",
+	"formation_id": "off_shotgun",
+	"side": "offense",
+	"play_type": "run",
+	"tile_delta_min": 0,
+	"tile_delta_max": 10,
+	"description": "Gap run; blocking determines lane."
+  },
+  "pass_01": {
+	"name": "Pass Concept 1",
+	"formation_id": "off_pro",
+	"side": "offense",
+	"play_type": "pass",
+	"tile_delta_min": 0,
+	"tile_delta_max": 13,
+	"description": "Routes: mixed depths; completion vs coverage."
+  },
+  "pass_02": {
+	"name": "Pass Concept 2",
+	"formation_id": "off_i",
+	"side": "offense",
+	"play_type": "pass",
+	"tile_delta_min": 0,
+	"tile_delta_max": 13,
+	"description": "Routes: mixed depths; completion vs coverage."
+  },
+  "pass_03": {
+	"name": "Pass Concept 3",
+	"formation_id": "off_shotgun",
+	"side": "offense",
+	"play_type": "pass",
+	"tile_delta_min": 0,
+	"tile_delta_max": 13,
+	"description": "Routes: mixed depths; completion vs coverage."
+  },
+  "pass_04": {
+	"name": "Pass Concept 4",
+	"formation_id": "off_empty",
+	"side": "offense",
+	"play_type": "pass",
+	"tile_delta_min": 0,
+	"tile_delta_max": 13,
+	"description": "Routes: mixed depths; completion vs coverage."
+  },
+  "pass_05": {
+	"name": "Pass Concept 5",
+	"formation_id": "off_singleback",
+	"side": "offense",
+	"play_type": "pass",
+	"tile_delta_min": 0,
+	"tile_delta_max": 13,
+	"description": "Routes: mixed depths; completion vs coverage."
+  },
+  "pass_06": {
+	"name": "Pass Concept 6",
+	"formation_id": "off_pro",
+	"side": "offense",
+	"play_type": "pass",
+	"tile_delta_min": 0,
+	"tile_delta_max": 13,
+	"description": "Routes: mixed depths; completion vs coverage."
+  },
+  "pass_07": {
+	"name": "Pass Concept 7",
+	"formation_id": "off_i",
+	"side": "offense",
+	"play_type": "pass",
+	"tile_delta_min": 0,
+	"tile_delta_max": 13,
+	"description": "Routes: mixed depths; completion vs coverage."
+  },
+  "pass_08": {
+	"name": "Pass Concept 8",
+	"formation_id": "off_shotgun",
+	"side": "offense",
+	"play_type": "pass",
+	"tile_delta_min": 0,
+	"tile_delta_max": 13,
+	"description": "Routes: mixed depths; completion vs coverage."
+  },
+  "pass_09": {
+	"name": "Pass Concept 9",
+	"formation_id": "off_empty",
+	"side": "offense",
+	"play_type": "pass",
+	"tile_delta_min": 0,
+	"tile_delta_max": 13,
+	"description": "Routes: mixed depths; completion vs coverage."
+  },
+  "pass_10": {
+	"name": "Pass Concept 10",
+	"formation_id": "off_singleback",
+	"side": "offense",
+	"play_type": "pass",
+	"tile_delta_min": 0,
+	"tile_delta_max": 13,
+	"description": "Routes: mixed depths; completion vs coverage."
+  },
+  "pass_11": {
+	"name": "Pass Concept 11",
+	"formation_id": "off_pro",
+	"side": "offense",
+	"play_type": "pass",
+	"tile_delta_min": 0,
+	"tile_delta_max": 13,
+	"description": "Routes: mixed depths; completion vs coverage."
+  },
+  "pass_12": {
+	"name": "Pass Concept 12",
+	"formation_id": "off_i",
+	"side": "offense",
+	"play_type": "pass",
+	"tile_delta_min": 0,
+	"tile_delta_max": 13,
+	"description": "Routes: mixed depths; completion vs coverage."
+  },
+  "run_def_01": {
+	"name": "Run Defense 1",
+	"formation_id": "def_43",
+	"side": "defense",
+	"play_type": "run_def",
+	"description": "Fill and spill run fits."
+  },
+  "run_def_02": {
+	"name": "Run Defense 2",
+	"formation_id": "def_34",
+	"side": "defense",
+	"play_type": "run_def",
+	"description": "Fill and spill run fits."
+  },
+  "run_def_03": {
+	"name": "Run Defense 3",
+	"formation_id": "def_43",
+	"side": "defense",
+	"play_type": "run_def",
+	"description": "Fill and spill run fits."
+  },
+  "run_def_04": {
+	"name": "Run Defense 4",
+	"formation_id": "def_34",
+	"side": "defense",
+	"play_type": "run_def",
+	"description": "Fill and spill run fits."
+  },
+  "run_def_05": {
+	"name": "Run Defense 5",
+	"formation_id": "def_43",
+	"side": "defense",
+	"play_type": "run_def",
+	"description": "Fill and spill run fits."
+  },
+  "run_def_06": {
+	"name": "Run Defense 6",
+	"formation_id": "def_34",
+	"side": "defense",
+	"play_type": "run_def",
+	"description": "Fill and spill run fits."
+  },
+  "run_def_07": {
+	"name": "Run Defense 7",
+	"formation_id": "def_43",
+	"side": "defense",
+	"play_type": "run_def",
+	"description": "Fill and spill run fits."
+  },
+  "run_def_08": {
+	"name": "Run Defense 8",
+	"formation_id": "def_34",
+	"side": "defense",
+	"play_type": "run_def",
+	"description": "Fill and spill run fits."
+  },
+  "run_def_09": {
+	"name": "Run Defense 9",
+	"formation_id": "def_43",
+	"side": "defense",
+	"play_type": "run_def",
+	"description": "Fill and spill run fits."
+  },
+  "run_def_10": {
+	"name": "Run Defense 10",
+	"formation_id": "def_34",
+	"side": "defense",
+	"play_type": "run_def",
+	"description": "Fill and spill run fits."
+  },
+  "run_def_11": {
+	"name": "Run Defense 11",
+	"formation_id": "def_43",
+	"side": "defense",
+	"play_type": "run_def",
+	"description": "Fill and spill run fits."
+  },
+  "run_def_12": {
+	"name": "Run Defense 12",
+	"formation_id": "def_34",
+	"side": "defense",
+	"play_type": "run_def",
+	"description": "Fill and spill run fits."
+  },
+  "pass_def_01": {
+	"name": "Pass Defense 1",
+	"formation_id": "def_nickel",
+	"side": "defense",
+	"play_type": "pass_def",
+	"description": "Coverage shell vs pass."
+  },
+  "pass_def_02": {
+	"name": "Pass Defense 2",
+	"formation_id": "def_dime",
+	"side": "defense",
+	"play_type": "pass_def",
+	"description": "Coverage shell vs pass."
+  },
+  "pass_def_03": {
+	"name": "Pass Defense 3",
+	"formation_id": "def_m2m",
+	"side": "defense",
+	"play_type": "pass_def",
+	"description": "Coverage shell vs pass."
+  },
+  "pass_def_04": {
+	"name": "Pass Defense 4",
+	"formation_id": "def_nickel",
+	"side": "defense",
+	"play_type": "pass_def",
+	"description": "Coverage shell vs pass."
+  },
+  "pass_def_05": {
+	"name": "Pass Defense 5",
+	"formation_id": "def_dime",
+	"side": "defense",
+	"play_type": "pass_def",
+	"description": "Coverage shell vs pass."
+  },
+  "pass_def_06": {
+	"name": "Pass Defense 6",
+	"formation_id": "def_m2m",
+	"side": "defense",
+	"play_type": "pass_def",
+	"description": "Coverage shell vs pass."
+  },
+  "pass_def_07": {
+	"name": "Pass Defense 7",
+	"formation_id": "def_nickel",
+	"side": "defense",
+	"play_type": "pass_def",
+	"description": "Coverage shell vs pass."
+  },
+  "pass_def_08": {
+	"name": "Pass Defense 8",
+	"formation_id": "def_dime",
+	"side": "defense",
+	"play_type": "pass_def",
+	"description": "Coverage shell vs pass."
+  },
+  "pass_def_09": {
+	"name": "Pass Defense 9",
+	"formation_id": "def_m2m",
+	"side": "defense",
+	"play_type": "pass_def",
+	"description": "Coverage shell vs pass."
+  },
+  "pass_def_10": {
+	"name": "Pass Defense 10",
+	"formation_id": "def_nickel",
+	"side": "defense",
+	"play_type": "pass_def",
+	"description": "Coverage shell vs pass."
+  },
+  "pass_def_11": {
+	"name": "Pass Defense 11",
+	"formation_id": "def_dime",
+	"side": "defense",
+	"play_type": "pass_def",
+	"description": "Coverage shell vs pass."
+  },
+  "pass_def_12": {
+	"name": "Pass Defense 12",
+	"formation_id": "def_m2m",
+	"side": "defense",
+	"play_type": "pass_def",
+	"description": "Coverage shell vs pass."
+  },
+  "kickoff_01": {
+	"name": "Kickoff 1",
+	"formation_id": "spe_kickoff",
+	"side": "special",
+	"play_type": "kickoff",
+	"description": "Kickoff placement variant."
+  },
+  "kickoff_ret_01": {
+	"name": "Kickoff Return 1",
+	"formation_id": "spe_kickoff_return",
+	"side": "defense",
+	"play_type": "kickoff_return",
+	"description": "Return lanes and wall."
+  },
+  "punt_01": {
+	"name": "Punt 1",
+	"formation_id": "spe_punt",
+	"side": "special",
+	"play_type": "punt",
+	"description": "Directional punt variant."
+  },
+  "punt_ret_01": {
+	"name": "Punt Return 1",
+	"formation_id": "spe_punt_return",
+	"side": "defense",
+	"play_type": "punt_return",
+	"description": "Return setup variant."
+  },
+  "kickoff_02": {
+	"name": "Kickoff 2",
+	"formation_id": "spe_kickoff",
+	"side": "special",
+	"play_type": "kickoff",
+	"description": "Kickoff placement variant."
+  },
+  "kickoff_ret_02": {
+	"name": "Kickoff Return 2",
+	"formation_id": "spe_kickoff_return",
+	"side": "defense",
+	"play_type": "kickoff_return",
+	"description": "Return lanes and wall."
+  },
+  "punt_02": {
+	"name": "Punt 2",
+	"formation_id": "spe_punt",
+	"side": "special",
+	"play_type": "punt",
+	"description": "Directional punt variant."
+  },
+  "punt_ret_02": {
+	"name": "Punt Return 2",
+	"formation_id": "spe_punt_return",
+	"side": "defense",
+	"play_type": "punt_return",
+	"description": "Return setup variant."
+  },
+  "kickoff_03": {
+	"name": "Kickoff 3",
+	"formation_id": "spe_kickoff",
+	"side": "special",
+	"play_type": "kickoff",
+	"description": "Kickoff placement variant."
+  },
+  "kickoff_ret_03": {
+	"name": "Kickoff Return 3",
+	"formation_id": "spe_kickoff_return",
+	"side": "defense",
+	"play_type": "kickoff_return",
+	"description": "Return lanes and wall."
+  },
+  "punt_03": {
+	"name": "Punt 3",
+	"formation_id": "spe_punt",
+	"side": "special",
+	"play_type": "punt",
+	"description": "Directional punt variant."
+  },
+  "punt_ret_03": {
+	"name": "Punt Return 3",
+	"formation_id": "spe_punt_return",
+	"side": "defense",
+	"play_type": "punt_return",
+	"description": "Return setup variant."
+  },
+  "fg_01": {
+	"name": "Field Goal 1",
 	"formation_id": "spe_spot_kick",
 	"side": "special",
-	"enabled_zones": [4, 5, 6],
+	"play_type": "spot_kick",
+	"enabled_zones": [
+	  4,
+	  5,
+	  6
+	],
 	"base_chance": {
 	  "4": 35,
 	  "5": 55,
 	  "6": 75
-	}
+	},
+	"description": "FG alignment variant."
   },
-  "fg_xp_block": {
-	"name": "FG/XP block",
+  "fg_xp_def_01": {
+	"name": "FG/XP Block 1",
 	"formation_id": "spe_fg_block",
-	"side": "defense"
+	"side": "defense",
+	"play_type": "fg_xp_def",
+	"description": "Rush lanes vs FG/XP."
   },
-  "punt": {
-	"name": "Punt",
-	"formation_id": "spe_punt",
-	"side": "special"
+  "fg_02": {
+	"name": "Field Goal 2",
+	"formation_id": "spe_spot_kick",
+	"side": "special",
+	"play_type": "spot_kick",
+	"enabled_zones": [
+	  4,
+	  5,
+	  6
+	],
+	"base_chance": {
+	  "4": 35,
+	  "5": 55,
+	  "6": 75
+	},
+	"description": "FG alignment variant."
   },
-  "punt_return": {
-	"name": "Punt return",
-	"formation_id": "spe_punt_return",
-	"side": "defense"
-  },
-  "kickoff": {
-	"name": "Kickoff",
-	"formation_id": "spe_kickoff",
-	"side": "special"
-  },
-  "kickoff_return": {
-	"name": "Kickoff return",
-	"formation_id": "spe_kickoff_return",
-	"side": "defense"
-  },
-  "run_def": {
-	"name": "Run defense",
-	"formation_id": "def_43",
-	"side": "defense"
-  },
-  "man_to_man": {
-	"name": "Man-to-man",
-	"formation_id": "def_nickel",
-	"side": "defense"
-  },
-  "zone": {
-	"name": "Zone",
-	"formation_id": "def_34",
-	"side": "defense"
-  },
-  "fg_def": {
-	"name": "FG/XP block defense",
+  "fg_xp_def_02": {
+	"name": "FG/XP Block 2",
 	"formation_id": "spe_fg_block",
-	"side": "defense"
+	"side": "defense",
+	"play_type": "fg_xp_def",
+	"description": "Rush lanes vs FG/XP."
   }
 }

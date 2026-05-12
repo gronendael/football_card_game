@@ -8,15 +8,9 @@ Coordinator - A coach assigned as either the Offensive Coordinator (OC) or Defen
 - May provide Player, Team, Play, or Game modifiers/buffs/debuffs
 - May provide unique Cards to the Team's available Decks
 - Comes with:
--- 6 Core Plays always available:
---- Kickoff
---- Kickoff Return
---- Spot kick (FG/XP; play id **`spot_kick`**)
---- FG/XP block
---- Punt
---- Punt Return/Block
--- 2 Offensive Plays (OC)
--- 2 Defensive Plays (DC)
+-- Required playbook buckets (six): kickoff, kickoff_return, spot_kick, fg_xp_def, punt, punt_return
+-- OC slots / DC slots (see coach row `max_playbook_offense_slots` / `max_playbook_defense_slots`; prototype uses **4** each) choose catalog offense/defense plays for [data/playbooks/](data/playbooks/)
+- Team row in [data/teams.json](data/teams.json): **`off_coord_id`**, **`def_coord_id`**, **`playbook_id`**
 
 Roster - A list of all players and coaches on the user's Team that they have accumulated over the course of playing the app.
 - Roster Limit: 50 players

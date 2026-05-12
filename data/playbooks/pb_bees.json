@@ -1,0 +1,21 @@
+{
+  "id": "pb_bees",
+  "team_id": "bees",
+  "max_slots": 14,
+  "play_ids": [
+    "kickoff_02",
+    "kickoff_ret_03",
+    "punt_03",
+    "punt_ret_03",
+    "fg_01",
+    "fg_xp_def_02",
+    "pass_01",
+    "pass_03",
+    "run_03",
+    "pass_02",
+    "pass_def_03",
+    "run_def_04",
+    "pass_def_01",
+    "run_def_03"
+  ]
+}

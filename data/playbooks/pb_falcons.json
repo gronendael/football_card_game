@@ -1,0 +1,21 @@
+{
+  "id": "pb_falcons",
+  "team_id": "falcons",
+  "max_slots": 14,
+  "play_ids": [
+    "kickoff_03",
+    "kickoff_ret_02",
+    "punt_03",
+    "punt_ret_02",
+    "fg_02",
+    "fg_xp_def_02",
+    "run_04",
+    "pass_03",
+    "run_03",
+    "pass_01",
+    "pass_def_04",
+    "run_def_03",
+    "pass_def_01",
+    "pass_def_02"
+  ]
+}

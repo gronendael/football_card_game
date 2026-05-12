@@ -13,7 +13,6 @@ PROPERTIES
 - Jersey ID
 - Current Playbook ID
 - Current Deck ID
-- Head Coach ID
 - Offensive Coordinator ID
 - Defensive Coordinator ID
 - Player IDs for current Lineup
@@ -198,8 +197,9 @@ SPECIALTIES (List of specialties the coach has which gives boosts to players, pl
 - Ball spot / first-down logic use **`current_los_row_engine`**; standard-play **defense matchup** and OC **`standard_zone_bonus`** adjust `tile_delta` in **whole tile rows** (not ×5)
 
 ### PUNT RETURN (resolver / `resolve_punt` modifier map)
+- **Net tile rows** = `punt_rows - return_rows` (no minimum floor; can be negative). **Zone** after punt: `current_zone + round(net / 5)`, clamped to `[1, MAX_ZONE]` (`resolve_punt` → `game_scene` punt result).
 - **1 tile row ≈ 1 yd** of return gain. Tiered sampling (see `scripts/play_resolver.gd`); returner = `PlayerData.get_primary_return_candidate(receiving team)` (speed + agility + catching vs punter tackling + awareness for coverage bias).
-- Optional **`bonus` int keys** on `head_coach` / `def_coord` in [data/coaches.json](data/coaches.json) (receiving team): **`punt_return_bonus`** — shifts tier mass toward longer returns. (Punting team): **`punt_coverage_bonus`** — shifts mass toward short / zero returns.
+- Optional int keys on coordinators in [data/coaches_catalog.json](data/coaches_catalog.json): receiving team **`def_coord.bonus_defense.punt_return_bonus`** — shifts tier mass toward longer returns; punting team **`off_coord.bonus_offense.punt_coverage_bonus`** — shifts mass toward short / zero returns.
 - **`card_return_bonus` / `card_coverage_bonus`** (ints, default **0** in `_build_punt_return_modifiers`) — reserved for queued card / effect hooks to nudge the same weights.
 
 ### SKILLS (for Players)
@@ -307,3 +307,8 @@ SPECIALTIES (List of specialties the coach has which gives boosts to players, pl
 - Standings
 - Wins/Losses/Ties
 - Team IDs (List of teams competing in the Season)
+
+### LIVE GAME (GameScene HUD / testing)
+- **`show_action_timer_bar`** (bool export on [scenes/game_scene.tscn](scenes/game_scene.tscn) root, mirrored by HUD **Play clock (10s)** `CheckButton`): **`true`** — 10s play clock, progress bar, delay-of-game / defense timeout pick / card-queue auto-ready from timer; **`false`** — no countdown or timer-driven behavior (analysis / testing).
+- **`_defer_scrimmage_game_clock_until_first_snap`** (`game_scene.gd`): while **`true`**, the **game clock** does not run during scrimmage **offense** play-selection windows; cleared when **`_resolve_play`** starts (first snap of the half after play + cards); set again on **Restart** and when the **second half** begins (`_after_force_halftime_second_half`). While defer is on, **`_apply_sim_presnap_runoff`** does not subtract **`game_time_remaining`** (sim play clock bar still drains if enabled).
+- **Last play toast:** after most play outcomes, a **2s** line centered on **`MobileFrame`** (bold italic colored text, **~88px** font, no panel); gain/loss/punt-net lines use **yard** phrasing only (tile rows ≈ yards; no duplicate tile-row suffix). See `game_scene.gd` (`_show_last_play_toast`, `_maybe_toast_after_standard_apply_play`).

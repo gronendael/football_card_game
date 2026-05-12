@@ -2,7 +2,7 @@ ABBREVIATIONS
 OFF - Offense; Team in Possession
 DEF - Defense; Team NOT in Possession
 KO - Kickoff
-HC - Head Coach
+HC - Head Coach (not used for numeric bonuses in current prototype; OC/DC carry coordinator bonuses)
 OC - Offensive Coordinator
 DC - Defensive Coordinator
 PB - Playbook
@@ -21,7 +21,8 @@ RET - Returner
 TO - Timeout
 TD - Touchdown
 G2G - Goal to go (within 10 tile rows of scoring endzone; no first-down line; full endzone highlight)
-FG - Field Goal (scoring); offensive play id in data is **`spot_kick`** (FG and XP)
+FG - Field Goal (scoring); offensive bucket in catalog is **`spot_kick`** (FG and XP attempts)
+FGXP DEF - Defensive bucket **`fg_xp_def`** (FG/XP block-style calls vs spot kicks)
 XP - Extra Point
 2P - 2-point Conversion
 SAF - Safety (scoring play when offense is tackled in **Defensive Endzone**, zone ID 1)

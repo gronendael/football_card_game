@@ -1,0 +1,21 @@
+{
+  "id": "pb_knights",
+  "team_id": "knights",
+  "max_slots": 14,
+  "play_ids": [
+    "kickoff_02",
+    "kickoff_ret_03",
+    "punt_02",
+    "punt_ret_02",
+    "fg_01",
+    "fg_xp_def_01",
+    "run_01",
+    "pass_04",
+    "pass_02",
+    "run_02",
+    "run_def_02",
+    "pass_def_04",
+    "pass_def_03",
+    "pass_def_01"
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "id": "pb_hawks",
+  "team_id": "hawks",
+  "max_slots": 14,
+  "play_ids": [
+    "kickoff_01",
+    "kickoff_ret_01",
+    "punt_01",
+    "punt_ret_01",
+    "fg_02",
+    "fg_xp_def_01",
+    "pass_02",
+    "run_04",
+    "run_02",
+    "pass_03",
+    "run_def_02",
+    "pass_def_02",
+    "pass_def_03",
+    "pass_def_04"
+  ]
+}

@@ -285,12 +285,14 @@ Note: possession summaries still use **`field_goal`** / **`missed_field_goal`** 
 - Manual card input behavior:
   - In manual mode, user queues cards by dragging/clicking specific hand cards into queue (no required `Play Card` button usage)
   - Queued cards can be removed back to hand before user presses `Ready`
-- Action timer (HUD progress bar; replaces legacy combined play clock for scrimmage):
+- Play clock / action timer (HUD **`ActionTimerProgressBar`** + toggle **`ShowActionTimerBarToggle`** / export **`show_action_timer_bar`**; replaces legacy combined play clock for scrimmage):
+  - When **`show_action_timer_bar`** is **`false`**: timer **does not run** — no bar, no countdown, no delay-of-game / defense AI timeout pick / card-queue auto-ready from the timer (analysis mode). When **`true`**: full behavior below.
+  - **Inspector / HUD:** same flag; toggling off mid-window calls `_stop_turn_action_timer()`; toggling on during `PHASE_PLAY_SELECTION` or `PHASE_CARD_QUEUE` restarts a full **10s** window.
   - **Play selection:** offense has **10s** to set a **tentative** play + **Call Play** (button disabled until tentative); on expiration → delay of game (LOS back one tile row toward own goal when not already on hold row `TILE_ROWS_TOTAL - 2`), then another **10s** offense window. After offense locks, defense has **10s** for tentative + **Call Play**; on expiration before defense calls → AI recommended defense is selected and locked. **XP:** primary slot shows **Call Play** disabled for the conversion team before auto-resolve.
   - Offense AI in sim/autoplay uses situational punt logic (`_sim_should_call_punt`) based on down, zone, score differential, and current-half time left.
-  - **Punt resolution** (`resolve_punt`): punt distance in tile rows from kicker stats. **No Punt Return** → **0** return rows. **Punt Return** → tiered return tile rows (`play_resolver.gd`: bands 0 | 1–5 | 6–19 | 20–29 | 30–34 field cap, NFL-ish base weights, **stats/coach/card modifiers** shift weights via `_build_punt_return_modifiers()` in `game_scene.gd`). Net drives new possession spot; event log includes punt / return / net tile rows.
+  - **Punt resolution** (`resolve_punt`): punt distance in tile rows from kicker stats. **No Punt Return** → **0** return rows. **Punt Return** → tiered return tile rows (`play_resolver.gd`: bands 0 | 1–5 | 6–19 | 20–29 | 30–34 field cap, NFL-ish base weights, **stats/coach/card modifiers** shift weights via `_build_punt_return_modifiers()` in `game_scene.gd`). **Net** = punt rows − return rows (true difference, can be negative). **Zone** delta = `round(net / 5)` from punting offense’s zone, clamped to `[1, MAX_ZONE]`; event log includes punt / return / net tile rows.
   - **Touchback LOS (row 25):** Opening possession (`start_game`), halftime second half (`force_halftime_now`), post-score **kickoff**, and punt into **endzone** (`zone_after >= ZONE_END` → `next_drive_los_row_engine` + `end_possession`) all use `GameState.TOUCHBACK_LOS_ROW_ENGINE` via `start_possession(..., los_row_override)`. **Event log:** `_append_touchback_event_log(suffix)` after each of those flows (opening kickoff, halftime, post-TD kickoff, punt endzone).
-  - **Card queue:** **10s** simultaneous window; on expiration → auto-ready **empty** for teams not ready.
+  - **Card queue:** **10s** simultaneous window (only when play clock on); on expiration → auto-ready **empty** for teams not ready.
   - Decrement uses **real delta time** in `_process` (not tied to running game clock ticks).
   - **Forfeit (per tracked team):** 3 consecutive completed turns with **no manual play call** for that team’s role and **no cards played**; `scripts/game_scene.gd` (`_evaluate_inaction_streaks_for_completed_turn`).
 - Post-TD: `PHASE_CONVERSION` with empty `conversion_type` → scoring team chooses **XP** or **2PT** (`ExtraPointButton` / `TwoPointButton`). **XP:** `_choose_conversion(CONVERSION_XP)` → `_run_extra_point_attempt()` (kicker stats). **2PT:** `_choose_conversion(CONVERSION_2PT)` → normal play-selection / resolve path. Sim / AI scoring team: `_maybe_run_ai_inputs` + `_sim_pick_conversion()`.
@@ -301,9 +303,9 @@ Note: possession summaries still use **`field_goal`** / **`missed_field_goal`** 
 - Resolve start-turn effects
 - Draw 1 card per team
 - Resolve draw-triggered effects
-- Offense selects tentative play + **Call Play** (10s bar; **Call Play** disabled until tentative)
-- Defense selects tentative play + **Call Play** (10s bar; AI auto-calls on timeout; **Call Play** disabled until tentative)
-- Teams queue cards + **Ready** (10s bar; auto-ready empty on timeout; **Ready** not blocked by zero cards)
+- Offense selects tentative play + **Call Play** (10s bar when play clock on; **Call Play** disabled until tentative)
+- Defense selects tentative play + **Call Play** (10s bar when play clock on; AI auto-calls on timeout; **Call Play** disabled until tentative)
+- Teams queue cards + **Ready** (10s bar when play clock on; auto-ready empty on timeout; **Ready** not blocked by zero cards)
 - Execute queued cards
 - Resolve play outcome
 - End turn
@@ -319,10 +321,10 @@ In `GameState`, maintain:
 
 ### Dynamic Possession Play UI
 
-- Two team play rows are shown (`OpponentPlayButtons`, `UserPlayButtons` mapped by seat); **offense picks before defense** on scrimmage downs.
-- Offense row: `Run`, `Short Pass`, `Deep Pass`, `Field Goal` (as enabled), `Punt` (all downs), then **`Call Play`** (same physical button as `Ready` in card phase) to lock — **`Call Play` disabled** until a **tentative** offensive play is selected.
-- Defense row: `Run Def`, `Man-to-Man`, `Zone`, `FG Def` / `Punt Return` (contextual on offense call), then **`Call Play`** (same physical button as `Ready` in card phase); defense controls are enabled only after offense has locked; **`Call Play` disabled** until a **tentative** defensive play is selected. Card phase: **`Ready`** not blocked by zero cards (still disabled when already readied / AI / wrong phase).
-- Formation preview privacy (multiplayer-ready rule): before `Call Play`, only the selecting team sees its own tentative formation; opponent sees it only after that team calls. During defense window, defense can see called offense formation plus its own tentative defense formation.
+- Two team play rows are shown (`OpponentPlayButtons`, `UserPlayButtons` inside `UserPlayButtonsRow` mapped by seat); **`UserPlayRowPossessionIcon`** (🏈 offense / 🛡️ defense for the user’s current scrimmage role). **Offense picks before defense** on scrimmage downs.
+- Offense row: **Run / Pass / Field Goal / Punt** (as enabled) open **`PlayPickPopup`** on a **`CanvasLayer`** — scrollable **`play_pick_card`** tiles (name + 3×3 formation thumbnail), **✕** top-right, large green **Call Play** bottom-right; **`UserReadyButton`** / opponent primary slot stays labeled **`Ready`** and commits the tentative offense play (**disabled** until a tentative play exists).
+- Defense row: defense categories → same picker; **`Ready`** commits defensive tentative play after offense has locked (**disabled** until tentative exists). Card phase: **`Ready`** not blocked by zero cards (still disabled when already readied / AI / wrong phase).
+- Formation preview privacy (multiplayer-ready rule): before **`Ready`** commits the line, only the selecting team sees its own tentative formation; opponent sees it only after that team calls. During defense window, defense can see called offense formation plus its own tentative defense formation.
 - Card queue flow:
   - Both teams can queue cards concurrently
   - Both teams press `Ready` independently
@@ -336,8 +338,8 @@ In `GameState`, maintain:
 ## Scene / UI Structure
 
 - [scenes/game_scene.tscn](scenes/game_scene.tscn)
-  - Root Control with managers as child nodes
-  - HUD labels for clock / half / score / possession / zone / down / phase / result; **ClockPanel** includes `ActionTimerProgressBar` (10s windows); legacy `PlayClockValueLabel` hidden; **UserDownDistanceLabel** on `UserHUD` (`1st and 10` / `3rd and Goal`, tile rows); event log uses tile rows toward goal per play and teal **First down** lines; **FG** make/miss explicit lines in `_apply_play_result` (`#66ff00` good, `#ff6666` miss + turnover); **Game clock:** `_sync_game_clock_scrimmage_policy()` (end of `_update_ui`) sets `_clock_running` only in `_scrimmage_offense_selecting_window()` unless `_manual_pause_active`, `_auto_pause_after_sim_stop`, or `_game_clock_hold_after_rule_stop` (`_stop_clock(..., true)`); **Sim** pause uses `_sim_tick_paused` + `sim_timer` decoupled from `_clock_running`; **manual** Pause toggles `_manual_pause_active`; **Sim → Man** `_auto_pause_after_sim_stop`. **Halftime:** `_after_force_halftime_second_half` after `force_halftime_now`
+  - Root Control with managers as child nodes; **LastPlayToastLayer** (`CanvasLayer` layer 18): **2s** outcome line over **`MobileFrame`** (very large bold italic BBCode ~88px, no background; `game_scene.gd`; yardage toasts: **N yard(s)** only, no “tile rows” duplicate); **`UserPlayButtonsRow`** — **`UserPhasePromptPanel`** (`MarginContainer`) + **`UserPhasePromptLabel`** (uppercase notification, not a button chip)
+  - HUD labels for clock / half / score / possession / zone / down / phase / result; **ClockPanel** includes `ActionTimerProgressBar` (10s when `show_action_timer_bar`); **`ShowActionTimerBarToggle`** on `HUDGroup`; legacy `PlayClockValueLabel` hidden; **UserDownDistanceLabel** on `UserHUD` (`1st and 10` / `3rd and Goal`, tile rows); **`UserPlayButtonsRow`** + **`UserPlayRowPossessionIcon`**; **`SpeedPanel`**: `-` / `+` adjust sim speed, **`SpeedX2`** / **`SpeedX10`** jump to **2×** / **10×** (clamped **0.5–10**); event log: **tile-row play line first**, then **turnover** / **turnover on downs** / **first down** as applicable; **FG** make/miss explicit lines in `_apply_play_result` (`#66ff00` good, `#ff6666` miss + turnover); **Game clock:** `_sync_game_clock_scrimmage_policy()` (end of `_update_ui`) sets `_clock_running` only in `_scrimmage_offense_selecting_window()` when **`not _defer_scrimmage_game_clock_until_first_snap`** (cleared at `_resolve_play` entry; re-armed on **Restart** and `_after_force_halftime_second_half`) unless `_manual_pause_active`, `_auto_pause_after_sim_stop`, or `_game_clock_hold_after_rule_stop` (`_stop_clock(..., true)`); **Sim** pause uses `_sim_tick_paused` + `sim_timer` decoupled from `_clock_running`; **manual** Pause toggles `_manual_pause_active`; **Sim → Man** `_auto_pause_after_sim_stop`. **Halftime:** `_after_force_halftime_second_half` after `force_halftime_now`
   - [scenes/field.tscn](scenes/field.tscn): **`BallChip`** (`Label`, football emoji at LOS; possession tint); removed legacy `BallMarker` / `PossessionArrow` / `PossessionOnFieldLabel`
   - [scenes/field.tscn](scenes/field.tscn): **`BallChip`** (`Label`, football emoji at LOS; possession tint); removed legacy `BallMarker` / `PossessionArrow` / `PossessionOnFieldLabel`
   - `UserTeamLabel` showing random per-game assignment (`You are: Home/Away`)
@@ -372,8 +374,9 @@ In `GameState`, maintain:
 - [data/players.json](data/players.json)
 - [data/skills.json](data/skills.json)
 - [data/cards.json](data/cards.json)
-- [data/coaches.json](data/coaches.json)
-- [data/plays.json](data/plays.json) (offense + defense play ids, `formation_id`, `side`; **spot_kick** replaces legacy field goal key; defense ids include `run_def`, `man_to_man`, `zone`, `fg_def`)
+- [data/coaches_catalog.json](data/coaches_catalog.json) (OC/DC ids referenced by [data/teams.json](data/teams.json); `bonus_offense` / `bonus_defense`)
+- [data/playbooks/](data/playbooks/) per-team playbook JSON (`play_ids`, `max_slots`; validated vs catalog)
+- [data/plays.json](data/plays.json) (catalog: each play id has `play_type` bucket — **run**, **pass**, **run_def**, **pass_def**, **spot_kick**, **punt**, **fg_xp_def**, **punt_return**, specials, etc.)
 - [data/formations.json](data/formations.json)
 
 Use typed conversion when loading JSON arrays to satisfy typed GDScript arrays.

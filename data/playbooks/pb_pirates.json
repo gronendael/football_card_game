@@ -1,0 +1,21 @@
+{
+  "id": "pb_pirates",
+  "team_id": "pirates",
+  "max_slots": 14,
+  "play_ids": [
+    "kickoff_01",
+    "kickoff_ret_02",
+    "punt_01",
+    "punt_ret_01",
+    "fg_02",
+    "fg_xp_def_01",
+    "run_03",
+    "run_01",
+    "pass_01",
+    "run_04",
+    "pass_def_01",
+    "pass_def_04",
+    "run_def_01",
+    "run_def_02"
+  ]
+}
