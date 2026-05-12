@@ -185,9 +185,12 @@ SPECIALTIES (List of specialties the coach has which gives boosts to players, pl
 | 7 | `ZONE_END` | Scoring Endzone | Defensive Endzone |
 
 - In-game **Zone** HUD label uses **offense** names when the viewer’s team has the ball, **defense** names when the viewer’s team is on defense (`scripts/game_scene.gd`: `_zone_display_for_team`).
+- **`GlobalHUD` / `PlayCountLabel`:** **`Plays: n`** — **n** = `_game_plays` (increment at start of `_apply_play_result` / `_apply_punt_result`; reset in `_begin_new_game_stats`).
 - Event logs and resolver strings use **offense** names (`_zone_name`) as the canonical field description for the current possession. **Field goal** result lines: good `#66ff00`, missed `#ff6666` (then turnover text).
+- **Event log situation prefix** (`game_scene.gd`): on scrimmage (`_apply_play_result`, non-2PT) and punt (`_apply_punt_result`), lines may open with `[Nth & X from R⬇️/⬆️] ` where **Nth** is down at snap, **X** is `max(0, snap_los_engine - snap_fd_target)` tile rows or **Goal** when goal-to-go / no FD row, **R** = `FieldGrid.perspective_row(snap_los_engine, possession_team == "home")`, arrow **⬇️** if `R > FieldGrid.TOTAL_ROWS / 2` else **⬆️**. Prefix is cleared before post-TD conversion flows so TD/XP/2PT-style lines do not carry scrimmage spot context.
 
 ### GAME STATE (runtime / prototype)
+- `momentum_home` / `momentum_away` — per-team banks (**≥ 0**, no upper cap); **persist across possession changes** (`start_possession` does not reset them). Gain **+1** each to both after most resolved plays (`_advance_both_teams_resources`); spending cards reduces the bank. `start_game` sets both to **1** before the opening `start_possession` (restart / new game).
 - `downs` — current down, **1–4**; resets to **1** on new possession and on each new first down
 - `first_down_chain_base_row_engine` / `first_down_target_row_engine` — engine tile row for LOS at chain start and yellow first-down line (**10 rows** toward the goal from base); `first_down_target_row_engine == -1` when **goal to go** (LOS within 10 rows of the scoring endzone — no first-down line; still 4 downs to score)
 - `current_zone` — macro field position (**1–7**; see FIELD ZONES above); FG range and modifiers use zone IDs
@@ -197,7 +200,7 @@ SPECIALTIES (List of specialties the coach has which gives boosts to players, pl
 - Ball spot / first-down logic use **`current_los_row_engine`**; standard-play **defense matchup** and OC **`standard_zone_bonus`** adjust `tile_delta` in **whole tile rows** (not ×5)
 
 ### PUNT RETURN (resolver / `resolve_punt` modifier map)
-- **Net tile rows** = `punt_rows - return_rows` (no minimum floor; can be negative). **Zone** after punt: `current_zone + round(net / 5)`, clamped to `[1, MAX_ZONE]` (`resolve_punt` → `game_scene` punt result).
+- **Net tile rows** = `punt_rows - return_rows` (no minimum floor; can be negative). **Post-punt ball spot:** engine LOS before punt **minus** `net_rows` (clamped); **zone** after punt = `zone_from_engine_row` of that row (`resolve_punt` → `game_scene` `_apply_punt_result`; not `round(net / 5)` zone steps).
 - **1 tile row ≈ 1 yd** of return gain. Tiered sampling (see `scripts/play_resolver.gd`); returner = `PlayerData.get_primary_return_candidate(receiving team)` (speed + agility + catching vs punter tackling + awareness for coverage bias).
 - Optional int keys on coordinators in [data/coaches_catalog.json](data/coaches_catalog.json): receiving team **`def_coord.bonus_defense.punt_return_bonus`** — shifts tier mass toward longer returns; punting team **`off_coord.bonus_offense.punt_coverage_bonus`** — shifts mass toward short / zero returns.
 - **`card_return_bonus` / `card_coverage_bonus`** (ints, default **0** in `_build_punt_return_modifiers`) — reserved for queued card / effect hooks to nudge the same weights.

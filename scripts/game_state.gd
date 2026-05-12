@@ -117,8 +117,8 @@ func start_game() -> void:
 	next_drive_los_row_engine = -1
 	drive_summaries.clear()
 	_just_switched_for_halftime = false
-	momentum_home = 0
-	momentum_away = 0
+	momentum_home = 1
+	momentum_away = 1
 
 	deck_home.clear()
 	hand_home.clear()
@@ -153,9 +153,7 @@ func start_possession(team: String, start_zone: int, los_row_override: int = -1)
 	pending_play_type = PENDING_NONE
 	reset_first_down_chain_from_current_zone()
 
-	# Reset both teams to exactly 1 on possession change.
-	momentum_home = 1
-	momentum_away = 1
+	# Momentum carries across possessions (per-team bank; clamped when gained/spent in `game_scene.gd`).
 
 	# Mark first play of this possession so start-of-play gain can be skipped once.
 	just_started_possession = true

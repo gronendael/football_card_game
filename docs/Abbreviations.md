@@ -29,4 +29,5 @@ SAF - Safety (scoring play when offense is tackled in **Defensive Endzone**, zon
 Z1–Z7 - Field zone IDs (`current_zone`); offense vs defense **display** names in [Properties.md](Properties.md) FIELD ZONES (e.g. ID 2 offense **Build Zone** / defense **Contain Zone**)
 FUM - Fumble
 INT - Interception
+EL spot - Event log situation line arrows after perspective LOS row: **⬇️** = toward the **user’s** end of the field, **⬆️** = toward the **opponent** (midfield split in perspective row space; see [Properties.md](Properties.md) **Event log situation prefix**)
 SUB - Substitution (When a team removes a player from the team on the field and puts in another player from the Player Bench)

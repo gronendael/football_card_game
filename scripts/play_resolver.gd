@@ -225,7 +225,12 @@ func _punt_return_tile_rows_from_modifiers(m: Dictionary) -> Dictionary:
 	return {"rows": rows, "tier": tier, "tier_label": tier_label, "weights": w}
 
 
-func resolve_punt(current_zone: int, kick_stats: Dictionary, defense_called_return: bool = false, return_modifiers: Dictionary = {}) -> Dictionary:
+func _punt_zone_from_engine_row(row: int) -> int:
+	var zidx := clampi(row / GameState.TILE_ROWS_PER_ZONE, 0, GameState.MAX_ZONE - 1)
+	return clampi(GameState.ZONE_END - zidx, 1, GameState.MAX_ZONE)
+
+
+func resolve_punt(los_row_engine: int, kick_stats: Dictionary, defense_called_return: bool = false, return_modifiers: Dictionary = {}) -> Dictionary:
 	var kick_power: int = int(kick_stats.get("kick_power", 50))
 	var kick_consistency: int = int(kick_stats.get("kick_consistency", 50))
 	var punt_rows := randi_range(8, 18) + int((kick_power - 50) * 0.08) + int((kick_consistency - 50) * 0.04)
@@ -237,13 +242,15 @@ func resolve_punt(current_zone: int, kick_stats: Dictionary, defense_called_retu
 		return_rows = int(return_meta.get("rows", 0))
 		return_rows = clampi(return_rows, 0, _PUNT_RETURN_ROWS_MAX)
 	var net_rows := punt_rows - return_rows
-	var zone_delta := int(round(float(net_rows) / 5.0))
-	var zone_after_offense_view := clampi(current_zone + zone_delta, 1, 7)
+	## Same sign as scrimmage `apply_ball_movement_tile_delta`: positive net → ball toward scoring end → engine row decreases.
+	var post_punt_los_row_engine := clampi(los_row_engine - net_rows, 0, GameState.TILE_ROWS_TOTAL - 1)
+	var zone_after_offense_view := _punt_zone_from_engine_row(post_punt_los_row_engine)
 	var return_line := ("Return: %d tile rows" % return_rows) if defense_called_return else "Return: 0 tile rows (no Punt Return)"
 	var bd: Array = [
 		"Punt distance: %d rows" % punt_rows,
 		return_line,
-		"Net: %d rows" % net_rows
+		"Net: %d rows" % net_rows,
+		"Post-punt LOS engine row: %d (zone %d)" % [post_punt_los_row_engine, zone_after_offense_view]
 	]
 	if defense_called_return and not return_meta.is_empty():
 		bd.append(
@@ -262,6 +269,7 @@ func resolve_punt(current_zone: int, kick_stats: Dictionary, defense_called_retu
 		"punt_rows": punt_rows,
 		"return_rows": return_rows,
 		"net_rows": net_rows,
+		"post_punt_los_row_engine": post_punt_los_row_engine,
 		"zone_after_current_offense": zone_after_offense_view,
 		"result_text": "Punt %d tile rows, return %d tile rows, net %d." % [punt_rows, return_rows, net_rows],
 		"breakdown": bd

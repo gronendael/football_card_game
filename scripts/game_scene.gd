@@ -43,6 +43,7 @@ const PLAY_PICK_CARD_SCENE := preload("res://scenes/play_pick_card.tscn")
 @onready var half_label: Label = $HUDGroup/GlobalHUD/HalfLabel
 @onready var zone_label: Label = $HUDGroup/GlobalHUD/ZoneLabel
 @onready var downs_label: Label = $HUDGroup/GlobalHUD/DownsLabel
+@onready var play_count_label: Label = get_node_or_null("HUDGroup/GlobalHUD/PlayCountLabel") as Label
 @onready var phase_label: Label = $HUDGroup/GlobalHUD/PhaseLabel
 @onready var result_text: RichTextLabel = $HUDGroup/PlayInfoHUD/ResultText
 @onready var opponent_momentum_value_label: Label = get_node_or_null("OpponentGroup/OpponentHUD/OpponentMomentumValueLabel") as Label
@@ -206,6 +207,8 @@ var _ready_miss_streak_away: int = 0
 var _turn_manual_play_home: bool = false
 var _turn_manual_play_away: bool = false
 var _play_down_at_snap: int = 1
+## Non-empty while logging lines for the current resolved scrimmage/punt play (`1st & 10 from 22⬇️` …).
+var _event_log_play_situation_prefix: String = ""
 var _offense_play_tentative: String = GameState.PENDING_NONE
 var _defense_play_tentative: String = ""
 var _play_pick_window: String = "offense"
@@ -1675,8 +1678,8 @@ func _advance_both_teams_resources() -> void:
 		game_state.card_played_this_play_away = false
 		return
 		
-	game_state.momentum_home = clampi(game_state.momentum_home + 1, 0, 5)
-	game_state.momentum_away = clampi(game_state.momentum_away + 1, 0, 5)
+	game_state.momentum_home += 1
+	game_state.momentum_away += 1
 
 	card_manager.draw(game_state.hand_home, game_state.deck_home, game_state.discard_home, 1, 5)
 	card_manager.draw(game_state.hand_away, game_state.deck_away, game_state.discard_away, 1, 5)
@@ -1705,7 +1708,7 @@ func _resolve_play() -> void:
 	if pbucket == BUCKET_PUNT:
 		var punter := _kicker_for_fg_attempt()
 		var return_called := _pid_bucket(_selected_defense_play) == BUCKET_PUNT_RETURN
-		var punt_result := play_resolver.resolve_punt(game_state.current_zone, punter, return_called, _build_punt_return_modifiers())
+		var punt_result := play_resolver.resolve_punt(game_state.current_los_row_engine, punter, return_called, _build_punt_return_modifiers())
 		punt_result["breakdown"].append("Defense call: %s" % _selected_defense_play)
 		_apply_punt_result(punt_result)
 		return
@@ -1772,20 +1775,26 @@ func _build_punt_return_modifiers() -> Dictionary:
 
 
 func _apply_punt_result(result: Dictionary) -> void:
+	var snap_down := clampi(game_state.downs, 1, 4)
+	var snap_los := game_state.current_los_row_engine
+	var snap_fd := game_state.first_down_target_row_engine
+	var snap_goal := snap_fd < 0 or snap_los <= GameState.FIRST_DOWN_TILE_ROWS
+	_begin_event_log_play_situation(snap_down, snap_los, snap_fd, snap_goal)
 	var offense_play_for_summary := game_state.pending_play_type
 	var offense_team_for_summary := game_state.possession_team
 	var defense_play_for_summary := _selected_defense_play
 	var summary_result_text := str(result.get("result_text", "Punt"))
-	var zone_before := game_state.current_zone
-	var zone_after_offense_view := int(result.get("zone_after_current_offense", clampi(zone_before + 1, 1, GameState.MAX_ZONE)))
+	var post_row := int(result.get("post_punt_los_row_engine", game_state.current_los_row_engine))
+	post_row = clampi(post_row, 0, GameState.TILE_ROWS_TOTAL - 1)
+	var zone_after_offense_view := int(result.get("zone_after_current_offense", game_state.zone_from_engine_row(post_row)))
 	var net_rows := int(result.get("net_rows", 5))
 	var punt_rows := int(result.get("punt_rows", net_rows))
 	var return_rows := int(result.get("return_rows", 0))
 	_game_plays += 1
 	game_state.plays_used_current_drive += 1
-	game_state.current_zone = zone_after_offense_view
-	game_state.current_los_row_engine = game_state.los_row_engine_from_zone(zone_after_offense_view)
-	game_state.next_drive_start_zone = _map_possession_start_zone(zone_after_offense_view)
+	game_state.current_los_row_engine = post_row
+	game_state.current_zone = game_state.zone_from_engine_row(post_row)
+	game_state.next_drive_start_zone = _map_possession_start_zone(game_state.current_zone)
 	if zone_after_offense_view >= GameState.ZONE_END:
 		game_state.next_drive_los_row_engine = GameState.TOUCHBACK_LOS_ROW_ENGINE
 	else:
@@ -1807,6 +1816,7 @@ func _apply_punt_result(result: Dictionary) -> void:
 	game_state.pending_play_type = GameState.PENDING_NONE
 	_selected_defense_play = ""
 	_awaiting_defense_pick = false
+	_end_event_log_play_situation()
 	_reset_next_turn_after_possession_change("punt")
 	game_state.emit_signal("state_changed")
 
@@ -1838,6 +1848,7 @@ func _apply_downs_and_first_down_after_play(
 			var tod_summary := "TURNOVER ON DOWNS + DEFENSIVE TD"
 			_append_event_log_play_tile_rows_line(offense_team_for_summary, offense_play_for_summary, tile_rows_toward_goal)
 			_append_event_log("[color=#ff6666][b]TURNOVER ON DOWNS[/b][/color]")
+			_end_event_log_play_situation()
 			_begin_post_td_conversion(scoring_team)
 			_render_last_play_info(offense_team_for_summary, offense_play_for_summary, defense_play_for_summary, tod_summary, tile_rows_toward_goal)
 			game_state.pending_play_type = GameState.PENDING_NONE
@@ -1877,6 +1888,12 @@ func _apply_play_result(result: Dictionary) -> void:
 	var defense_play_for_summary := _selected_defense_play
 	var summary_result_text := str(result.get("result_text", ""))
 	var is_two_point_attempt := game_state.conversion_pending and game_state.conversion_type == CONVERSION_2PT
+	if not is_two_point_attempt:
+		var snap_down := clampi(game_state.downs, 1, 4)
+		var snap_los := game_state.current_los_row_engine
+		var snap_fd := game_state.first_down_target_row_engine
+		var snap_goal := snap_fd < 0 or snap_los <= GameState.FIRST_DOWN_TILE_ROWS
+		_begin_event_log_play_situation(snap_down, snap_los, snap_fd, snap_goal)
 	_game_plays += 1
 	if _pid_bucket(game_state.pending_play_type) == BUCKET_SPOT_KICK:
 		_game_fg_attempts += 1
@@ -1906,6 +1923,7 @@ func _apply_play_result(result: Dictionary) -> void:
 		_selected_defense_play = ""
 		_awaiting_defense_pick = false
 		game_state.emit_signal("state_changed")
+		_end_event_log_play_situation()
 		return
 	var turnover := _roll_turnover_if_any(game_state.pending_play_type, int(result.get("tile_delta", 0)))
 	if bool(turnover.get("occurred", false)):
@@ -1933,6 +1951,7 @@ func _apply_play_result(result: Dictionary) -> void:
 			game_state.conversion_team = scoring_team
 			result_text.text = "[center][color=#ff4444][b]TURNOVER + DEFENSIVE TD![/b][/color][/center]\n%s%s" % [turnover_text, proc_line]
 			summary_result_text = "TURNOVER + DEFENSIVE TD"
+			_end_event_log_play_situation()
 			_begin_post_td_conversion(scoring_team)
 			_render_last_play_info(offense_team_for_summary, offense_play_for_summary, defense_play_for_summary, summary_result_text, tile_rows_toward_goal)
 			_show_last_play_toast("Turnover — Defensive TD!", "bad")
@@ -1948,6 +1967,7 @@ func _apply_play_result(result: Dictionary) -> void:
 		_show_last_play_toast("Turnover!", "bad")
 		_reset_next_turn_after_possession_change("turnover")
 		game_state.emit_signal("state_changed")
+		_end_event_log_play_situation()
 		return
 
 	var downs_res: int = 0
@@ -1957,6 +1977,7 @@ func _apply_play_result(result: Dictionary) -> void:
 		downs_res = _apply_downs_and_first_down_after_play(row_after_engine, offense_team_for_summary, offense_play_for_summary, defense_play_for_summary, summary_result_text, tile_rows_toward_goal, earned_first_down)
 		if downs_res == 1:
 			_show_last_play_toast("Turnover on Downs — Defensive TD!", "bad")
+			_end_event_log_play_situation()
 			return
 
 	var score_delta := score_delta_early
@@ -1986,6 +2007,7 @@ func _apply_play_result(result: Dictionary) -> void:
 		game_state.next_drive_start_zone = _map_possession_start_zone(game_state.current_zone)
 		game_state.end_possession("touchdown", 6)
 		_stop_clock("touchdown")
+		_end_event_log_play_situation()
 		_begin_post_td_conversion(game_state.conversion_team)
 		game_state.pending_play_type = GameState.PENDING_NONE
 		_selected_defense_play = ""
@@ -2014,6 +2036,7 @@ func _apply_play_result(result: Dictionary) -> void:
 
 	if game_state.phase == GameState.PHASE_GAME_OVER:
 		game_state.emit_signal("state_changed")
+		_end_event_log_play_situation()
 		return
 
 	if game_state.should_force_halftime_now() and game_state.phase != GameState.PHASE_GAME_OVER:
@@ -2022,10 +2045,12 @@ func _apply_play_result(result: Dictionary) -> void:
 		_append_touchback_event_log("(halftime, second half).")
 		_after_force_halftime_second_half()
 		game_state.emit_signal("state_changed")
+		_end_event_log_play_situation()
 		return
 	
 	print("END PLAY phase=", game_state.phase, " game_over=", game_state.phase == GameState.PHASE_GAME_OVER)
 	
+	_end_event_log_play_situation()
 	_after_play_phase_hooks()
 	game_state.emit_signal("state_changed")
 
@@ -2298,6 +2323,8 @@ func _update_ui() -> void:
 		downs_label.text = "Goal to go | Downs: %d" % game_state.downs
 	else:
 		downs_label.text = "Downs: %d" % game_state.downs
+	if play_count_label:
+		play_count_label.text = "Plays: %d" % _game_plays
 	if user_down_distance_label:
 		user_down_distance_label.text = _format_down_and_distance_for_hud()
 	var offense_team := game_state.possession_team
@@ -2585,6 +2612,32 @@ func _update_player_details(player_id: String) -> void:
 		frozen_rope_bonus
 	]
 
+func _format_bracketed_event_log_situation(snap_down: int, snap_los_engine: int, snap_fd_target: int, snap_goal_to_go: bool) -> String:
+	var d := clampi(snap_down, 1, 4)
+	var ord := "1st"
+	if d == 2:
+		ord = "2nd"
+	elif d == 3:
+		ord = "3rd"
+	elif d == 4:
+		ord = "4th"
+	var dist_str := "Goal" if snap_goal_to_go else str(maxi(0, snap_los_engine - snap_fd_target))
+	var pr := snap_los_engine
+	if field_grid:
+		pr = field_grid.perspective_row(snap_los_engine, game_state.possession_team == "home")
+	var mid := FieldGrid.TOTAL_ROWS / 2
+	var arrow := "⬇️" if pr > mid else "⬆️"
+	return "[%s & %s from %d%s] " % [ord, dist_str, pr, arrow]
+
+
+func _begin_event_log_play_situation(snap_down: int, snap_los_engine: int, snap_fd_target: int, snap_goal_to_go: bool) -> void:
+	_event_log_play_situation_prefix = _format_bracketed_event_log_situation(snap_down, snap_los_engine, snap_fd_target, snap_goal_to_go)
+
+
+func _end_event_log_play_situation() -> void:
+	_event_log_play_situation_prefix = ""
+
+
 func _format_down_and_distance_for_hud() -> String:
 	if game_state.phase == GameState.PHASE_GAME_OVER or game_state.phase == GameState.PHASE_HALFTIME:
 		return "—"
@@ -2620,10 +2673,12 @@ func _append_event_log(message: String) -> void:
 		return
 	var ts := _format_time(game_state.game_time_remaining)
 	var team_label := _team_display_name(game_state.possession_team)
-	var down_prefix := ""
-	if _turn_initialized and game_state.phase != GameState.PHASE_GAME_OVER and game_state.phase != GameState.PHASE_HALFTIME:
-		down_prefix = "[%s] " % _format_down_label(_play_down_at_snap)
-	_event_log_lines.append("[%s] (%s) %s%s" % [ts, team_label, down_prefix, message])
+	var prefix_part := ""
+	if not _event_log_play_situation_prefix.is_empty():
+		prefix_part = _event_log_play_situation_prefix
+	elif _turn_initialized and game_state.phase != GameState.PHASE_GAME_OVER and game_state.phase != GameState.PHASE_HALFTIME:
+		prefix_part = "[%s] " % _format_down_label(_play_down_at_snap)
+	_event_log_lines.append("[%s] (%s) %s%s" % [ts, team_label, prefix_part, message])
 	if _event_log_lines.size() > MAX_EVENT_LOG_LINES:
 		_event_log_lines = _event_log_lines.slice(_event_log_lines.size() - MAX_EVENT_LOG_LINES, _event_log_lines.size())
 	if event_log_text:

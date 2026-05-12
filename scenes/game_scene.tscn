@@ -597,6 +597,12 @@ theme_override_font_sizes/font_size = 16
 text = "Downs: 1"
 vertical_alignment = 1
 
+[node name="PlayCountLabel" type="Label" parent="HUDGroup/GlobalHUD" unique_id=1550221751]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "Plays: 0"
+vertical_alignment = 1
+
 [node name="PhaseLabel" type="Label" parent="HUDGroup/GlobalHUD" unique_id=1534667255]
 layout_mode = 2
 theme_override_font_sizes/font_size = 16
@@ -673,7 +679,7 @@ text = "x10"
 
 [node name="PlayInfoHUD" type="Panel" parent="HUDGroup" unique_id=1248807706]
 offset_left = 1173.0
-offset_top = 288.0
+offset_top = 316.0
 offset_right = 1773.0
 offset_bottom = 640.0
 
