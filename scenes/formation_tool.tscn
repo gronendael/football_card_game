@@ -1,0 +1,7 @@
+[gd_scene format=3 uid="uid://coqo06og5ytvs"]
+
+[ext_resource type="Script" path="res://scripts/formation_tool.gd" id="1_ft"]
+
+[node name="FormationTool" type="CanvasLayer"]
+layer = 100
+script = ExtResource("1_ft")

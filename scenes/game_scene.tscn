@@ -69,11 +69,22 @@ offset_right = 540.0
 offset_bottom = 960.0
 color = Color(0.16470589, 0, 0, 0.43529412)
 
-[node name="QuitButton" type="Button" parent="." unique_id=875355186]
+[node name="TopRightBar" type="HBoxContainer" parent="." unique_id=875355185]
 layout_mode = 0
-offset_left = 1696.0
+offset_left = 1520.0
 offset_right = 1771.0
 offset_bottom = 75.0
+theme_override_constants/separation = 8
+alignment = 2
+
+[node name="ToolsMenuButton" type="MenuButton" parent="TopRightBar" unique_id=875355184]
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+text = "Tools"
+flat = false
+
+[node name="QuitButton" type="Button" parent="TopRightBar" unique_id=875355186]
+layout_mode = 2
 theme_override_font_sizes/font_size = 32
 text = "Quit"
 
@@ -778,9 +789,8 @@ anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = 8.0
-offset_top = -62.0
+offset_top = -3.0
 offset_right = -8.0
-offset_bottom = 124.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/separation = 6
@@ -836,11 +846,6 @@ layout_mode = 2
 button_pressed = true
 text = "Conversion"
 
-[node name="CalcFilterClock" type="CheckButton" parent="HUDGroup/CalcLogPanel/CalcLogVBox/CalcFilterGrid" unique_id=501100012]
-layout_mode = 2
-button_pressed = true
-text = "Clock"
-
 [node name="CalcNavRow" type="HBoxContainer" parent="HUDGroup/CalcLogPanel/CalcLogVBox" unique_id=501100013]
 layout_mode = 2
 theme_override_constants/separation = 12
@@ -860,13 +865,13 @@ layout_mode = 2
 text = "Next"
 
 [node name="CalcLogScroll" type="ScrollContainer" parent="HUDGroup/CalcLogPanel/CalcLogVBox" unique_id=501100017]
-custom_minimum_size = Vector2(0, 200)
+custom_minimum_size = Vector2(0, 150)
 layout_mode = 2
 size_flags_vertical = 3
 horizontal_scroll_mode = 0
 
 [node name="CalcLogText" type="RichTextLabel" parent="HUDGroup/CalcLogPanel/CalcLogVBox/CalcLogScroll" unique_id=501100018]
-custom_minimum_size = Vector2(540, 120)
+custom_minimum_size = Vector2(540, 100)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3

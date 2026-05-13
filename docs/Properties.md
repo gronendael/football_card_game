@@ -39,33 +39,45 @@ BIO
 - Archetypes (List of archtypes that can give small bonuses or synergies; Power Back RB + Run Blocking OL, Ball Hawk CB + Pass Rush DL, Deep Threat WR + Gunslinger QB)
 - Traits (List of traits that can give small bonuses or synergies'; Deep Threat WR + Spread Offense OC, Pass Rush DL + Blitz Heavy DC)
 
-CORE (1-100)
+CORE GLOBAL (1-10)
 - Speed
 - Strength
-- Agility
-- Awareness
-- Catching
 - Stamina
-- Toughness (Injury likelihood)
+- Awareness
 
-OFFENSE (1-100)
-- Passing
-- Ball Security
+NON-CORE GLOBAL (1-10)
+- Acceleration
+- Catching
+- Carrying (Ball Security)
+- Agility
+- Toughness
+- Tackling
+
+SPECIALIZATIONS
+
+OFFENSE (1-10)
+- Throw Power
+- Throw Accuracy
 - Blocking
 - Route Running
 
-DEFENSE (1-100)
-- Tackling
-- Coverage
+DEFENSE (1-10)
 - Pass Rush
+- Coverage
+- Block Shedding
 
-SPECIAL TEAMS (1-100)
+SPECIAL TEAMS (1-10)
 - Kick Power
 - Kick Accuracy
 
+**Prototype `data/players.json`:** each row uses **franchise** `team` (id from `data/teams.json`, not `home`/`away`), **global numeric string `id`** (e.g. `0001`), bio fields **`first_name`**, **`last_name`**, **`age`**, **`college`**, **`hometown`**, **`jersey_number`**, **`height`**, **`weight`**, and stat keys in **snake_case** matching this section: `speed`, `strength`, `stamina`, `awareness`, `acceleration`, `catching`, `carrying`, `agility`, `toughness`, `tackling`, `throw_power`, `throw_accuracy`, `blocking`, `route_running`, `pass_rush`, `coverage`, `block_shedding`, `kick_power`, `kick_accuracy` — all **1–10** integers. **`teams.json`** lists **`roster_player_ids`** (17 per franchise: offensive field group, defensive field group, kicker, punter, returner order used by the match field split). `PlayerStatView` reads these keys directly (legacy `passing` / `ball_security` still supported if present). Skills object optional; omitted in generated rosters.
+
 SKILLS (List of Special Skills the player has which give boosts)
-- Skill ID
-- Skill Rank
+- ID
+- Rank
+- Progression (How close to next rank)
+- Description
+- Modifiers
 
 ### COACHES
 BIO
@@ -75,20 +87,23 @@ BIO
 - Age
 - Current Team ID
 
-CORE (1-100)
+CORE (1-10)
 - Leadership
 - Game Management
 - IQ
 
-OFFENSE (1-100)
-- Run Offense
+OFFENSE (1-10)
+- Run Inside
+- Run Outside
 - Short Pass 
+- Medium Pass
 - Deep Pass 
 
-DEFENSE (1-100)
+DEFENSE (1-10)
 - Run Defense
-- Short Pass Defense
-- Deep Pass Defense
+- Pass Defense
+- Coverage
+- Pass Rush
 
 COACH_PLAYS
 - List of Plays the Coach comes with
@@ -103,12 +118,13 @@ SPECIALTIES (List of specialties the coach has which gives boosts to players, pl
 ### FORMATIONS
 - ID
 - Name
-- **Side**: `offense` | `defense` | `special` (special teams shells: spot kick, punt, kickoff, etc.)
+- **Side**: `offense` | `defense` | `special` (geometry / `delta_row` rules; see below)
+- **`formation_shell`** (required string): one of `scrimmage_offense`, `scrimmage_defense`, `kick_fg_xp`, `block_fg_xp`, `punt`, `punt_return`, `kickoff`, `kickoff_return`. Must match the expected **`side`** for that shell (e.g. `kick_fg_xp` / `punt` / `kickoff` use `side: "special"`; `block_fg_xp` / `punt_return` / `kickoff_return` use `side: "defense"`). Used for tooling, palettes, and validation in [scripts/formations_catalog.gd](scripts/formations_catalog.gd).
 - Optional: description, tags (strings)
 - **Positions** (JSON array): each entry `{ "role", "delta_row", "delta_col" }` relative to the **ball at the LOS center tile** `(0,0)`. Engine: row **0** = scoring end; positive ball movement decreases row index. **`side: "offense"`:** use **`delta_row` ≥ 0** only (LOS row = 0, larger = backfield toward own end); negative `delta_row` would be past the LOS toward the goal and is rejected at load. **`side: "defense"` / `"special"`:** negative `delta_row` is allowed (toward the offense’s scoring end / into the offensive backfield from the LOS).
 - **7v7:** each formation lists **exactly 7** positions. Per-role counts must stay within global caps (see [docs/Team_Setup.md](Team_Setup.md)); [scripts/formations_catalog.gd](scripts/formations_catalog.gd) enforces count **== 7** and per-family maxima at load.
 - Data: [data/formations.json](data/formations.json); loader/validation: [scripts/formations_catalog.gd](scripts/formations_catalog.gd)
-- Role keys used in data include: `QB`, `RB1`…, `WR1`…, `OL1`…, `DL1`…, `LB1`…, `CB1`…, `S1`…, `K`, `P`, `RET1`/`RET2`, `ST1`…`ST6`
+- Role keys used in data include: `QB`, `RB1`…, `WR1`…, `OL1`…, `DL1`…, `LB1`…, `CB1`…, `S1`…, `K`, `P`, `RET1`/`RET2`, `GUN1`/`GUN2`, `ST1`…`ST6`
 
 ### OFFENSIVE PLAYS
 - ID
@@ -317,3 +333,110 @@ SPECIALTIES (List of specialties the coach has which gives boosts to players, pl
 - **`show_action_timer_bar`** (bool export on [scenes/game_scene.tscn](scenes/game_scene.tscn) root, mirrored by HUD **Play clock (10s)** `CheckButton`): **`true`** — 10s play clock, progress bar, delay-of-game / defense timeout pick / card-queue auto-ready from timer; **`false`** — no countdown or timer-driven behavior (analysis / testing).
 - **`_defer_scrimmage_game_clock_until_first_snap`** (`game_scene.gd`): while **`true`**, the **game clock** does not run during scrimmage **offense** play-selection windows; cleared when **`_resolve_play`** starts (first snap of the half after play + cards); set again on **Restart** and when the **second half** begins (`_after_force_halftime_second_half`). While defer is on, **`_apply_sim_presnap_runoff`** does not subtract **`game_time_remaining`** (sim play clock bar still drains if enabled).
 - **Last play toast:** after most play outcomes, a **2s** line centered on **`MobileFrame`** (bold italic colored text, **~88px** font, no panel); gain/loss/punt-net lines use **yard** phrasing only (tile rows ≈ yards; no duplicate tile-row suffix). See `game_scene.gd` (`_show_last_play_toast`, `_maybe_toast_after_standard_apply_play`).
+
+
+### POSITION LIST BY FORMATION
+Offense
+- QB
+- RB1
+- RB2
+- TE1
+- TE2
+- WR1
+- WR2
+- WR3
+- OL1
+- OL2
+- OL3
+
+Defense
+- DL1
+- DL2
+- DL3
+- LB1
+- LB2
+- LB3
+- CB1
+- CB2
+- CB3
+- S1
+- S2
+
+Special (Offense; Field Goals/Extra Points)
+- K
+- QB (holder)
+- RB1
+- RB2
+- OL1
+- OL2
+- OL3
+- OL4
+- OL5
+- TE1
+- TE2
+- TE3
+
+Special (Defense; Field Goals/Extra Points)
+- DL1
+- DL2
+- DL3
+- DL4
+- DL5
+- LB1
+- LB2
+- LB3
+- CB1
+- CB2
+- S1
+- S2
+
+Special (Offense; Punts)
+- P
+- RB1
+- RB2
+- OL1
+- OL2
+- OL3
+- OL4
+- OL5
+- TE1
+- TE2
+- TE3
+- GUN1 (Gunner)
+- GUN2
+
+Special (Defense; Punts)
+- RET1
+- RET2
+- DL1
+- DL2
+- DL3
+- DL4
+- DL5
+- LB1
+- LB2
+- LB3
+- CB1
+- CB2
+- S1
+- S2
+
+Kickoffs (Offense)
+- K
+- ST1 (Special Teams player)
+- ST2
+- ST3
+- ST4
+- ST5
+- ST6
+
+
+Kickoffs (Defense)
+- RET1
+- RET2
+- ST1 (Special Teams player)
+- ST2
+- ST3
+- ST4
+- ST5
+- ST6

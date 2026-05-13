@@ -31,6 +31,7 @@ PLAY EXECUTION & RESOLUTION
 - After both teams are Ready in the card phase (or after auto-ready), queued cards execute then the play resolves
 - Game clock follows **GAME CLOCK** (offense-only scrimmage rule; conversions / dead ball per that section)
 - Based on the Plays & Cards selected modifiers are applied to players, cards, plays, coordinatores, etc.
+- **Scrimmage (run/pass):** resolution is **stat-only** in `scripts/resolution/` (no card/coach/skill layers on yards or sim checks yet). Defensive play id still selects the **defensive formation shell** for auto-matchups; it does **not** apply the old flat ±tile “bucket matchup” rows to offense.
 - The Offense may progress zones, regress zones, or end up in the same zone based on the Play Resolution
 - A Change of Possession may occur due to a Turnover, Running out of Downs (Turnover on Downs), 1st Half ends, Punt play, Kickoff Play
 - Plays that start before the Game Clock expires in the 1st or 2nd half resolve completely even if the Game Clock expires during the play

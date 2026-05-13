@@ -21,6 +21,7 @@ const CONVERSION_2PT := "2pt"
 const SIM_2PT_DIFFS := [-2, -5, -8, -10, 1, 5, 12]
 const CLOCK_BASE_RATE := 2.0
 const SAME_BUCKET_DEFENSE_EXTRA := 3
+const FORMATION_TOOL_SCENE := preload("res://scenes/formation_tool.tscn")
 
 const CALC_LOG_CAT_RESOLVER := "resolver"
 const CALC_LOG_CAT_POST := "post"
@@ -30,7 +31,6 @@ const CALC_LOG_CAT_CARDS := "cards"
 const CALC_LOG_CAT_SKILLS := "skills"
 const CALC_LOG_CAT_SPECIAL := "special"
 const CALC_LOG_CAT_CONVERSION := "conversion"
-const CALC_LOG_CAT_CLOCK := "clock"
 const CALC_LOG_PLACEHOLDER := "No matching lines for the current filters (or this step has no extra detail in the prototype)."
 
 const PREVIEW_MARKER_SIZE := Vector2(26, 26)
@@ -86,7 +86,8 @@ const PLAY_PICK_CARD_SCENE := preload("res://scenes/play_pick_card.tscn")
 @onready var sim_status_label: Label = get_node_or_null("HUDGroup/GlobalHUD/SimStatusLabel") as Label
 @onready var sim_stats_label: Label = get_node_or_null("HUDGroup/GlobalHUD/SimStatsLabel") as Label
 @onready var user_team_label: Label = get_node_or_null("HUDGroup/GlobalHUD/UserTeamLabel") as Label
-@onready var quit_button: Button = (get_node_or_null("QuitButton") as Button) if get_node_or_null("QuitButton") != null else (get_node_or_null("HUDGroup/GlobalHUD/QuitButton") as Button)
+@onready var quit_button: Button = (get_node_or_null("TopRightBar/QuitButton") as Button) if get_node_or_null("TopRightBar/QuitButton") != null else ((get_node_or_null("QuitButton") as Button) if get_node_or_null("QuitButton") != null else (get_node_or_null("HUDGroup/GlobalHUD/QuitButton") as Button))
+@onready var tools_menu_button: MenuButton = get_node_or_null("TopRightBar/ToolsMenuButton") as MenuButton
 @onready var speed_label: Label = (get_node_or_null("HUDGroup/SpeedPanel/SpeedLabel") as Label) if get_node_or_null("HUDGroup/SpeedPanel/SpeedLabel") != null else (get_node_or_null("HUDGroup/SimButtons/SpeedLabel") as Label)
 
 @onready var opponent_play_buttons: Control = get_node_or_null("OpponentGroup/OpponentHUD/OpponentPlayButtons") as Control
@@ -134,7 +135,6 @@ const PLAY_PICK_CARD_SCENE := preload("res://scenes/play_pick_card.tscn")
 @onready var calc_filter_skills: CheckButton = get_node_or_null("HUDGroup/CalcLogPanel/CalcLogVBox/CalcFilterGrid/CalcFilterSkills") as CheckButton
 @onready var calc_filter_special: CheckButton = get_node_or_null("HUDGroup/CalcLogPanel/CalcLogVBox/CalcFilterGrid/CalcFilterSpecial") as CheckButton
 @onready var calc_filter_conversion: CheckButton = get_node_or_null("HUDGroup/CalcLogPanel/CalcLogVBox/CalcFilterGrid/CalcFilterConversion") as CheckButton
-@onready var calc_filter_clock: CheckButton = get_node_or_null("HUDGroup/CalcLogPanel/CalcLogVBox/CalcFilterGrid/CalcFilterClock") as CheckButton
 
 @onready var opponent_players_container: GridContainer = get_node_or_null("OpponentGroup/OpponentPlayersContainer") as GridContainer
 @onready var user_players_container: GridContainer = get_node_or_null("UserGroup/UserHUD/UserPlayersContainer") as GridContainer
@@ -249,6 +249,17 @@ var _sim_presnap_runoff_applied: bool = false
 var _calc_log_entries: Array = []
 var _calc_log_index: int = -1
 var _calc_log_seq: int = 0
+## One calc-log "slide" for the whole snap: cards → resolver → sim → turnover → outcome (filters still apply per line).
+var _calc_log_snap_bundle_active: bool = false
+var _calc_log_snap_bundle_title: String = ""
+var _calc_log_snap_lines: Array = []
+var _calc_log_snap_seen_cards: bool = false
+var _calc_log_re_side_home: RegEx
+var _calc_log_re_side_away: RegEx
+## Set for the current `_resolve_play` scrimmage sim so turnover calc lines can label ball carrier / defender by team + formation role.
+var _last_scrimmage_sim_ctx: PlaySimContext = null
+## Per franchise id for the current match: off_field/def_field (7 each), kicker, punter, returner dicts from roster order.
+var _match_field_packages: Dictionary = {}
 const ACTION_WINDOW_SECONDS := 10.0
 const DELAY_OF_GAME_HOLD_ROW := GameState.TILE_ROWS_TOTAL - 2
 const SIM_RUNOFF_MIN_SECONDS := 18
@@ -311,7 +322,13 @@ func _zone_display_for_team(zone: int, viewer_team: String) -> String:
 
 func _team_display_name(team: String) -> String:
 	var profile := _team_profile(team)
-	return str(profile.get("name", team.capitalize()))
+	var n := str(profile.get("name", "")).strip_edges()
+	if not n.is_empty():
+		return n
+	var tid := str(profile.get("id", "")).strip_edges()
+	if not tid.is_empty():
+		return tid
+	return team
 
 func _team_role_name(team: String) -> String:
 	return "User" if team == _user_team else "Opponent"
@@ -330,6 +347,55 @@ func _sync_field_perspective_to_user_team() -> void:
 	if field_grid == null:
 		return
 	field_grid.set("is_user_perspective_home", _user_team == "home")
+
+func _franchise_id_for_seat(seat: String) -> String:
+	return _home_team_id if seat == "home" else _away_team_id
+
+
+func _franchise_display_name_from_id(fr_id: String) -> String:
+	var p := team_data.get_by_id(fr_id)
+	var n := str(p.get("name", "")).strip_edges()
+	return n if not n.is_empty() else fr_id
+
+
+func _rebuild_match_field_packages() -> void:
+	_match_field_packages.clear()
+	for fid in [_home_team_id, _away_team_id]:
+		_match_field_packages[fid] = _compute_match_field_package_for_franchise(fid)
+
+
+func _compute_match_field_package_for_franchise(fr_id: String) -> Dictionary:
+	var tdoc := team_data.get_by_id(fr_id)
+	var id_order: Array = tdoc.get("roster_player_ids", []) as Array
+	var ordered: Array[Dictionary] = []
+	for idv in id_order:
+		var pd := player_data.get_by_id(str(idv))
+		if not pd.is_empty():
+			ordered.append(pd)
+	var off_field: Array[Dictionary] = []
+	var def_field: Array[Dictionary] = []
+	var kicker: Dictionary = {}
+	var punter: Dictionary = {}
+	var returner: Dictionary = {}
+	if ordered.size() >= 17:
+		for i in range(7):
+			off_field.append(ordered[i])
+		for i in range(7, 14):
+			def_field.append(ordered[i])
+		kicker = ordered[14]
+		punter = ordered[15]
+		returner = ordered[16]
+	else:
+		push_warning("Franchise %s roster size %d (expected 17); using full list for sim." % [fr_id, ordered.size()])
+		off_field = ordered.duplicate()
+	return {
+		"off_field": off_field,
+		"def_field": def_field,
+		"kicker": kicker,
+		"punter": punter,
+		"returner": returner,
+	}
+
 
 func _team_profile(team: String) -> Dictionary:
 	var team_id := _home_team_id if team == "home" else _away_team_id
@@ -436,6 +502,10 @@ func _play_buttons_for_team(team: String) -> Dictionary:
 func _ready() -> void:
 	add_to_group("game_scene")
 	randomize()
+	_calc_log_re_side_home = RegEx.new()
+	_calc_log_re_side_home.compile("(?<![A-Za-z0-9_])home(?![A-Za-z0-9_])")
+	_calc_log_re_side_away = RegEx.new()
+	_calc_log_re_side_away.compile("(?<![A-Za-z0-9_])away(?![A-Za-z0-9_])")
 	if sim_timer == null:
 		sim_timer = Timer.new()
 		sim_timer.name = "SimTimer"
@@ -769,6 +839,7 @@ func _load_data() -> void:
 	if not _plays_catalog.load_from_json("res://data/plays.json"):
 		push_error("plays.json failed to load")
 	player_data.load_from_json("res://data/players.json")
+	_rebuild_match_field_packages()
 	coach_data.load_catalog("res://data/coaches_catalog.json")
 	_load_team_playbooks_and_validate()
 	_build_staff_from_team_assignments()
@@ -1350,6 +1421,10 @@ func _wire_buttons() -> void:
 		speed_x10_button.pressed.connect(func(): _on_speed_preset_pressed(10.0))
 	if quit_button:
 		quit_button.pressed.connect(_on_quit_pressed)
+	if tools_menu_button:
+		var pm := tools_menu_button.get_popup()
+		pm.add_item("Formation tool…", 0)
+		pm.id_pressed.connect(_on_tools_menu_id_pressed)
 	if user_tos_button:
 		user_tos_button.pressed.connect(func(): _call_timeout(_user_team))
 	if user_forfeit_button:
@@ -1369,7 +1444,7 @@ func _wire_buttons() -> void:
 		calc_log_next_nav_button.pressed.connect(_on_calc_log_next_nav_pressed)
 	for f in [
 		calc_filter_resolver, calc_filter_post, calc_filter_outcome, calc_filter_turnover,
-		calc_filter_cards, calc_filter_skills, calc_filter_special, calc_filter_conversion, calc_filter_clock
+		calc_filter_cards, calc_filter_skills, calc_filter_special, calc_filter_conversion
 	]:
 		if f:
 			f.toggled.connect(_on_calc_filter_toggled)
@@ -1598,7 +1673,9 @@ func _spawn_players() -> void:
 	for p in player_data.players:
 		var token: PlayerToken = token_scene.instantiate()
 		var team := str(p.get("team", ""))
-		if team == "home":
+		var user_fr := _franchise_id_for_seat(_user_team)
+		var opp_fr := _franchise_id_for_seat("away" if _user_team == "home" else "home")
+		if team == user_fr:
 			user_players_container.add_child(token)
 		else:
 			opponent_players_container.add_child(token)
@@ -1733,9 +1810,53 @@ func _advance_both_teams_resources() -> void:
 	# draw calls...
 	print("DRAW AFTER  H:", game_state.hand_home.size(), " A:", game_state.hand_away.size())
 
+
+func _build_scrimmage_play_sim_context(offense_play_id: String, defense_play_id: String, play_row: Dictionary) -> PlaySimContext:
+	var rng := RandomNumberGenerator.new()
+	rng.randomize()
+	var poss := game_state.possession_team
+	var def_seat := "away" if poss == "home" else "home"
+	var off_fr := _franchise_id_for_seat(poss)
+	var def_fr := _franchise_id_for_seat(def_seat)
+	var off_pkg: Dictionary = _match_field_packages.get(off_fr, {}) as Dictionary
+	var def_pkg: Dictionary = _match_field_packages.get(def_fr, {}) as Dictionary
+	var off_players: Array = off_pkg.get("off_field", [])
+	var def_players: Array = def_pkg.get("def_field", [])
+	if off_players.is_empty():
+		off_players = player_data.get_team(off_fr)
+	if def_players.is_empty():
+		def_players = player_data.get_team(def_fr)
+	var labels := {
+		off_fr: _franchise_display_name_from_id(off_fr),
+		def_fr: _franchise_display_name_from_id(def_fr),
+	}
+	var off_f := _formations_catalog.get_by_id(_plays_catalog.formation_id_for(offense_play_id))
+	var def_f := _formations_catalog.get_by_id(_plays_catalog.formation_id_for(defense_play_id))
+	if off_f.is_empty():
+		off_f = _formations_catalog.get_by_id("off_i")
+	if def_f.is_empty():
+		def_f = _formations_catalog.get_by_id("def_43")
+	if off_f.is_empty() or def_f.is_empty():
+		push_error("Scrimmage sim: formations missing for play/defense ids")
+	return PlaySimContext.build(
+		rng,
+		poss,
+		offense_play_id,
+		defense_play_id,
+		play_row,
+		game_state.current_zone,
+		off_players,
+		def_players,
+		off_f,
+		def_f,
+		labels
+	)
+
+
 func _resolve_play() -> void:
 	if game_state.pending_play_type == PLAY_NONE():
 		return
+	_last_scrimmage_sim_ctx = null
 	if _defer_scrimmage_game_clock_until_first_snap:
 		_defer_scrimmage_game_clock_until_first_snap = false
 		_sync_game_clock_scrimmage_policy()
@@ -1763,8 +1884,8 @@ func _resolve_play() -> void:
 				int(mods.get("card_return_bonus", 0)), int(mods.get("card_coverage_bonus", 0))
 			]
 		]
-		_calc_log_push_slide_flat(_calc_log_next_title("Punt — setup"), spec_lines, CALC_LOG_CAT_SPECIAL)
-		_calc_log_push_breakdown_slide(_calc_log_next_title("Punt — resolver"), punt_result)
+		_calc_log_push_slide_flat("Punt — setup", spec_lines, CALC_LOG_CAT_SPECIAL)
+		_calc_log_push_breakdown_slide("Punt — resolver", punt_result)
 		_apply_punt_result(punt_result)
 		return
 
@@ -1780,39 +1901,41 @@ func _resolve_play() -> void:
 		play_result["breakdown"].append("Defense call: %s (%+d)" % [_selected_defense_play, defense_mod])
 	else:
 		if game_state.selected_player_id.is_empty():
-			var team_players := player_data.get_team(game_state.possession_team)
+			var team_players := player_data.get_team(_franchise_id_for_seat(game_state.possession_team))
 			if team_players.size() > 0:
 				game_state.selected_player_id = str(team_players[0].get("id", ""))
 
 		var row := _plays_catalog.get_play(pid)
-		play_result = play_resolver.resolve_standard_play(pid, row, game_state.selected_player_id, game_state.current_zone)
-		play_result["breakdown"].append("Opponent defense: -%d" % _opponent_flat_def_mod)
-		play_result["breakdown"].append("Defense call: %s (%+d)" % [_selected_defense_play, defense_mod])
+		var sim_ctx := _build_scrimmage_play_sim_context(pid, _selected_defense_play, row)
+		_last_scrimmage_sim_ctx = sim_ctx
+		play_result = play_resolver.resolve_scrimmage_play(sim_ctx, pid, row, pbucket, game_state.selected_player_id)
+		play_result["breakdown"].append("Defense call (formation shell only; no yard modifiers): %s" % _selected_defense_play)
 		var tile_delta := int(play_result.get("tile_delta", 0))
-		if defense_mod != 0:
-			tile_delta = maxi(tile_delta - defense_mod, 0)
-			play_result["breakdown"].append("Net from defense matchup: %+d tile rows toward goal" % -defense_mod)
-
-		var staff_play_bonus := int((_staff_data[game_state.possession_team]["off_coord"].get("bonus_offense", {}) as Dictionary).get("standard_zone_bonus", 0))
-		if staff_play_bonus != 0:
-			tile_delta += staff_play_bonus
-			play_result["breakdown"].append("Staff bonus: %+d tile rows" % staff_play_bonus)
-
 		play_result["tile_delta"] = tile_delta
 		play_result["result_text"] = "%s: %+d tile rows toward goal." % [str(play_result.get("play_type", "")), tile_delta]
+		if not str(play_result.get("tackled_by_id", "")).is_empty():
+			_last_defender_id = str(play_result.get("tackled_by_id", ""))
 
 	if pbucket == BUCKET_SPOT_KICK and current_phase_level >= 2:
-		_calc_log_push_breakdown_slide(_calc_log_next_title("Field goal — resolver"), play_result)
+		_calc_log_push_breakdown_slide("Field goal — resolver", play_result)
 	else:
-		_calc_log_push_breakdown_slide(_calc_log_next_title("Scrimmage — resolver & matchup"), play_result)
+		_calc_log_push_breakdown_slide("Scrimmage — resolver & matchup", play_result)
 
 	_apply_play_result(play_result)
 
 func _build_punt_return_modifiers() -> Dictionary:
 	var offense := game_state.possession_team
 	var defense := "away" if offense == "home" else "home"
-	var ret := player_data.get_primary_return_candidate(defense)
-	var punter := _kicker_for_fg_attempt()
+	var def_fr := _franchise_id_for_seat(defense)
+	var off_fr := _franchise_id_for_seat(offense)
+	var pkgd: Dictionary = _match_field_packages.get(def_fr, {})
+	var ret: Dictionary = pkgd.get("returner", {})
+	if ret.is_empty():
+		ret = player_data.get_primary_return_candidate(def_fr)
+	var pkgo: Dictionary = _match_field_packages.get(off_fr, {})
+	var punter: Dictionary = pkgo.get("punter", {})
+	if punter.is_empty():
+		punter = _kicker_for_fg_attempt()
 	var st_d: Dictionary = _staff_data.get(defense, {}) as Dictionary
 	var st_o: Dictionary = _staff_data.get(offense, {}) as Dictionary
 	var dc_d: Dictionary = st_d.get("def_coord", {}) as Dictionary
@@ -1822,11 +1945,11 @@ func _build_punt_return_modifiers() -> Dictionary:
 	var s_ret := int(b_d_d.get("punt_return_bonus", 0))
 	var s_cov := int(b_o_o.get("punt_coverage_bonus", 0))
 	return {
-		"return_speed": int(ret.get("speed", 65)),
-		"return_agility": int(ret.get("agility", 65)),
-		"return_catching": int(ret.get("catching", 60)),
-		"coverage_tackling": int(punter.get("tackling", 55)),
-		"coverage_awareness": int(punter.get("awareness", 65)),
+		"return_speed": int(ret.get("speed", 5)),
+		"return_agility": int(ret.get("agility", 5)),
+		"return_catching": int(ret.get("catching", 5)),
+		"coverage_tackling": int(punter.get("tackling", 5)),
+		"coverage_awareness": int(punter.get("awareness", 5)),
 		"staff_return_bonus": s_ret,
 		"staff_coverage_bonus": s_cov,
 		"card_return_bonus": 0,
@@ -1863,7 +1986,7 @@ func _apply_punt_result(result: Dictionary) -> void:
 	_stop_clock("punt")
 	_render_last_play_info(offense_team_for_summary, offense_play_for_summary, defense_play_for_summary, summary_result_text, -net_rows)
 	_append_event_log("[color=#4da3ff][b]PUNT[/b][/color] Punt %d tile rows, return %d tile rows, net %d. Opponent starts in %s." % [punt_rows, return_rows, net_rows, _zone_name(game_state.next_drive_start_zone)])
-	_calc_log_push_slide_flat(_calc_log_next_title("Punt — result & possession"), [
+	_calc_log_push_slide_flat("Punt — result & possession", [
 		"Punt: %d tile rows out, return %d, net %d toward receiving goal." % [punt_rows, return_rows, net_rows],
 		"Receiving drive starts in %s; new LOS row (engine) %d." % [_zone_name(game_state.next_drive_start_zone), post_row],
 		"Punt into endzone (touchback path): %s." % ("yes" if zone_after_offense_view >= GameState.ZONE_END else "no"),
@@ -1883,6 +2006,7 @@ func _apply_punt_result(result: Dictionary) -> void:
 	_awaiting_defense_pick = false
 	_end_event_log_play_situation()
 	_reset_next_turn_after_possession_change("punt")
+	_calc_log_commit_snap_bundle_if_active()
 	_sim_try_pause_step_after_play()
 	game_state.emit_signal("state_changed")
 
@@ -1914,7 +2038,7 @@ func _apply_downs_and_first_down_after_play(
 			var tod_summary := "TURNOVER ON DOWNS + DEFENSIVE TD"
 			_append_event_log_play_tile_rows_line(offense_team_for_summary, offense_play_for_summary, tile_rows_toward_goal)
 			_append_event_log("[color=#ff6666][b]TURNOVER ON DOWNS[/b][/color]")
-			_calc_log_push_slide_flat(_calc_log_next_title("Outcome — turnover on downs (defensive TD)"), [
+			_calc_log_push_slide_flat("Outcome — turnover on downs (defensive TD)", [
 				"Fourth-down stop in the scoring endzone: defense scores +6 for %s (conversion follows)." % _team_display_name(scoring_team),
 			], CALC_LOG_CAT_OUTCOME)
 			_end_event_log_play_situation()
@@ -1930,7 +2054,7 @@ func _apply_downs_and_first_down_after_play(
 		game_state.end_possession("turnover_on_downs", 0)
 		_stop_clock("turnover on downs")
 		result_text.text = "[center][color=#ff4444][b]TURNOVER ON DOWNS![/b][/color][/center]\nOpponent starts in %s." % _zone_name(game_state.next_drive_start_zone)
-		_calc_log_push_slide_flat(_calc_log_next_title("Outcome — turnover on downs"), [
+		_calc_log_push_slide_flat("Outcome — turnover on downs", [
 			"Failed to convert on 4th down outside the scoring endzone.",
 			"Opponent takes over in %s." % _zone_name(game_state.next_drive_start_zone),
 		], CALC_LOG_CAT_OUTCOME)
@@ -1986,7 +2110,8 @@ func _apply_play_result(result: Dictionary) -> void:
 			{"cat": CALC_LOG_CAT_OUTCOME, "text": "After movement, zone is %s (index %d)." % [_zone_name(z2), z2]},
 			{"cat": CALC_LOG_CAT_OUTCOME, "text": "Result: %s." % ("GOOD (+2)" if z2 >= GameState.ZONE_END else "NO GOOD")}
 		]
-		_calc_log_push_slide(_calc_log_next_title("2-point conversion"), conv_lines)
+		_calc_log_push_slide(_calc_log_slide_title("2-point conversion"), conv_lines)
+		_calc_log_commit_snap_bundle_if_active()
 		if game_state.current_zone >= GameState.ZONE_END:
 			game_state.add_score(game_state.conversion_team, 2)
 			_append_event_log("[b]2-Point Conversion GOOD[/b]")
@@ -2007,12 +2132,19 @@ func _apply_play_result(result: Dictionary) -> void:
 		_sim_try_pause_step_after_play()
 		game_state.emit_signal("state_changed")
 		return
-	var turnover := _roll_turnover_if_any(game_state.pending_play_type, int(result.get("tile_delta", 0)))
+	var turnover: Dictionary
+	var toe: Variant = result.get("turnover_outcome", null)
+	if typeof(toe) == TYPE_DICTIONARY:
+		turnover = (toe as Dictionary).duplicate(true)
+		if bool(turnover.get("occurred", false)) and int(turnover.get("start_zone", -1)) < 0:
+			turnover["start_zone"] = _map_possession_start_zone(game_state.current_zone)
+	else:
+		turnover = _roll_turnover_if_any(game_state.pending_play_type, int(result.get("tile_delta", 0)))
 	var tcalc: Array = turnover.get("calc_lines", []) as Array
 	if not tcalc.is_empty():
-		_calc_log_push_slide(_calc_log_next_title("Turnover checks"), tcalc)
+		_calc_log_push_slide(_calc_log_slide_title("Turnover checks"), tcalc)
 	if not _last_skill_proc_text.is_empty():
-		_calc_log_push_slide_flat(_calc_log_next_title("Skills — procs"), [_last_skill_proc_text], CALC_LOG_CAT_SKILLS)
+		_calc_log_push_slide_flat("Skills — procs", [_last_skill_proc_text], CALC_LOG_CAT_SKILLS)
 	if bool(turnover.get("occurred", false)):
 		var defensive_td := game_state.current_zone == GameState.ZONE_MY_END
 		game_state.next_drive_start_zone = int(turnover.get("start_zone", GameState.DEFAULT_START_ZONE))
@@ -2038,9 +2170,10 @@ func _apply_play_result(result: Dictionary) -> void:
 			game_state.conversion_team = scoring_team
 			result_text.text = "[center][color=#ff4444][b]TURNOVER + DEFENSIVE TD![/b][/color][/center]\n%s%s" % [turnover_text, proc_line]
 			summary_result_text = "TURNOVER + DEFENSIVE TD"
-			_calc_log_push_slide_flat(_calc_log_next_title("Outcome — defensive TD (turnover)"), [
+			_calc_log_push_slide_flat("Outcome — defensive TD (turnover)", [
 				"Defense scores in the scoring endzone; +6 to %s pending conversion." % _team_display_name(scoring_team),
 			], CALC_LOG_CAT_OUTCOME)
+			_calc_log_commit_snap_bundle_if_active()
 			_end_event_log_play_situation()
 			_begin_post_td_conversion(scoring_team)
 			_render_last_play_info(offense_team_for_summary, offense_play_for_summary, defense_play_for_summary, summary_result_text, tile_rows_toward_goal)
@@ -2058,6 +2191,7 @@ func _apply_play_result(result: Dictionary) -> void:
 		_show_last_play_toast("Turnover!", "bad")
 		_reset_next_turn_after_possession_change("turnover")
 		_end_event_log_play_situation()
+		_calc_log_commit_snap_bundle_if_active()
 		_sim_try_pause_step_after_play()
 		game_state.emit_signal("state_changed")
 		return
@@ -2070,6 +2204,7 @@ func _apply_play_result(result: Dictionary) -> void:
 		if downs_res == 1:
 			_show_last_play_toast("Turnover on Downs — Defensive TD!", "bad")
 			_end_event_log_play_situation()
+			_calc_log_commit_snap_bundle_if_active()
 			_sim_try_pause_step_after_play()
 			return
 
@@ -2100,10 +2235,11 @@ func _apply_play_result(result: Dictionary) -> void:
 		game_state.next_drive_start_zone = _map_possession_start_zone(game_state.current_zone)
 		game_state.end_possession("touchdown", 6)
 		_stop_clock("touchdown")
-		_calc_log_push_slide_flat(_calc_log_next_title("Outcome — touchdown"), [
+		_calc_log_push_slide_flat("Outcome — touchdown", [
 			"Offensive touchdown for %s (+6, conversion pending)." % _team_display_name(offense_team_for_summary),
 			"LOS row after the score (engine): %d." % row_after_engine,
 		], CALC_LOG_CAT_OUTCOME)
+		_calc_log_commit_snap_bundle_if_active()
 		_end_event_log_play_situation()
 		_begin_post_td_conversion(game_state.conversion_team)
 		game_state.pending_play_type = GameState.PENDING_NONE
@@ -2141,7 +2277,9 @@ func _apply_play_result(result: Dictionary) -> void:
 		outcome_lines.append({"cat": CALC_LOG_CAT_OUTCOME, "text": "First down earned on this play."})
 	if downs_res == 2:
 		outcome_lines.append({"cat": CALC_LOG_CAT_OUTCOME, "text": "Turnover on downs — opponent starts in %s." % _zone_name(game_state.next_drive_start_zone)})
-	_calc_log_push_slide(_calc_log_next_title("Outcome — apply play"), outcome_lines)
+	_calc_log_push_slide(_calc_log_slide_title("Outcome — apply play"), outcome_lines)
+
+	_calc_log_commit_snap_bundle_if_active()
 
 	_maybe_toast_after_standard_apply_play(offense_play_for_summary, had_first_down, tile_rows_toward_goal, skip_tile_row_event, downs_res, score_delta)
 
@@ -2185,7 +2323,15 @@ func _kicker_for_fg_attempt() -> Dictionary:
 		var selected := player_data.get_by_id(game_state.selected_player_id)
 		if not selected.is_empty():
 			return selected
-	var best := player_data.get_best_kicker(game_state.possession_team)
+	var fr := _franchise_id_for_seat(game_state.possession_team)
+	var pkg: Dictionary = _match_field_packages.get(fr, {})
+	var k: Dictionary = pkg.get("kicker", {})
+	if not k.is_empty():
+		var kid := str(k.get("id", ""))
+		if not kid.is_empty():
+			game_state.selected_player_id = kid
+		return k
+	var best := player_data.get_best_kicker(fr)
 	var best_id := str(best.get("id", ""))
 	if not best_id.is_empty():
 		game_state.selected_player_id = best_id
@@ -2196,7 +2342,7 @@ func _can_attempt_field_goal_from_current_zone() -> bool:
 		return true
 	if game_state.current_zone == GameState.ZONE_MIDFIELD:
 		var kicker := _kicker_for_fg_attempt()
-		return int(kicker.get("kick_power", 50)) > 80
+		return int(kicker.get("kick_power", 5)) > 7
 	return false
 
 func _map_possession_start_zone(zone_at_change: int) -> int:
@@ -2226,8 +2372,20 @@ func _roll_turnover_if_any(play_type: String, zone_delta: int) -> Dictionary:
 
 	var offense_player := _get_offense_ball_carrier(play_type)
 	var defense_player := _select_defender_for_play(play_type)
-	var off_name := str(offense_player.get("name", offense_player.get("id", "?")))
-	var def_name := str(defense_player.get("name", defense_player.get("id", "?")))
+	var off_name: String
+	var def_name: String
+	if _last_scrimmage_sim_ctx != null:
+		off_name = _last_scrimmage_sim_ctx.format_player_slot(
+			offense_player,
+			_last_scrimmage_sim_ctx.role_for_player_id(str(offense_player.get("id", "")))
+		)
+		def_name = _last_scrimmage_sim_ctx.format_player_slot(
+			defense_player,
+			_last_scrimmage_sim_ctx.role_for_player_id(str(defense_player.get("id", "")))
+		)
+	else:
+		off_name = _calc_log_format_player_roster(offense_player)
+		def_name = _calc_log_format_player_roster(defense_player)
 	var header: Array = [
 		{"cat": CALC_LOG_CAT_TURNOVER, "text": "Ball carrier considered: %s. Defender model: %s." % [off_name, def_name]}
 	]
@@ -2236,7 +2394,7 @@ func _roll_turnover_if_any(play_type: String, zone_delta: int) -> Dictionary:
 	for s in fumble_roll.get("lines", []):
 		merged.append({"cat": CALC_LOG_CAT_TURNOVER, "text": str(s)})
 	if bool(fumble_roll.get("turnover", false)):
-		merged.append({"cat": CALC_LOG_CAT_OUTCOME, "text": "Result: fumble lost — turnover."})
+		merged.append({"cat": CALC_LOG_CAT_TURNOVER, "text": "Result: fumble lost — turnover."})
 		return {
 			"occurred": true,
 			"ended_by": "fumble_recovery",
@@ -2249,7 +2407,7 @@ func _roll_turnover_if_any(play_type: String, zone_delta: int) -> Dictionary:
 	for s in int_roll.get("lines", []):
 		merged.append({"cat": CALC_LOG_CAT_TURNOVER, "text": str(s)})
 	if bool(int_roll.get("turnover", false)):
-		merged.append({"cat": CALC_LOG_CAT_OUTCOME, "text": "Result: interception — turnover."})
+		merged.append({"cat": CALC_LOG_CAT_TURNOVER, "text": "Result: interception — turnover."})
 		return {
 			"occurred": true,
 			"ended_by": "interception",
@@ -2258,22 +2416,31 @@ func _roll_turnover_if_any(play_type: String, zone_delta: int) -> Dictionary:
 			"calc_lines": merged
 		}
 
-	merged.append({"cat": CALC_LOG_CAT_OUTCOME, "text": "Result: possession kept (no fumble, no interception)."})
+	merged.append({"cat": CALC_LOG_CAT_TURNOVER, "text": "Result: possession kept (no fumble, no interception)."})
 	return {"occurred": false, "calc_lines": merged}
 
 func _get_offense_ball_carrier(play_type: String) -> Dictionary:
 	if not game_state.selected_player_id.is_empty():
 		return player_data.get_by_id(game_state.selected_player_id)
-	var offense_team := player_data.get_team(game_state.possession_team)
+	var fr := _franchise_id_for_seat(game_state.possession_team)
+	var pkg: Dictionary = _match_field_packages.get(fr, {})
+	var offense_team: Array = pkg.get("off_field", [])
+	if offense_team.is_empty():
+		offense_team = player_data.get_team(fr)
 	if offense_team.is_empty():
 		return {}
 	if _pid_bucket(play_type) == BUCKET_RUN:
 		return offense_team[-1]
 	return offense_team[0]
 
+
 func _select_defender_for_play(play_type: String) -> Dictionary:
-	var defense_team_name := "away" if game_state.possession_team == "home" else "home"
-	var defenders: Array[Dictionary] = player_data.get_team(defense_team_name)
+	var defense_seat := "away" if game_state.possession_team == "home" else "home"
+	var def_fr := _franchise_id_for_seat(defense_seat)
+	var pkg: Dictionary = _match_field_packages.get(def_fr, {})
+	var defenders: Array = pkg.get("def_field", [])
+	if defenders.is_empty():
+		defenders = player_data.get_team(def_fr)
 	if defenders.is_empty():
 		return {}
 
@@ -2282,9 +2449,9 @@ func _select_defender_for_play(play_type: String) -> Dictionary:
 	for d in defenders:
 		var score := 0
 		if _pid_bucket(play_type) == BUCKET_RUN:
-			score = _effective_stat(d, "tackling", 60)
+			score = _effective_stat(d, "tackling", 5)
 		else:
-			score = _effective_stat(d, "coverage", 60) + _effective_stat(d, "catching", 60)
+			score = _effective_stat(d, "coverage", 5) + _effective_stat(d, "catching", 5)
 		if score > best_score:
 			best_score = score
 			best = d
@@ -2293,11 +2460,11 @@ func _select_defender_for_play(play_type: String) -> Dictionary:
 
 func _roll_fumble(play_type: String, offense: Dictionary, defense: Dictionary) -> Dictionary:
 	var base := 4.0 if _pid_bucket(play_type) == BUCKET_RUN else 2.0
-	var security := _effective_stat(offense, "ball_security", 65)
-	var defender_tackling := _effective_stat(defense, "tackling", 60)
+	var security := _effective_stat(offense, "carrying", 5)
+	var defender_tackling := _effective_stat(defense, "tackling", 5)
 	var ball_strip_bonus := _skill_chance_bonus_pct(defense, "ball_stripping", "fumble_forced_pct")
 	var big_hit_bonus := _skill_chance_bonus_pct(defense, "big_hit", "fumble_forced_pct")
-	var chance := clampf(base + float(defender_tackling - security) * 0.08 + ball_strip_bonus + big_hit_bonus, 1.0, 14.0)
+	var chance := clampf(base + float(defender_tackling - security) * 0.5 + ball_strip_bonus + big_hit_bonus, 1.0, 14.0)
 	var proc_labels: Array[String] = []
 	if ball_strip_bonus > 0.0:
 		proc_labels.append("Ball Stripping")
@@ -2321,14 +2488,14 @@ func _roll_interception(play_type: String, offense: Dictionary, defense: Diction
 	if _pid_bucket(play_type) != BUCKET_PASS:
 		return {"turnover": false, "lines": ["Interception check skipped (not a pass play)."]}
 	var base := 6.0 if zone_delta >= 8 else 4.0
-	var coverage := _effective_stat(defense, "coverage", 60)
-	var def_catching := _effective_stat(defense, "catching", 60)
-	var off_awareness := _effective_stat(offense, "awareness", 65)
-	var off_catching := _effective_stat(offense, "catching", 65)
-	var off_passing := _effective_stat(offense, "passing", 65)
+	var coverage := _effective_stat(defense, "coverage", 5)
+	var def_catching := _effective_stat(defense, "catching", 5)
+	var off_awareness := _effective_stat(offense, "awareness", 5)
+	var off_catching := _effective_stat(offense, "catching", 5)
+	var off_passing := _effective_stat(offense, "passing", 5)
 	var hawk_bonus := _skill_chance_bonus_pct(defense, "ball_hawk", "interception_pct")
 	var frozen_rope_protect := float(_skill_level(offense, "frozen_rope")) * 0.5
-	var chance := clampf(base + float((coverage + def_catching) - (off_awareness + off_catching + off_passing)) * 0.05 + hawk_bonus - frozen_rope_protect, 1.0, 16.0)
+	var chance := clampf(base + float((coverage + def_catching) - (off_awareness + off_catching + off_passing)) * 0.35 + hawk_bonus - frozen_rope_protect, 1.0, 16.0)
 	var int_proc_labels: Array[String] = []
 	if hawk_bonus > 0.0:
 		int_proc_labels.append("Ball Hawk")
@@ -2348,7 +2515,55 @@ func _roll_interception(play_type: String, offense: Dictionary, defense: Diction
 	return {"turnover": triggered, "lines": lines}
 
 func _effective_stat(player: Dictionary, key: String, fallback: int) -> int:
-	var value := int(player.get(key, fallback))
+	var pv := PlayerStatView.from_dict(player)
+	var value := 0
+	match key:
+		"speed":
+			value = pv.speed()
+		"strength":
+			value = pv.strength()
+		"stamina":
+			value = pv.stamina()
+		"awareness":
+			value = pv.awareness()
+		"acceleration":
+			value = pv.acceleration()
+		"catching":
+			value = pv.catching()
+		"carrying":
+			value = pv.carrying()
+		"ball_security":
+			value = pv.carrying()
+		"agility":
+			value = pv.agility()
+		"toughness":
+			value = pv.toughness()
+		"tackling":
+			value = pv.tackling()
+		"blocking":
+			value = pv.blocking()
+		"route_running":
+			value = pv.route_running()
+		"coverage":
+			value = pv.coverage()
+		"pass_rush":
+			value = pv.pass_rush()
+		"block_shedding":
+			value = pv.block_shedding()
+		"throw_power":
+			value = pv.throw_power()
+		"throw_accuracy":
+			value = pv.throw_accuracy()
+		"kick_power":
+			value = pv.kick_power()
+		"kick_accuracy":
+			value = pv.kick_accuracy()
+		"passing":
+			value = (pv.throw_power() + pv.throw_accuracy()) / 2
+		"kick_consistency":
+			value = (pv.kick_power() + pv.kick_accuracy()) / 2
+		_:
+			value = clampi(int(player.get(key, fallback)), 1, 99)
 	var skills := _player_skills(player)
 	for skill_id in skills.keys():
 		var level := clampi(int(skills[skill_id]), 1, 10)
@@ -2356,9 +2571,20 @@ func _effective_stat(player: Dictionary, key: String, fallback: int) -> int:
 		if typeof(def) != TYPE_DICTIONARY:
 			continue
 		var stat_mods: Dictionary = def.get("stat_mods", {})
-		if stat_mods.has(key):
-			value += int(stat_mods.get(key, 0)) * level
-	return value
+		for mk in stat_mods.keys():
+			if _skill_stat_mod_key_matches(str(mk), key):
+				value += int(stat_mods.get(mk, 0)) * level
+	return clampi(value, 1, 99)
+
+
+func _skill_stat_mod_key_matches(mod_key: String, lookup_key: String) -> bool:
+	if mod_key == lookup_key:
+		return true
+	if lookup_key == "passing" and mod_key == "passing":
+		return true
+	if lookup_key in ["carrying", "ball_security"] and mod_key == "ball_security":
+		return true
+	return false
 
 func _skill_level(player: Dictionary, skill_id: String) -> int:
 	var skills := _player_skills(player)
@@ -2386,9 +2612,10 @@ func _update_token_visuals() -> void:
 		var p := player_data.get_by_id(str(id))
 		if p.is_empty():
 			continue
-		var team := str(p.get("team", "home"))
-		var base_color := Color(0.60, 0.78, 1.0, 1.0) if team == "home" else Color(1.0, 0.70, 0.70, 1.0)
-		if team == game_state.possession_team:
+		var poss_fr := _franchise_id_for_seat(game_state.possession_team)
+		var team := str(p.get("team", ""))
+		var base_color := Color(0.60, 0.78, 1.0, 1.0) if team == poss_fr else Color(1.0, 0.70, 0.70, 1.0)
+		if team == poss_fr:
 			base_color = base_color.lightened(0.20)
 		if str(id) == _last_defender_id:
 			base_color = Color(1.0, 1.0, 0.45, 1.0)
@@ -2670,8 +2897,8 @@ func _update_ui() -> void:
 func _begin_targeted_card(card: Dictionary) -> void:
 	_pending_target_card = card
 	var context := {
-		"my_team_players": player_data.get_team(game_state.possession_team),
-		"opponent_players": player_data.get_team("away" if game_state.possession_team == "home" else "home"),
+		"my_team_players": player_data.get_team(_franchise_id_for_seat(game_state.possession_team)),
+		"opponent_players": player_data.get_team(_franchise_id_for_seat("away" if game_state.possession_team == "home" else "home")),
 		"staff": {
 			"offensive_coordinator": _staff_data[game_state.possession_team].get("off_coord", {}),
 			"defensive_coordinator": _staff_data[game_state.possession_team].get("def_coord", {})
@@ -2728,14 +2955,15 @@ func _update_player_details(player_id: String) -> void:
 	var skills_text := "-" if skill_parts.is_empty() else ", ".join(skill_parts)
 
 	var baseline_keys: Array[String] = [
-		"speed", "strength", "awareness", "passing", "catching", "blocking",
-		"tackling", "agility", "coverage", "ball_security", "kick_power",
-		"kick_accuracy", "kick_consistency", "route_running", "stamina",
-		"injury", "toughness"
+		"speed", "strength", "stamina", "awareness", "acceleration", "catching", "carrying", "agility",
+		"toughness", "tackling", "throw_power", "throw_accuracy", "blocking", "route_running",
+		"pass_rush", "coverage", "block_shedding", "kick_power", "kick_accuracy"
 	]
 	var stat_lines: Array[String] = []
 	for key in baseline_keys:
 		var base := int(p.get(key, 0))
+		if base <= 0:
+			base = 5
 		var eff := _effective_stat(p, key, base)
 		if eff != base:
 			stat_lines.append("%s: %d (%+d)" % [key, eff, eff - base])
@@ -2746,10 +2974,9 @@ func _update_player_details(player_id: String) -> void:
 	var int_bonus := _skill_chance_bonus_pct(p, "ball_hawk", "interception_pct")
 	var frozen_rope_bonus := float(_skill_level(p, "frozen_rope")) * 1.0
 
-	player_details_label.text = "Name: %s\nTeam: %s\nRole: %s\n\nSkills: %s\n\n%s\n\nDerived:\nFumble Force Bonus: +%.1f%%\nInterception Bonus: +%.1f%%\nFrozen Rope Passing Bonus: +%.1f" % [
-		str(p.get("name", player_id)),
+	player_details_label.text = "Name: %s\nTeam: %s\n\nSkills: %s\n\n%s\n\nDerived:\nFumble Force Bonus: +%.1f%%\nInterception Bonus: +%.1f%%\nFrozen Rope Passing Bonus: +%.1f" % [
+		PlayerStatView.display_name_from_dict(p),
 		str(p.get("team", "unknown")),
-		str(p.get("role", "n/a")),
 		skills_text,
 		"\n".join(stat_lines),
 		fumble_force_bonus,
@@ -2813,13 +3040,106 @@ func _format_down_label(down: int) -> String:
 		return "3rd Down"
 	return "4th Down"
 
+func _calc_log_localize_team_tokens_in_text(s: String) -> String:
+	if s.is_empty():
+		return s
+	if _calc_log_re_side_home == null or _calc_log_re_side_away == null:
+		return s
+	var hn := _team_display_name("home")
+	var an := _team_display_name("away")
+	var t := _calc_log_re_side_home.sub(s, hn, true)
+	t = _calc_log_re_side_away.sub(t, an, true)
+	return t
+
+
+func _calc_log_format_player_roster(p: Dictionary) -> String:
+	if p.is_empty():
+		return "(none)"
+	var tk := str(p.get("team", ""))
+	var tn := _franchise_display_name_from_id(tk)
+	var nm := PlayerStatView.display_name_from_dict(p)
+	return "%s · %s (%s)" % [tn, nm, str(p.get("id", "?"))]
+
+
+func _calc_log_begin_snap_bundle() -> void:
+	if _calc_log_snap_bundle_active:
+		return
+	_calc_log_snap_bundle_active = true
+	_calc_log_snap_lines.clear()
+	_calc_log_snap_seen_cards = false
+	_calc_log_snap_bundle_title = _calc_log_next_title("Play snap")
+
+
+func _calc_log_commit_snap_bundle_if_active() -> void:
+	if not _calc_log_snap_bundle_active:
+		return
+	_calc_log_snap_bundle_active = false
+	_calc_log_snap_seen_cards = false
+	if _calc_log_snap_lines.is_empty():
+		_calc_log_refresh_view()
+		return
+	_calc_log_entries.append({"title": _calc_log_snap_bundle_title, "lines": _calc_log_snap_lines.duplicate(true)})
+	_calc_log_snap_lines.clear()
+	_calc_log_snap_bundle_title = ""
+	_calc_log_index = _calc_log_entries.size() - 1
+	_calc_log_refresh_view()
+
+
+func _calc_log_snap_append_separator_gated(plain_label: String, gate_line_objs: Array) -> void:
+	var txt := "[i]── %s ──[/i]" % plain_label
+	var cats: Array[String] = []
+	for lo in gate_line_objs:
+		if typeof(lo) != TYPE_DICTIONARY:
+			continue
+		var c := str((lo as Dictionary).get("cat", CALC_LOG_CAT_RESOLVER))
+		var found := false
+		for ex in cats:
+			if ex == c:
+				found = true
+				break
+		if not found:
+			cats.append(c)
+	_calc_log_snap_lines.append({
+		"text": _calc_log_localize_team_tokens_in_text(txt),
+		"sep_gate_cats": cats,
+		"cat": cats[0] if cats.size() > 0 else CALC_LOG_CAT_RESOLVER,
+	})
+
+
+func _calc_log_snap_append_separator(plain_label: String, cat: String) -> void:
+	_calc_log_snap_append_separator_gated(plain_label, [{"cat": cat}])
+
+
+func _calc_log_snap_append_line_objs(line_objs: Array) -> void:
+	for lo in line_objs:
+		if typeof(lo) != TYPE_DICTIONARY:
+			continue
+		var d: Dictionary = (lo as Dictionary).duplicate(true)
+		d["text"] = _calc_log_localize_team_tokens_in_text(str(d.get("text", "")))
+		_calc_log_snap_lines.append(d)
+
+
+func _calc_log_snap_append_flat_lines(texts: Array, cat: String) -> void:
+	for t in texts:
+		_calc_log_snap_lines.append({"cat": cat, "text": _calc_log_localize_team_tokens_in_text(str(t))})
+
+
+func _calc_log_snap_append_section(plain_title: String, texts: Array, cat: String) -> void:
+	_calc_log_snap_append_separator(plain_title, cat)
+	_calc_log_snap_append_flat_lines(texts, cat)
+
+
 func _calc_log_cat_enabled(cat: String) -> bool:
+	if cat == CALC_LOG_CAT_RESOLVER or cat == CALC_LOG_CAT_POST:
+		var r := calc_filter_resolver
+		var p := calc_filter_post
+		if r == null and p == null:
+			return true
+		var r_on := r == null or r.button_pressed
+		var p_on := p == null or p.button_pressed
+		return r_on or p_on
 	var b: CheckButton = null
 	match cat:
-		CALC_LOG_CAT_RESOLVER:
-			b = calc_filter_resolver
-		CALC_LOG_CAT_POST:
-			b = calc_filter_post
 		CALC_LOG_CAT_OUTCOME:
 			b = calc_filter_outcome
 		CALC_LOG_CAT_TURNOVER:
@@ -2832,17 +3152,33 @@ func _calc_log_cat_enabled(cat: String) -> bool:
 			b = calc_filter_special
 		CALC_LOG_CAT_CONVERSION:
 			b = calc_filter_conversion
-		CALC_LOG_CAT_CLOCK:
-			b = calc_filter_clock
 		_:
 			return true
 	return b == null or b.button_pressed
 
 
+func _calc_log_sep_gate_any_enabled(gate_cats: Variant) -> bool:
+	if typeof(gate_cats) != TYPE_ARRAY:
+		return false
+	for x in gate_cats as Array:
+		if _calc_log_cat_enabled(str(x)):
+			return true
+	return false
+
+
+func _calc_log_line_passes_category_filter(d: Dictionary) -> bool:
+	return _calc_log_cat_enabled(str(d.get("cat", CALC_LOG_CAT_RESOLVER)))
+
+
 func _calc_log_clear() -> void:
+	_calc_log_snap_bundle_active = false
+	_calc_log_snap_lines.clear()
+	_calc_log_snap_bundle_title = ""
+	_calc_log_snap_seen_cards = false
 	_calc_log_entries.clear()
 	_calc_log_index = -1
 	_calc_log_seq = 0
+	_last_scrimmage_sim_ctx = null
 	_calc_log_refresh_view()
 
 
@@ -2851,29 +3187,48 @@ func _calc_log_next_title(prefix: String) -> String:
 	return "#%d — %s" % [_calc_log_seq, prefix]
 
 
+func _calc_log_slide_title(plain_prefix: String) -> String:
+	return plain_prefix if _calc_log_snap_bundle_active else _calc_log_next_title(plain_prefix)
+
+
 func _calc_log_push_slide(title: String, line_objs: Array) -> void:
-	_calc_log_entries.append({"title": title, "lines": line_objs})
+	var processed: Array = []
+	for lo in line_objs:
+		if typeof(lo) != TYPE_DICTIONARY:
+			continue
+		var d: Dictionary = (lo as Dictionary).duplicate(true)
+		d["text"] = _calc_log_localize_team_tokens_in_text(str(d.get("text", "")))
+		processed.append(d)
+	if _calc_log_snap_bundle_active:
+		if not processed.is_empty():
+			var label := title
+			if title.contains(" — "):
+				label = title.get_slice(" — ", 1)
+			_calc_log_snap_append_separator_gated(label, processed)
+			_calc_log_snap_append_line_objs(processed)
+		_calc_log_refresh_view()
+		return
+	_calc_log_entries.append({"title": title, "lines": processed})
 	_calc_log_index = _calc_log_entries.size() - 1
 	_calc_log_refresh_view()
 
 
-func _calc_log_push_slide_flat(title: String, texts: Array, cat: String) -> void:
+func _calc_log_push_slide_flat(plain_title: String, texts: Array, cat: String) -> void:
+	var full_title := _calc_log_slide_title(plain_title)
 	var line_objs: Array = []
 	for t in texts:
-		line_objs.append({"cat": cat, "text": str(t)})
-	_calc_log_push_slide(title, line_objs)
+		line_objs.append({"cat": cat, "text": _calc_log_localize_team_tokens_in_text(str(t))})
+	_calc_log_push_slide(full_title, line_objs)
 
 
-func _calc_log_push_breakdown_slide(title: String, result: Dictionary) -> void:
+func _calc_log_push_breakdown_slide(plain_title: String, result: Dictionary) -> void:
 	var bd: Array = result.get("breakdown", []) as Array
 	var line_objs: Array = []
 	for s in bd:
-		var st := str(s)
-		var cat := CALC_LOG_CAT_RESOLVER
-		if st.begins_with("Defense call:") or st.begins_with("Opponent defense:") or st.begins_with("Staff bonus:") or st.begins_with("Net from"):
-			cat = CALC_LOG_CAT_POST
-		line_objs.append({"cat": cat, "text": st})
-	_calc_log_push_slide(title, line_objs)
+		var st := _calc_log_localize_team_tokens_in_text(str(s))
+		line_objs.append({"cat": CALC_LOG_CAT_RESOLVER, "text": st})
+	var full_title := _calc_log_slide_title(plain_title)
+	_calc_log_push_slide(full_title, line_objs)
 
 
 func _calc_log_refresh_view() -> void:
@@ -2897,14 +3252,38 @@ func _calc_log_refresh_view() -> void:
 	var title := str(entry.get("title", "Entry"))
 	var lines_raw: Array = entry.get("lines", []) as Array
 	var shown: Array[String] = []
-	for lo in lines_raw:
+	var i := 0
+	while i < lines_raw.size():
+		var lo = lines_raw[i]
 		if typeof(lo) != TYPE_DICTIONARY:
+			i += 1
 			continue
 		var d := lo as Dictionary
-		var c := str(d.get("cat", CALC_LOG_CAT_RESOLVER))
-		if not _calc_log_cat_enabled(c):
+		if d.has("sep_gate_cats"):
+			if not _calc_log_sep_gate_any_enabled(d.get("sep_gate_cats", [])):
+				i += 1
+				continue
+			var j := i + 1
+			var has_visible := false
+			while j < lines_raw.size():
+				var lo2 = lines_raw[j]
+				if typeof(lo2) != TYPE_DICTIONARY:
+					j += 1
+					continue
+				var d2 := lo2 as Dictionary
+				if d2.has("sep_gate_cats"):
+					break
+				if _calc_log_line_passes_category_filter(d2):
+					has_visible = true
+					break
+				j += 1
+			if has_visible:
+				shown.append(str(d.get("text", "")))
+			i += 1
 			continue
-		shown.append(str(d.get("text", "")))
+		if _calc_log_line_passes_category_filter(d):
+			shown.append(str(d.get("text", "")))
+		i += 1
 	var body := "\n".join(shown)
 	if body.strip_edges().is_empty():
 		body = CALC_LOG_PLACEHOLDER
@@ -2954,7 +3333,7 @@ func _append_event_log_play_tile_rows_line(offense_team: String, offense_play_id
 
 func _append_touchback_event_log(suffix: String) -> void:
 	_append_event_log("[color=#4da3ff][b]Touchback[/b][/color] %s" % suffix)
-	_calc_log_push_slide_flat(_calc_log_next_title("Touchback"), [
+	_calc_log_push_slide_flat("Touchback", [
 		"Receiving team spots the ball at touchback row %d (engine)." % GameState.TOUCHBACK_LOS_ROW_ENGINE,
 		"Context: %s" % suffix.strip_edges(),
 	], CALC_LOG_CAT_SPECIAL)
@@ -3438,6 +3817,7 @@ func _on_restart_pressed() -> void:
 	_begin_new_game_stats()
 	_assign_user_team_random()
 	_load_data()
+	_spawn_players()
 	_turn_initialized = false
 	_offense_play_tentative = GameState.PENDING_NONE
 	_play_pick_window = "offense"
@@ -3464,6 +3844,23 @@ func _on_reset_stats_pressed() -> void:
 
 func _on_quit_pressed() -> void:
 	get_tree().quit()
+
+
+func _on_tools_menu_id_pressed(id: int) -> void:
+	if id != 0:
+		return
+	if _formations_catalog == null:
+		push_error("Formations not loaded")
+		return
+	var t := FORMATION_TOOL_SCENE.instantiate() as FormationTool
+	t.setup(_formations_catalog, Callable(self, "_formation_tool_after_save"))
+	add_child(t)
+
+
+func _formation_tool_after_save() -> void:
+	if _formations_catalog and not _formations_catalog.load_from_json("res://data/formations.json"):
+		push_error("Failed to reload formations.json after tool save")
+
 
 func _on_user_forfeit_pressed() -> void:
 	_apply_forfeit(_user_team, "forfeit_button")
@@ -3643,12 +4040,6 @@ func _apply_sim_presnap_runoff() -> void:
 		return
 	if not _defer_scrimmage_game_clock_until_first_snap:
 		game_state.game_time_remaining = max(game_state.game_time_remaining - runoff, 0)
-	var presnap_lines: Array[String] = ["Sim drew %d seconds of pre-snap runoff before resolving the play." % runoff]
-	if _defer_scrimmage_game_clock_until_first_snap:
-		presnap_lines.append("Full game clock tick is deferred until the first scrimmage snap of the half (runoff did not change game clock).")
-	else:
-		presnap_lines.append("Game clock after runoff: %s." % _format_time(game_state.game_time_remaining))
-	_calc_log_push_slide_flat(_calc_log_next_title("Clock — sim presnap"), presnap_lines, CALC_LOG_CAT_CLOCK)
 	if show_action_timer_bar and _turn_action_timer_active and (game_state.phase == PHASE_PLAY_SELECTION or game_state.phase == PHASE_CARD_QUEUE):
 		_turn_action_time_remaining = maxf(0.0, _turn_action_time_remaining - float(runoff))
 		_last_play_clock_display_seconds = int(ceili(_turn_action_time_remaining))
@@ -3698,7 +4089,7 @@ func _begin_post_td_conversion(team: String) -> void:
 	game_state.conversion_team = team
 	game_state.possession_team = team
 	_append_event_log("[color=#66ff00][b]Touchdown![/b][/color] %s +6." % _team_display_name(team))
-	_calc_log_push_slide_flat(_calc_log_next_title("Conversion — start"), [
+	_calc_log_push_slide_flat("Conversion — start", [
 		"Scoring side for conversion: %s." % _team_display_name(team),
 		"Choose extra point (auto roll) or a full two-point scrimmage play.",
 	], CALC_LOG_CAT_CONVERSION)
@@ -3721,7 +4112,7 @@ func _choose_conversion(conv_type: String) -> void:
 	game_state.conversion_type = conv_type
 	game_state.possession_team = game_state.conversion_team
 	_append_phase_subphase("conversion_attempt", "type=%s" % conv_type)
-	_calc_log_push_slide_flat(_calc_log_next_title("Conversion — choice"), [
+	_calc_log_push_slide_flat("Conversion — choice", [
 		"%s commits to %s." % [
 			_team_display_name(game_state.conversion_team),
 			"extra point (resolver roll)" if conv_type == CONVERSION_XP else "two-point try (normal scrimmage flow)"
@@ -3744,11 +4135,11 @@ func _choose_conversion(conv_type: String) -> void:
 
 func _run_extra_point_attempt() -> void:
 	var team := game_state.conversion_team
-	var kicker := player_data.get_best_kicker(team)
+	var kicker := player_data.get_best_kicker(_franchise_id_for_seat(team))
 	var kicker_id := str(kicker.get("id", ""))
 	var staff_bonus := int((_staff_data[team]["off_coord"].get("bonus_offense", {}) as Dictionary).get("standard_zone_bonus", 0))
 	var xp_result := play_resolver.resolve_extra_point(kicker_id, kicker, _opponent_flat_def_mod - staff_bonus)
-	_calc_log_push_breakdown_slide(_calc_log_next_title("Conversion — extra point resolver"), xp_result)
+	_calc_log_push_breakdown_slide("Conversion — extra point resolver", xp_result)
 	if bool(xp_result.get("success", false)):
 		game_state.add_score(team, 1)
 		result_text.text = "[center][color=#66ff66][b]EXTRA POINT GOOD[/b][/color][/center]"
@@ -3773,7 +4164,7 @@ func _finish_conversion(ended_by: String, made: bool) -> void:
 	game_state.next_drive_start_zone = _map_possession_start_zone(GameState.ZONE_END)
 	var next_team := "away" if scoring_team == "home" else "home"
 	game_state.start_possession(next_team, game_state.next_drive_start_zone, GameState.TOUCHBACK_LOS_ROW_ENGINE)
-	_calc_log_push_slide_flat(_calc_log_next_title("Conversion — kickoff / new possession"), [
+	_calc_log_push_slide_flat("Conversion — kickoff / new possession", [
 		"Receiving team: %s at touchback row %d." % [next_team.capitalize(), GameState.TOUCHBACK_LOS_ROW_ENGINE],
 		"Drive start zone (mapped): %s." % _zone_name(game_state.next_drive_start_zone),
 	], CALC_LOG_CAT_CONVERSION)
@@ -4052,6 +4443,9 @@ func _execute_queued_cards_in_order() -> void:
 	var offense := game_state.possession_team
 	var defense := "away" if offense == "home" else "home"
 
+	if game_state.pending_play_type != PLAY_NONE():
+		_calc_log_begin_snap_bundle()
+
 	var q_offense: Array = game_state.queued_cards_home if offense == "home" else game_state.queued_cards_away
 	var q_defense: Array = game_state.queued_cards_home if defense == "home" else game_state.queued_cards_away
 
@@ -4077,6 +4471,7 @@ func _execute_queued_cards_in_order() -> void:
 	if game_state.pending_play_type != PLAY_NONE():
 		_resolve_play()
 	else:
+		_calc_log_commit_snap_bundle_if_active()
 		game_state.phase = PHASE_PLAY_SELECTION
 		_update_ui()
 
@@ -4106,7 +4501,14 @@ func _execute_queued_card(entry: Dictionary) -> void:
 	var card_lines: Array[String] = ["%s spends %d momentum on [b]%s[/b]." % [_team_display_name(team), cost, cname]]
 	if not effect_text.is_empty():
 		card_lines.append("Effect: %s" % effect_text)
-	_calc_log_push_slide_flat(_calc_log_next_title("Cards — queue resolve"), card_lines, CALC_LOG_CAT_CARDS)
+	if _calc_log_snap_bundle_active:
+		if not _calc_log_snap_seen_cards:
+			_calc_log_snap_seen_cards = true
+			_calc_log_snap_append_section("Cards — queue resolve", card_lines, CALC_LOG_CAT_CARDS)
+		else:
+			_calc_log_snap_append_flat_lines(card_lines, CALC_LOG_CAT_CARDS)
+	else:
+		_calc_log_push_slide_flat("Cards — queue resolve", card_lines, CALC_LOG_CAT_CARDS)
 	if not effect_text.is_empty():
 		if team == "home":
 			_resolved_effects_home.append(effect_text)

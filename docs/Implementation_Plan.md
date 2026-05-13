@@ -18,9 +18,10 @@ Deliver a stable 2v2 mobile-first prototype with:
 Keep a modular gameplay setup:
 
 - [scripts/game_state.gd](scripts/game_state.gd): authoritative runtime state and transitions; **`current_los_row_engine`** holds LOS tile row, **`current_zone`** derived after each move
-- [scripts/game_scene.gd](scripts/game_scene.gd): flow orchestration, UI wiring, **field formation preview** (labeled markers from plays → formations; fan-out / offense–defense nudge / defense row shift)
-- [scripts/play_resolver.gd](scripts/play_resolver.gd): standard + **spot kick** resolution; ball movement uses **tile deltas** (zones remain for range, modifiers, UI labels)
-- [scripts/formations_catalog.gd](scripts/formations_catalog.gd): [data/formations.json](data/formations.json) load/validate (**7** positions per formation, per-role caps; offense positions must have `delta_row` ≥ 0)
+- [scripts/game_scene.gd](scripts/game_scene.gd): flow orchestration, UI wiring, **field formation preview** (labeled markers from plays → formations; fan-out / offense–defense nudge / defense row shift); builds **`PlaySimContext`** for run/pass and applies **`turnover_outcome`** from the sim (skips legacy `_roll_turnover_if_any` when present)
+- [scripts/play_resolver.gd](scripts/play_resolver.gd): thin node delegating **run/pass** to [scripts/resolution/scrimmage_play_resolver.gd](scripts/resolution/scrimmage_play_resolver.gd) and **punt / spot kick / XP** to [scripts/resolution/special_teams_resolver_legacy.gd](scripts/resolution/special_teams_resolver_legacy.gd); ball movement uses **tile deltas**
+- [scripts/resolution/](scripts/resolution/): modular stat-only scrimmage sim (`PlaySimContext`, `PlayerStatView`, matchup/blocking/route/pass/run/tackle/turnover helpers, `balance_constants.gd`) — no UI, no skills/cards/coach in this path yet
+- [scripts/formations_catalog.gd](scripts/formations_catalog.gd): [data/formations.json](data/formations.json) load/validate (**7** positions per formation, required **`formation_shell`**, shell/`side` consistency, per-role caps including **GUN**; offense positions must have `delta_row` ≥ 0). Public `validate_formation_dict` for the formation editor tool.
 - [scripts/plays_catalog.gd](scripts/plays_catalog.gd): [data/plays.json](data/plays.json) load; **`formation_id_for(play_type)`** for offense and defense play-type ids
 - [scripts/card_manager.gd](scripts/card_manager.gd): deck / hand / discard / draw / cost checks
 - [scripts/effect_manager.gd](scripts/effect_manager.gd): applied effect lifecycle
@@ -104,7 +105,7 @@ Keep a modular gameplay setup:
 ## Field Goal Rules
 
 - Allowed in **Attack Zone** and **Red Zone**
-- Allowed in **Midfield Zone** only when the kicking player's `kick_power > 80`
+- Allowed in **Midfield Zone** only when the kicking player's `kick_power > 7` (stats are **1–10**)
 - Disabled in **Defensive Endzone**, **Build Zone**, **Advance Zone**, and **Scoring Endzone** (unless Midfield eligibility is met)
 - Base chance profile:
   - **Red Zone:** high
@@ -134,6 +135,9 @@ All resolves must return:
 - `clock_seconds_used`
 - `result_text`
 - `breakdown` (short explanatory strings)
+- **Scrimmage extensions (run/pass):** `turnover_outcome` (`occurred`, `ended_by`, `start_zone` may be `-1` until `game_scene` patches post-movement, `text`, `calc_lines` — resolvers leave `calc_lines` empty so the play calc log does not duplicate `breakdown`; `_roll_turnover_if_any` in `game_scene` still fills `calc_lines` for post-snap checks), `event_log` (structured sim events; same narrative as `breakdown` messages), `key_matchups`, `play_type_bucket`, `incomplete_pass`, `pressure_level`, `target_receiver_id`, `tackled_by_id`, `broken_tackles`
+
+Note: engine uses **`tile_delta`** (signed tile rows toward goal) for ball movement; older docs may say `zone_delta`.
 
 ## Drive Summary Hook
 
@@ -191,12 +195,12 @@ Note: possession summaries still use **`field_goal`** / **`missed_field_goal`** 
     - Failure (zero or negative zone change) -> no additional points
 - Extra Point probability:
   - Base 80% chance made
-  - Adjusted by kicker baseline stats (and any skills that modify them):
-    - +/- (kick_accuracy - 50) * 0.5
-    - +/- (kick_power - 50) * 0.2
-    - +/- (kick_consistency - 50) * 0.3
+  - Adjusted by kicker baseline stats on **1–10** scale (and any skills that modify them); `kick_consistency` defaults to `(kick_accuracy + kick_power) / 2` when absent:
+    - `+ (kick_accuracy - 5) * 4` percentage points
+    - `+ (kick_power - 5) * 3` percentage points
+    - `+ (kick_consistency - 5) * 2` percentage points
     - minus opponent flat defense modifier
-  - Clamp final chance to 50-99
+  - Clamp final chance to 5–95
 - Choice UX:
   - Human mode: present `Extra Point` and `2-Point` buttons
   - Sim mode: auto-pick using post-TD score differential (scoring_team - opponent):
@@ -213,6 +217,12 @@ Note: possession summaries still use **`field_goal`** / **`missed_field_goal`** 
 
 ## Turnovers and Player Stats
 
+### Scrimmage stat-only resolution (prototype)
+
+- **Run** and **pass** outcomes are produced by `ScrimmagePlayResolver` using formations (offense + defensive call’s `formation_id`), raw roster stats, and injected RNG. No card, coach, `EffectManager`, or skill modifiers apply to this path yet.
+- Turnovers on scrimmage (**interception**, **fumble**) are decided inside the sim and returned as `turnover_outcome`; `game_scene` applies **`start_zone`** after LOS movement when the sim left it unset (`-1`).
+- **Punt / FG / XP** still use `SpecialTeamsResolverLegacy` (global RNG, prior behavior).
+
 - Turnover types:
   - Turnover on downs (4th down without a new first down)
   - Fumble recovery (run or post-catch on pass)
@@ -225,27 +235,11 @@ Note: possession summaries still use **`field_goal`** / **`missed_field_goal`** 
 - Offensive ball carrier source is play-type role based:
   - Run uses runner role
   - Pass uses receiver role
-- Baseline player stats (authoritative core attributes):
-  - `speed`
-  - `strength`
-  - `awareness`
-  - `passing`
-  - `catching` (replaces `hands`)
-  - `blocking`
-  - `tackling`
-  - `agility`
-  - `coverage`
-  - `ball_security`
-  - `kick_power`
-  - `kick_accuracy`
-  - `kick_consistency`
-  - `route_running`
-  - `stamina`
-  - `injury`
-  - `toughness`
+- Baseline player stats in roster JSON (**1–10** integers; see [docs/Properties.md](docs/Properties.md)): `speed`, `strength`, `stamina`, `awareness`, `acceleration`, `catching`, `carrying`, `agility`, `toughness`, `tackling`, `throw_power`, `throw_accuracy`, `blocking`, `route_running`, `pass_rush`, `coverage`, `block_shedding`, `kick_power`, `kick_accuracy`. `PlayerStatView` still accepts legacy keys `passing` / `ball_security` if present. `injury` reserved for future use.
+- Match sim uses **field packages** from each franchise’s 17-player roster order in [data/teams.json](data/teams.json) (`roster_player_ids`: offense field group, defense field group, kicker, punter, returner).
 - Skill system data model:
   - Skill definitions live in separate [data/skills.json](data/skills.json) for scalability
-  - Player records reference skill levels (per skill) in [data/players.json](data/players.json)
+  - Player records may include optional per-skill levels in [data/players.json](data/players.json) (generated prototype rosters omit `skills`)
   - Skill levels use range `1-10`
   - Skills may apply:
     - stat modifiers (point-based)
@@ -338,10 +332,10 @@ In `GameState`, maintain:
 ## Scene / UI Structure
 
 - [scenes/game_scene.tscn](scenes/game_scene.tscn)
-  - Root Control with managers as child nodes; **LastPlayToastLayer** (`CanvasLayer` layer 18): **2s** outcome line over **`MobileFrame`** (very large bold italic BBCode ~88px, no background; `game_scene.gd`; yardage toasts: **N yard(s)** only, no “tile rows” duplicate); **`UserPlayButtonsRow`** — **`UserPhasePromptPanel`** (`MarginContainer`) + **`UserPhasePromptLabel`** (uppercase notification, not a button chip)
+  - Root Control with managers as child nodes; **`TopRightBar`** (`HBoxContainer`): **`ToolsMenuButton`** (`MenuButton`, **Tools** popup — **Formation tool…** → [`scenes/formation_tool.tscn`](scenes/formation_tool.tscn); conventions in [Tools.md](Tools.md)) and **`QuitButton`**; **LastPlayToastLayer** (`CanvasLayer` layer 18): **2s** outcome line over **`MobileFrame`** (very large bold italic BBCode ~88px, no background; `game_scene.gd`; yardage toasts: **N yard(s)** only, no “tile rows” duplicate); **`UserPlayButtonsRow`** — **`UserPhasePromptPanel`** (`MarginContainer`) + **`UserPhasePromptLabel`** (uppercase notification, not a button chip)
   - HUD labels for clock / half / score / possession / zone / down / phase / result; **`GlobalHUD`** includes **`PlayCountLabel`** (`Plays: n`, **n** = `_game_plays`); **ClockPanel** includes `ActionTimerProgressBar` (10s when `show_action_timer_bar`); **`ShowActionTimerBarToggle`** on `HUDGroup`; legacy `PlayClockValueLabel` hidden; **UserDownDistanceLabel** on `UserHUD` (`1st and 10` / `3rd and Goal`, tile rows); **`UserPlayButtonsRow`** + **`UserPlayRowPossessionIcon`**; **`SpeedPanel`**: `-` / `+` adjust sim speed, **`SpeedX2`** / **`SpeedX10`** jump to **2×** / **10×** (clamped **0.5–10**); event log: **pre-snap situation** bracket on scrimmage + punt (snap down/`&`/distance or Goal + `FieldGrid.perspective_row` + ⬇️/⬆️ vs midfield; cleared before post-TD conversion; no prefix on 2PT-only `_apply_play_result`); **tile-row play line first**, then **turnover** / **turnover on downs** / **first down** as applicable; **FG** make/miss explicit lines in `_apply_play_result` (`#66ff00` good, `#ff6666` miss + turnover); **Game clock:** `_sync_game_clock_scrimmage_policy()` (end of `_update_ui`) sets `_clock_running` only in `_scrimmage_offense_selecting_window()` when **`not _defer_scrimmage_game_clock_until_first_snap`** (cleared at `_resolve_play` entry; re-armed on **Restart** and `_after_force_halftime_second_half`) unless `_manual_pause_active`, `_auto_pause_after_sim_stop`, or `_game_clock_hold_after_rule_stop` (`_stop_clock(..., true)`); **Sim** pause uses `_sim_tick_paused` + `sim_timer` decoupled from `_clock_running`; **manual** Pause toggles `_manual_pause_active`; **Sim → Man** `_auto_pause_after_sim_stop`. **Halftime:** `_after_force_halftime_second_half` after `force_halftime_now`
   - **`SimStepPanel`** (`HUDGroup/SimStepPanel`, below **`SpeedPanel`**): **1 play at a time** toggle + **Next** — when Sim is on and the toggle is checked, `_sim_try_pause_step_after_play()` pauses `sim_timer` after each resolved scrimmage/punt, XP attempt, and 2PT attempt; **Next** clears `_sim_tick_paused` and restarts the sim tick (`game_scene.gd`).
-  - **Play calc log** (`HUDGroup/CalcLogPanel`, right of **`PlayInfoHUD`**): filters map to line categories in `_calc_log_cat_enabled` (`Resolver` / `CalcFilterPost`→**Matchup** / `Outcome` / `Turnover` / `Cards` / `Skills` / `Special` / `Conversion` / `Clock`); **Prev** / **CalcLogNextNav** step slides; `_calc_log_clear()` on Restart and in `_ready` after `start_game`.
+  - **Play calc log** (`HUDGroup/CalcLogPanel`, right of **`PlayInfoHUD`**): `_calc_log_cat_enabled` — **Resolver** and **Matchup** (`CalcFilterPost`) share visibility for resolver-category lines (either filter **on** shows them; both **off** hides that block); other filters map to `Outcome` / `Turnover` / `Cards` / `Skills` / `Special` / `Conversion`. Section headers (`── … ──`) use a union of the categories in that block: the header appears only if at least one of those filters is on **and** at least one following content line in that block would be visible (avoids orphan headers, including mixed-category slides). No separate clock calc-log filter (presnap runoff is not logged here). **Prev** / **CalcLogNextNav** step slides; `_calc_log_clear()` on Restart and in `_ready` after `start_game`.
   - [scenes/field.tscn](scenes/field.tscn): **`BallChip`** (`Label`, football emoji at LOS; possession tint); removed legacy `BallMarker` / `PossessionArrow` / `PossessionOnFieldLabel`
   - `UserTeamLabel` showing random per-game assignment (`You are: Home/Away`)
   - Play buttons (Run, Short Pass, Deep Pass, Field Goal, card controls)
@@ -372,7 +366,8 @@ In `GameState`, maintain:
 
 ## Data Files
 
-- [data/players.json](data/players.json)
+- [data/players.json](data/players.json) (global `id`, franchise `team`, bio + 1–10 stats)
+- [data/teams.json](data/teams.json) (`roster_player_ids` per franchise)
 - [data/skills.json](data/skills.json)
 - [data/cards.json](data/cards.json)
 - [data/coaches_catalog.json](data/coaches_catalog.json) (OC/DC ids referenced by [data/teams.json](data/teams.json); `bonus_offense` / `bonus_defense`)

@@ -18,7 +18,7 @@ func _ready() -> void:
 
 func bind_player(data: Dictionary) -> void:
 	player_id = str(data.get("id", ""))
-	name_label.text = str(data.get("name", "Player"))
+	name_label.text = PlayerStatView.display_name_from_dict(data)
 
 func set_highlighted(enabled: bool) -> void:
 	modulate = Color(1.0, 1.0, 0.6) if enabled else Color(1, 1, 1)

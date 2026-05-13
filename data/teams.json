@@ -1,212 +1,422 @@
 [
-  {
-    "id": "bees",
-    "name": "Bees",
-    "created_at": "2026-05-07T16:17:00-04:00",
-    "colors": {
-      "primary": "#801735",
-      "secondary": "#D4AF37",
-      "accent": "#111111"
-    },
-    "stats": {
-      "wins": 0,
-      "losses": 0,
-      "games_played": 0,
-      "points_scored_total": 0,
-      "points_scored_avg": 0
-    },
-    "vs_record": {},
-    "off_coord_id": "coach_01",
-    "def_coord_id": "coach_06",
-    "playbook_id": "pb_bees"
-  },
-  {
-    "id": "cavs",
-    "name": "Cavs",
-    "created_at": "2026-05-07T16:17:00-04:00",
-    "colors": {
-      "primary": "#CC2525",
-      "secondary": "#111111",
-      "accent": "#808080"
-    },
-    "stats": {
-      "wins": 0,
-      "losses": 0,
-      "games_played": 0,
-      "points_scored_total": 0,
-      "points_scored_avg": 0
-    },
-    "vs_record": {},
-    "off_coord_id": "coach_02",
-    "def_coord_id": "coach_07",
-    "playbook_id": "pb_cavs"
-  },
-  {
-    "id": "hawks",
-    "name": "Hawks",
-    "created_at": "2026-05-07T16:17:00-04:00",
-    "colors": {
-      "primary": "#1E3A8A",
-      "secondary": "#60A5FA",
-      "accent": "#0F172A"
-    },
-    "stats": {
-      "wins": 0,
-      "losses": 0,
-      "games_played": 0,
-      "points_scored_total": 0,
-      "points_scored_avg": 0
-    },
-    "vs_record": {},
-    "off_coord_id": "coach_03",
-    "def_coord_id": "coach_08",
-    "playbook_id": "pb_hawks"
-  },
-  {
-    "id": "wolves",
-    "name": "Wolves",
-    "created_at": "2026-05-07T16:17:00-04:00",
-    "colors": {
-      "primary": "#374151",
-      "secondary": "#9CA3AF",
-      "accent": "#111827"
-    },
-    "stats": {
-      "wins": 0,
-      "losses": 0,
-      "games_played": 0,
-      "points_scored_total": 0,
-      "points_scored_avg": 0
-    },
-    "vs_record": {},
-    "off_coord_id": "coach_04",
-    "def_coord_id": "coach_09",
-    "playbook_id": "pb_wolves"
-  },
-  {
-    "id": "tigers",
-    "name": "Tigers",
-    "created_at": "2026-05-07T16:17:00-04:00",
-    "colors": {
-      "primary": "#EA580C",
-      "secondary": "#FDBA74",
-      "accent": "#7C2D12"
-    },
-    "stats": {
-      "wins": 0,
-      "losses": 0,
-      "games_played": 0,
-      "points_scored_total": 0,
-      "points_scored_avg": 0
-    },
-    "vs_record": {},
-    "off_coord_id": "coach_05",
-    "def_coord_id": "coach_10",
-    "playbook_id": "pb_tigers"
-  },
-  {
-    "id": "sharks",
-    "name": "Sharks",
-    "created_at": "2026-05-07T16:17:00-04:00",
-    "colors": {
-      "primary": "#0E7490",
-      "secondary": "#67E8F9",
-      "accent": "#164E63"
-    },
-    "stats": {
-      "wins": 0,
-      "losses": 0,
-      "games_played": 0,
-      "points_scored_total": 0,
-      "points_scored_avg": 0
-    },
-    "vs_record": {},
-    "off_coord_id": "coach_06",
-    "def_coord_id": "coach_11",
-    "playbook_id": "pb_sharks"
-  },
-  {
-    "id": "knights",
-    "name": "Knights",
-    "created_at": "2026-05-07T16:17:00-04:00",
-    "colors": {
-      "primary": "#4C1D95",
-      "secondary": "#A78BFA",
-      "accent": "#1E1B4B"
-    },
-    "stats": {
-      "wins": 0,
-      "losses": 0,
-      "games_played": 0,
-      "points_scored_total": 0,
-      "points_scored_avg": 0
-    },
-    "vs_record": {},
-    "off_coord_id": "coach_07",
-    "def_coord_id": "coach_12",
-    "playbook_id": "pb_knights"
-  },
-  {
-    "id": "pirates",
-    "name": "Pirates",
-    "created_at": "2026-05-07T16:17:00-04:00",
-    "colors": {
-      "primary": "#7C2D12",
-      "secondary": "#FBBF24",
-      "accent": "#1C1917"
-    },
-    "stats": {
-      "wins": 0,
-      "losses": 0,
-      "games_played": 0,
-      "points_scored_total": 0,
-      "points_scored_avg": 0
-    },
-    "vs_record": {},
-    "off_coord_id": "coach_08",
-    "def_coord_id": "coach_01",
-    "playbook_id": "pb_pirates"
-  },
-  {
-    "id": "storm",
-    "name": "Storm",
-    "created_at": "2026-05-07T16:17:00-04:00",
-    "colors": {
-      "primary": "#1D4ED8",
-      "secondary": "#93C5FD",
-      "accent": "#1E3A8A"
-    },
-    "stats": {
-      "wins": 0,
-      "losses": 0,
-      "games_played": 0,
-      "points_scored_total": 0,
-      "points_scored_avg": 0
-    },
-    "vs_record": {},
-    "off_coord_id": "coach_09",
-    "def_coord_id": "coach_02",
-    "playbook_id": "pb_storm"
-  },
-  {
-    "id": "falcons",
-    "name": "Falcons",
-    "created_at": "2026-05-07T16:17:00-04:00",
-    "colors": {
-      "primary": "#B91C1C",
-      "secondary": "#FCA5A5",
-      "accent": "#3F3F46"
-    },
-    "stats": {
-      "wins": 0,
-      "losses": 0,
-      "games_played": 0,
-      "points_scored_total": 0,
-      "points_scored_avg": 0
-    },
-    "vs_record": {},
-    "off_coord_id": "coach_10",
-    "def_coord_id": "coach_03",
-    "playbook_id": "pb_falcons"
-  }
+	{
+		"id":  "bees",
+		"name":  "Bees",
+		"created_at":  "2026-05-07T16:17:00-04:00",
+		"colors":  {
+					   "primary":  "#801735",
+					   "secondary":  "#D4AF37",
+					   "accent":  "#111111"
+				   },
+		"stats":  {
+					  "wins":  0,
+					  "losses":  0,
+					  "games_played":  0,
+					  "points_scored_total":  0,
+					  "points_scored_avg":  0
+				  },
+		"vs_record":  {
+
+					  },
+		"off_coord_id":  "coach_01",
+		"def_coord_id":  "coach_06",
+		"playbook_id":  "pb_bees",
+		"roster_player_ids":  [
+								  "0016",
+								  "0007",
+								  "0012",
+								  "0003",
+								  "0004",
+								  "0017",
+								  "0001",
+								  "0009",
+								  "0006",
+								  "0015",
+								  "0014",
+								  "0010",
+								  "0013",
+								  "0011",
+								  "0005",
+								  "0002",
+                                  "0008"
+							  ]
+	},
+	{
+		"id":  "cavs",
+		"name":  "Cavs",
+		"created_at":  "2026-05-07T16:17:00-04:00",
+		"colors":  {
+					   "primary":  "#CC2525",
+					   "secondary":  "#111111",
+					   "accent":  "#808080"
+				   },
+		"stats":  {
+					  "wins":  0,
+					  "losses":  0,
+					  "games_played":  0,
+					  "points_scored_total":  0,
+					  "points_scored_avg":  0
+				  },
+		"vs_record":  {
+
+					  },
+		"off_coord_id":  "coach_02",
+		"def_coord_id":  "coach_07",
+		"playbook_id":  "pb_cavs",
+		"roster_player_ids":  [
+								  "0031",
+								  "0034",
+								  "0024",
+								  "0026",
+								  "0029",
+								  "0030",
+								  "0033",
+								  "0025",
+								  "0019",
+								  "0032",
+								  "0023",
+								  "0021",
+								  "0020",
+								  "0022",
+								  "0018",
+								  "0027",
+                                  "0028"
+							  ]
+	},
+	{
+		"id":  "hawks",
+		"name":  "Hawks",
+		"created_at":  "2026-05-07T16:17:00-04:00",
+		"colors":  {
+					   "primary":  "#1E3A8A",
+					   "secondary":  "#60A5FA",
+					   "accent":  "#0F172A"
+				   },
+		"stats":  {
+					  "wins":  0,
+					  "losses":  0,
+					  "games_played":  0,
+					  "points_scored_total":  0,
+					  "points_scored_avg":  0
+				  },
+		"vs_record":  {
+
+					  },
+		"off_coord_id":  "coach_03",
+		"def_coord_id":  "coach_08",
+		"playbook_id":  "pb_hawks",
+		"roster_player_ids":  [
+								  "0047",
+								  "0041",
+								  "0045",
+								  "0044",
+								  "0046",
+								  "0050",
+								  "0039",
+								  "0038",
+								  "0049",
+								  "0035",
+								  "0048",
+								  "0051",
+								  "0037",
+								  "0040",
+								  "0036",
+								  "0043",
+                                  "0042"
+							  ]
+	},
+	{
+		"id":  "wolves",
+		"name":  "Wolves",
+		"created_at":  "2026-05-07T16:17:00-04:00",
+		"colors":  {
+					   "primary":  "#374151",
+					   "secondary":  "#9CA3AF",
+					   "accent":  "#111827"
+				   },
+		"stats":  {
+					  "wins":  0,
+					  "losses":  0,
+					  "games_played":  0,
+					  "points_scored_total":  0,
+					  "points_scored_avg":  0
+				  },
+		"vs_record":  {
+
+					  },
+		"off_coord_id":  "coach_04",
+		"def_coord_id":  "coach_09",
+		"playbook_id":  "pb_wolves",
+		"roster_player_ids":  [
+								  "0053",
+								  "0058",
+								  "0061",
+								  "0063",
+								  "0067",
+								  "0057",
+								  "0059",
+								  "0060",
+								  "0064",
+								  "0054",
+								  "0055",
+								  "0052",
+								  "0066",
+								  "0065",
+								  "0056",
+								  "0068",
+                                  "0062"
+							  ]
+	},
+	{
+		"id":  "tigers",
+		"name":  "Tigers",
+		"created_at":  "2026-05-07T16:17:00-04:00",
+		"colors":  {
+					   "primary":  "#EA580C",
+					   "secondary":  "#FDBA74",
+					   "accent":  "#7C2D12"
+				   },
+		"stats":  {
+					  "wins":  0,
+					  "losses":  0,
+					  "games_played":  0,
+					  "points_scored_total":  0,
+					  "points_scored_avg":  0
+				  },
+		"vs_record":  {
+
+					  },
+		"off_coord_id":  "coach_05",
+		"def_coord_id":  "coach_10",
+		"playbook_id":  "pb_tigers",
+		"roster_player_ids":  [
+								  "0077",
+								  "0073",
+								  "0070",
+								  "0078",
+								  "0085",
+								  "0071",
+								  "0080",
+								  "0079",
+								  "0074",
+								  "0076",
+								  "0082",
+								  "0075",
+								  "0083",
+								  "0081",
+								  "0084",
+								  "0069",
+                                  "0072"
+							  ]
+	},
+	{
+		"id":  "sharks",
+		"name":  "Sharks",
+		"created_at":  "2026-05-07T16:17:00-04:00",
+		"colors":  {
+					   "primary":  "#0E7490",
+					   "secondary":  "#67E8F9",
+					   "accent":  "#164E63"
+				   },
+		"stats":  {
+					  "wins":  0,
+					  "losses":  0,
+					  "games_played":  0,
+					  "points_scored_total":  0,
+					  "points_scored_avg":  0
+				  },
+		"vs_record":  {
+
+					  },
+		"off_coord_id":  "coach_06",
+		"def_coord_id":  "coach_11",
+		"playbook_id":  "pb_sharks",
+		"roster_player_ids":  [
+								  "0088",
+								  "0094",
+								  "0095",
+								  "0099",
+								  "0091",
+								  "0093",
+								  "0089",
+								  "0100",
+								  "0087",
+								  "0096",
+								  "0086",
+								  "0102",
+								  "0101",
+								  "0090",
+								  "0098",
+								  "0092",
+                                  "0097"
+							  ]
+	},
+	{
+		"id":  "knights",
+		"name":  "Knights",
+		"created_at":  "2026-05-07T16:17:00-04:00",
+		"colors":  {
+					   "primary":  "#4C1D95",
+					   "secondary":  "#A78BFA",
+					   "accent":  "#1E1B4B"
+				   },
+		"stats":  {
+					  "wins":  0,
+					  "losses":  0,
+					  "games_played":  0,
+					  "points_scored_total":  0,
+					  "points_scored_avg":  0
+				  },
+		"vs_record":  {
+
+					  },
+		"off_coord_id":  "coach_07",
+		"def_coord_id":  "coach_12",
+		"playbook_id":  "pb_knights",
+		"roster_player_ids":  [
+								  "0111",
+								  "0115",
+								  "0108",
+								  "0107",
+								  "0114",
+								  "0104",
+								  "0110",
+								  "0113",
+								  "0116",
+								  "0109",
+								  "0103",
+								  "0119",
+								  "0106",
+								  "0117",
+								  "0118",
+								  "0105",
+                                  "0112"
+							  ]
+	},
+	{
+		"id":  "pirates",
+		"name":  "Pirates",
+		"created_at":  "2026-05-07T16:17:00-04:00",
+		"colors":  {
+					   "primary":  "#7C2D12",
+					   "secondary":  "#FBBF24",
+					   "accent":  "#1C1917"
+				   },
+		"stats":  {
+					  "wins":  0,
+					  "losses":  0,
+					  "games_played":  0,
+					  "points_scored_total":  0,
+					  "points_scored_avg":  0
+				  },
+		"vs_record":  {
+
+					  },
+		"off_coord_id":  "coach_08",
+		"def_coord_id":  "coach_01",
+		"playbook_id":  "pb_pirates",
+		"roster_player_ids":  [
+								  "0132",
+								  "0128",
+								  "0126",
+								  "0135",
+								  "0134",
+								  "0121",
+								  "0130",
+								  "0124",
+								  "0136",
+								  "0133",
+								  "0122",
+								  "0123",
+								  "0125",
+								  "0127",
+								  "0120",
+								  "0129",
+                                  "0131"
+							  ]
+	},
+	{
+		"id":  "storm",
+		"name":  "Storm",
+		"created_at":  "2026-05-07T16:17:00-04:00",
+		"colors":  {
+					   "primary":  "#1D4ED8",
+					   "secondary":  "#93C5FD",
+					   "accent":  "#1E3A8A"
+				   },
+		"stats":  {
+					  "wins":  0,
+					  "losses":  0,
+					  "games_played":  0,
+					  "points_scored_total":  0,
+					  "points_scored_avg":  0
+				  },
+		"vs_record":  {
+
+					  },
+		"off_coord_id":  "coach_09",
+		"def_coord_id":  "coach_02",
+		"playbook_id":  "pb_storm",
+		"roster_player_ids":  [
+								  "0144",
+								  "0151",
+								  "0141",
+								  "0153",
+								  "0149",
+								  "0138",
+								  "0148",
+								  "0137",
+								  "0146",
+								  "0139",
+								  "0150",
+								  "0147",
+								  "0152",
+								  "0145",
+								  "0142",
+								  "0143",
+                                  "0140"
+							  ]
+	},
+	{
+		"id":  "falcons",
+		"name":  "Falcons",
+		"created_at":  "2026-05-07T16:17:00-04:00",
+		"colors":  {
+					   "primary":  "#B91C1C",
+					   "secondary":  "#FCA5A5",
+					   "accent":  "#3F3F46"
+				   },
+		"stats":  {
+					  "wins":  0,
+					  "losses":  0,
+					  "games_played":  0,
+					  "points_scored_total":  0,
+					  "points_scored_avg":  0
+				  },
+		"vs_record":  {
+
+					  },
+		"off_coord_id":  "coach_10",
+		"def_coord_id":  "coach_03",
+		"playbook_id":  "pb_falcons",
+		"roster_player_ids":  [
+								  "0159",
+								  "0170",
+								  "0164",
+								  "0169",
+								  "0166",
+								  "0156",
+								  "0154",
+								  "0160",
+								  "0165",
+								  "0162",
+								  "0163",
+								  "0157",
+								  "0167",
+								  "0161",
+								  "0158",
+								  "0168",
+                                  "0155"
+							  ]
+	}
 ]

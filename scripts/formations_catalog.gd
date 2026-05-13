@@ -17,9 +17,43 @@ const ROLE_FAMILY_MAX := {
 	"P": 1,
 	"RET": 2,
 	"ST": 6,
+	"GUN": 2,
+}
+
+const FORMATION_SHELL_SCRIMMAGE_OFFENSE := "scrimmage_offense"
+const FORMATION_SHELL_SCRIMMAGE_DEFENSE := "scrimmage_defense"
+const FORMATION_SHELL_KICK_FG_XP := "kick_fg_xp"
+const FORMATION_SHELL_BLOCK_FG_XP := "block_fg_xp"
+const FORMATION_SHELL_PUNT := "punt"
+const FORMATION_SHELL_PUNT_RETURN := "punt_return"
+const FORMATION_SHELL_KICKOFF := "kickoff"
+const FORMATION_SHELL_KICKOFF_RETURN := "kickoff_return"
+
+const FORMATION_SHELLS: Array[String] = [
+	FORMATION_SHELL_SCRIMMAGE_OFFENSE,
+	FORMATION_SHELL_SCRIMMAGE_DEFENSE,
+	FORMATION_SHELL_KICK_FG_XP,
+	FORMATION_SHELL_BLOCK_FG_XP,
+	FORMATION_SHELL_PUNT,
+	FORMATION_SHELL_PUNT_RETURN,
+	FORMATION_SHELL_KICKOFF,
+	FORMATION_SHELL_KICKOFF_RETURN,
+]
+
+## Expected `side` for each shell (for load-time consistency).
+const FORMATION_SHELL_EXPECTED_SIDE := {
+	FORMATION_SHELL_SCRIMMAGE_OFFENSE: "offense",
+	FORMATION_SHELL_SCRIMMAGE_DEFENSE: "defense",
+	FORMATION_SHELL_KICK_FG_XP: "special",
+	FORMATION_SHELL_BLOCK_FG_XP: "defense",
+	FORMATION_SHELL_PUNT: "special",
+	FORMATION_SHELL_PUNT_RETURN: "defense",
+	FORMATION_SHELL_KICKOFF: "special",
+	FORMATION_SHELL_KICKOFF_RETURN: "defense",
 }
 
 var formations: Array[Dictionary] = []
+
 
 func load_from_json(path: String) -> bool:
 	formations.clear()
@@ -34,10 +68,11 @@ func load_from_json(path: String) -> bool:
 		if typeof(item) != TYPE_DICTIONARY:
 			continue
 		var f: Dictionary = item
-		if not _validate_formation(f):
+		if not validate_formation_dict(f):
 			return false
 		formations.append(f)
 	return true
+
 
 func get_by_id(formation_id: String) -> Dictionary:
 	for f in formations:
@@ -45,7 +80,9 @@ func get_by_id(formation_id: String) -> Dictionary:
 			return f
 	return {}
 
-func _validate_formation(f: Dictionary) -> bool:
+
+## Single-row validation (same rules as load). Logs errors and returns false on failure.
+func validate_formation_dict(f: Dictionary) -> bool:
 	var fid := str(f.get("id", ""))
 	if fid.is_empty():
 		push_error("Formation missing id")
@@ -53,6 +90,17 @@ func _validate_formation(f: Dictionary) -> bool:
 	var side := str(f.get("side", ""))
 	if side not in ["offense", "defense", "special"]:
 		push_error("Formation %s: invalid side %s" % [fid, side])
+		return false
+	var shell := str(f.get("formation_shell", ""))
+	if shell.is_empty():
+		push_error("Formation %s: missing formation_shell" % fid)
+		return false
+	if not shell in FORMATION_SHELLS:
+		push_error("Formation %s: invalid formation_shell %s" % [fid, shell])
+		return false
+	var exp_side: Variant = FORMATION_SHELL_EXPECTED_SIDE.get(shell, "")
+	if str(exp_side) != side:
+		push_error("Formation %s: formation_shell %s requires side %s, got %s" % [fid, shell, exp_side, side])
 		return false
 	var pos: Variant = f.get("positions", [])
 	if typeof(pos) != TYPE_ARRAY or pos.is_empty():
@@ -99,6 +147,8 @@ func _role_family(role: String) -> String:
 		return "ST"
 	if role.begins_with("RET"):
 		return "RET"
+	if role.begins_with("GUN"):
+		return "GUN"
 	if role == "QB":
 		return "QB"
 	if role.begins_with("RB"):

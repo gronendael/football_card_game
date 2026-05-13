@@ -1,6 +1,7 @@
 ### PLAYERS & COACHES
 Player - An indivdual player that users may add/remove from their team
 - Players have a number of stats that effect play outcomes during a game (e.g. speed, strength, agility, toughness, tackling, blocking, hands, stamina, etc.)
+- **Prototype match data:** [data/players.json](data/players.json) assigns each player a **franchise** `team` id (same id space as [data/teams.json](data/teams.json)); `home` / `away` are seats only. Each team row lists **`roster_player_ids`** (17) used to build offense/defense field packages for the sim.
 - May have additional player, team, play, or game boosts/modifiers/buffs/debuffs
 
 Coordinator - A coach assigned as either the Offensive Coordinator (OC) or Defensive Coordinator (DC).
@@ -76,7 +77,7 @@ Positions - All of the positions that should be occupied by a player on the fiel
 
 ### PLAYS & FORMATIONS
 - Formations are Play-specific and are a map of which positions are on the field for the Play and which Tile each position starts the play on
-- **7v7:** each formation on file has **exactly 7** spots; counts per role family must respect field caps below (QB 1; RB ≤2; WR ≤5; TE ≤2; OL ≤4; DL ≤4; LB ≤3; CB ≤3; S ≤2; K 1; P 1; RET ≤2; ST ≤6). Data: [data/formations.json](../data/formations.json).
+- **7v7:** each formation on file has **exactly 7** spots; counts per role family must respect field caps below (QB 1; RB ≤2; WR ≤5; TE ≤2; OL ≤4; DL ≤4; LB ≤3; CB ≤3; S ≤2; K 1; P 1; RET ≤2; GUN ≤2; ST ≤6). Data: [data/formations.json](../data/formations.json). Each row also has required **`formation_shell`** (see [Properties.md](Properties.md) FORMATIONS).
 - Example shells (not exhaustive):
 -- OFF: QB, RB, WR, WR, OL, OL, OL
 -- DEF: DL, DL, LB, LB, CB, CB, S
