@@ -35,6 +35,8 @@ const CALC_LOG_PLACEHOLDER := "No matching lines for the current filters (or thi
 
 const PREVIEW_MARKER_SIZE := Vector2(26, 26)
 const PREVIEW_MARKER_FONT := 9
+const SIM_PLAYBACK_MARKER_SIZE := Vector2(18, 18)
+const SIM_PLAYBACK_MARKER_FONT := 8
 
 const CARD_TILE_SCENE := preload("res://scenes/card_tile.tscn")
 const PLAY_PICK_CARD_SCENE := preload("res://scenes/play_pick_card.tscn")
@@ -163,7 +165,7 @@ var _play_pick_commit_btn: Button
 var _play_pick_target_team: String = ""
 var _play_pick_bucket_filter: String = ""
 var _play_pick_selected_id: String = ""
-var _formation_preview_root: Node2D
+var _field_lineup_marker_root: Node2D
 var _last_play_toast_layer: CanvasLayer
 var _last_play_toast_root: Control
 var _last_play_toast_rtl: RichTextLabel
@@ -258,6 +260,12 @@ var _calc_log_re_side_home: RegEx
 var _calc_log_re_side_away: RegEx
 ## Set for the current `_resolve_play` scrimmage sim so turnover calc lines can label ball carrier / defender by team + formation role.
 var _last_scrimmage_sim_ctx: PlaySimContext = null
+var _sim_playback_root: Node2D
+var _sim_playback_active: bool = false
+var _playback_snapshots: Array = []
+var _playback_snap_index: int = 0
+var _playback_alpha: float = 0.0
+var _sim_playback_markers: Dictionary = {}
 ## Per franchise id for the current match: off_field/def_field (7 each), kicker, punter, returner dicts from roster order.
 var _match_field_packages: Dictionary = {}
 const ACTION_WINDOW_SECONDS := 10.0
@@ -546,8 +554,10 @@ func _ready() -> void:
 	if player_details_panel:
 		player_details_panel.visible = false
 	_hide_card_info_panel()
+	_sync_debug_tick_sim_checkboxes()
 
 func _process(delta: float) -> void:
+	_tick_sim_playback(delta)
 	_tick_turn_action_timer(delta)
 	if not _clock_running:
 		return
@@ -1856,6 +1866,7 @@ func _build_scrimmage_play_sim_context(offense_play_id: String, defense_play_id:
 func _resolve_play() -> void:
 	if game_state.pending_play_type == PLAY_NONE():
 		return
+	_stop_tick_sim_playback_cleanup()
 	_last_scrimmage_sim_ctx = null
 	if _defer_scrimmage_game_clock_until_first_snap:
 		_defer_scrimmage_game_clock_until_first_snap = false
@@ -1908,13 +1919,47 @@ func _resolve_play() -> void:
 		var row := _plays_catalog.get_play(pid)
 		var sim_ctx := _build_scrimmage_play_sim_context(pid, _selected_defense_play, row)
 		_last_scrimmage_sim_ctx = sim_ctx
-		play_result = play_resolver.resolve_scrimmage_play(sim_ctx, pid, row, pbucket, game_state.selected_player_id)
+		if pbucket == BUCKET_RUN or pbucket == BUCKET_PASS:
+			var tick_engine := PlayTickEngine.new()
+			var tr: Dictionary
+			if PlayTickEngine.tick_authoritative:
+				tr = tick_engine.run(sim_ctx, game_state.current_los_row_engine, pbucket, game_state.selected_player_id, row)
+				var tpr: Dictionary = tr.get("tick_play_result", {}) as Dictionary
+				if not tpr.is_empty():
+					play_result = tpr.duplicate(true)
+				else:
+					play_result = play_resolver.resolve_scrimmage_play(sim_ctx, pid, row, pbucket, game_state.selected_player_id)
+			else:
+				play_result = play_resolver.resolve_scrimmage_play(sim_ctx, pid, row, pbucket, game_state.selected_player_id)
+				tr = tick_engine.run(sim_ctx, game_state.current_los_row_engine, pbucket, game_state.selected_player_id, row)
+			play_result["tick_snapshots"] = tr.get("snapshots", [])
+			var tlog: Variant = tr.get("sim_event_log", null)
+			if tlog is PlayEventLog:
+				play_result["tick_sim_event_log"] = (tlog as PlayEventLog).events.duplicate(true)
+				if pbucket == BUCKET_PASS and not PlayTickEngine.tick_authoritative:
+					var bd0: Variant = play_result.get("breakdown", [])
+					if bd0 is Array:
+						var bd_arr := bd0 as Array
+						bd_arr.append("--- Tick sim (dropback pressure samples) ---")
+						for ev in (tlog as PlayEventLog).events:
+							if str(ev.get("code", "")) == "pass_pressure_tick":
+								bd_arr.append(str(ev.get("message", "")))
+						play_result["breakdown"] = bd_arr
+		else:
+			play_result = play_resolver.resolve_scrimmage_play(sim_ctx, pid, row, pbucket, game_state.selected_player_id)
+		play_result["play_type"] = pid
+		play_result["selected_player_id"] = game_state.selected_player_id
+		if not play_result.has("possession_switch"):
+			play_result["possession_switch"] = false
+		if not play_result.has("clock_seconds_used"):
+			play_result["clock_seconds_used"] = 0
 		play_result["breakdown"].append("Defense call (formation shell only; no yard modifiers): %s" % _selected_defense_play)
 		var tile_delta := int(play_result.get("tile_delta", 0))
 		play_result["tile_delta"] = tile_delta
 		play_result["result_text"] = "%s: %+d tile rows toward goal." % [str(play_result.get("play_type", "")), tile_delta]
 		if not str(play_result.get("tackled_by_id", "")).is_empty():
 			_last_defender_id = str(play_result.get("tackled_by_id", ""))
+		_maybe_begin_tick_sim_playback(play_result)
 
 	if pbucket == BUCKET_SPOT_KICK and current_phase_level >= 2:
 		_calc_log_push_breakdown_slide("Field goal — resolver", play_result)
@@ -2888,7 +2933,7 @@ func _update_ui() -> void:
 		card_panel.visible = false
 	_update_staff_ui()
 	_update_field_ball_marker()
-	_refresh_formation_preview()
+	_refresh_field_lineup_markers()
 	_update_token_visuals()
 	_sync_game_clock_scrimmage_policy()
 	_update_sim_ui()
@@ -3453,15 +3498,15 @@ func _update_staff_ui() -> void:
 		opponent_tos_button.add_theme_color_override("font_color", opp_secondary)
 
 
-func _ensure_formation_preview_layer() -> void:
-	if _formation_preview_root != null:
+func _ensure_field_lineup_marker_layer() -> void:
+	if _field_lineup_marker_root != null:
 		return
 	if field_grid == null:
 		return
-	_formation_preview_root = Node2D.new()
-	_formation_preview_root.name = "FormationPreview"
-	_formation_preview_root.z_index = 40
-	(field_grid as Node).add_child(_formation_preview_root)
+	_field_lineup_marker_root = Node2D.new()
+	_field_lineup_marker_root.name = "FieldLineupMarkers"
+	_field_lineup_marker_root.z_index = 40
+	(field_grid as Node).add_child(_field_lineup_marker_root)
 
 
 func _preview_los_engine_row() -> int:
@@ -3500,7 +3545,8 @@ func _preview_visible_play_ids_for_viewer(viewer_team: String) -> Dictionary:
 		defense_play = _defense_play_tentative
 	return {"offense_play": offense_play, "defense_play": defense_play}
 
-func _should_show_formation_preview() -> bool:
+
+func _should_show_field_lineup_markers() -> bool:
 	if field_grid == null:
 		return false
 	if game_state.phase == GameState.PHASE_GAME_OVER or game_state.phase == GameState.PHASE_HALFTIME:
@@ -3518,7 +3564,7 @@ func _preview_display_row_for_defense(global_row: int, offense_is_home: bool) ->
 	return clampi(d + adj, 0, FieldGrid.TOTAL_ROWS - 1)
 
 
-func _formation_marker_specs_from_play(play_id: String, los_eng: int, offense_home: bool) -> Array[Dictionary]:
+func _field_lineup_marker_specs_from_play(play_id: String, los_eng: int, offense_home: bool) -> Array[Dictionary]:
 	var out: Array[Dictionary] = []
 	if play_id.is_empty() or _plays_catalog == null or _formations_catalog == null or field_grid == null:
 		return out
@@ -3528,16 +3574,30 @@ func _formation_marker_specs_from_play(play_id: String, los_eng: int, offense_ho
 	var f: Dictionary = _formations_catalog.get_by_id(fid)
 	if f.is_empty():
 		return out
-	var pos_arr: Variant = f.get("positions", [])
-	if typeof(pos_arr) != TYPE_ARRAY:
-		return out
 	var side := str(f.get("side", "offense"))
 	var is_sq := side == "defense"
-	for p in pos_arr:
-		if typeof(p) != TYPE_DICTIONARY:
-			continue
-		var pd: Dictionary = p
+	var poss := game_state.possession_team
+	var def_seat := "away" if poss == "home" else "home"
+	var team_arr: Array[Dictionary] = []
+	if is_sq:
+		var def_fr := _franchise_id_for_seat(def_seat)
+		var def_pkg: Dictionary = _match_field_packages.get(def_fr, {}) as Dictionary
+		var raw_d: Array = def_pkg.get("def_field", []) as Array
+		for x in raw_d:
+			if typeof(x) == TYPE_DICTIONARY:
+				team_arr.append(x as Dictionary)
+	else:
+		var off_fr := _franchise_id_for_seat(poss)
+		var off_pkg: Dictionary = _match_field_packages.get(off_fr, {}) as Dictionary
+		var raw_o: Array = off_pkg.get("off_field", []) as Array
+		for x in raw_o:
+			if typeof(x) == TYPE_DICTIONARY:
+				team_arr.append(x as Dictionary)
+	var slots: Array[Dictionary] = PlaySimContext.lineup_slots(team_arr, f)
+	for slot in slots:
+		var pd: Dictionary = slot
 		var role := str(pd.get("role", ""))
+		var pl: Dictionary = pd.get("player", {}) as Dictionary
 		var drow := int(pd.get("delta_row", 0))
 		var dcol := int(pd.get("delta_col", 0))
 		var td: Dictionary = field_grid.call("tile_data_from_los", los_eng, drow, dcol, 3) as Dictionary
@@ -3550,7 +3610,7 @@ func _formation_marker_specs_from_play(play_id: String, los_eng: int, offense_ho
 			disp_r = int(field_grid.call("perspective_row", g_row, offense_home))
 			disp_r = clampi(disp_r, 0, FieldGrid.TOTAL_ROWS - 1)
 		var w: Vector2 = field_grid.call("world_pos_from_tile", disp_r, g_col) as Vector2
-		out.append({"world": w, "sq": is_sq, "role": role, "dr": disp_r, "gc": g_col})
+		out.append({"world": w, "sq": is_sq, "role": role, "dr": disp_r, "gc": g_col, "player": pl})
 	return out
 
 
@@ -3601,7 +3661,7 @@ func _separate_offense_defense(specs: Array[Dictionary]) -> void:
 			break
 
 
-func _make_preview_marker_ui(world_center: Vector2, role: String, is_square: bool) -> void:
+func _make_field_lineup_marker_ui(world_center: Vector2, role: String, is_square: bool, player: Dictionary) -> void:
 	var p := Panel.new()
 	p.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	p.custom_minimum_size = PREVIEW_MARKER_SIZE
@@ -3615,7 +3675,12 @@ func _make_preview_marker_ui(world_center: Vector2, role: String, is_square: boo
 		sb.set_corner_radius_all(13)
 	p.add_theme_stylebox_override("panel", sb)
 	var lbl := Label.new()
-	lbl.text = role
+	var txt := role
+	if not player.is_empty():
+		txt = PlayerStatView.display_name_from_dict(player)
+		if txt.length() > 11:
+			txt = txt.substr(0, 10) + "…"
+	lbl.text = txt
 	lbl.custom_minimum_size = PREVIEW_MARKER_SIZE
 	lbl.size = PREVIEW_MARKER_SIZE
 	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -3623,16 +3688,16 @@ func _make_preview_marker_ui(world_center: Vector2, role: String, is_square: boo
 	lbl.add_theme_font_size_override("font_size", PREVIEW_MARKER_FONT)
 	lbl.add_theme_color_override("font_color", Color(0.05, 0.05, 0.05, 1.0) if not is_square else Color(1, 1, 1, 1))
 	p.add_child(lbl)
-	_formation_preview_root.add_child(p)
+	_field_lineup_marker_root.add_child(p)
 
 
-func _refresh_formation_preview() -> void:
-	_ensure_formation_preview_layer()
-	if _formation_preview_root == null:
+func _refresh_field_lineup_markers() -> void:
+	_ensure_field_lineup_marker_layer()
+	if _field_lineup_marker_root == null:
 		return
-	for c in _formation_preview_root.get_children():
+	for c in _field_lineup_marker_root.get_children():
 		c.queue_free()
-	if not _should_show_formation_preview():
+	if not _should_show_field_lineup_markers():
 		return
 	if _formations_catalog == null or _plays_catalog == null or field_grid == null:
 		return
@@ -3643,15 +3708,148 @@ func _refresh_formation_preview() -> void:
 	var offense_play := str(visible.get("offense_play", ""))
 	var defense_play := str(visible.get("defense_play", ""))
 	if not offense_play.is_empty():
-		specs.append_array(_formation_marker_specs_from_play(offense_play, los_eng, offense_home))
+		specs.append_array(_field_lineup_marker_specs_from_play(offense_play, los_eng, offense_home))
 	if not defense_play.is_empty():
-		specs.append_array(_formation_marker_specs_from_play(defense_play, los_eng, offense_home))
+		specs.append_array(_field_lineup_marker_specs_from_play(defense_play, los_eng, offense_home))
 	if specs.is_empty():
 		return
 	_apply_intragroup_fanout(specs)
 	_separate_offense_defense(specs)
 	for m in specs:
-		_make_preview_marker_ui(m["world"] as Vector2, str(m["role"]), bool(m["sq"]))
+		var pl: Dictionary = m.get("player", {}) as Dictionary
+		_make_field_lineup_marker_ui(m["world"] as Vector2, str(m["role"]), bool(m["sq"]), pl)
+
+
+func set_tick_sim_playback_enabled(v: bool) -> void:
+	PlayTickEngine.visual_playback_enabled = v
+
+
+func set_tick_sim_authority_enabled(v: bool) -> void:
+	PlayTickEngine.tick_authoritative = v
+
+
+func _sync_debug_tick_sim_checkboxes() -> void:
+	var pb := get_node_or_null("DebugMenu/VBoxContainer/TickSimPlayback") as CheckBox
+	if pb != null:
+		pb.set_pressed_no_signal(PlayTickEngine.visual_playback_enabled)
+	var ab := get_node_or_null("DebugMenu/VBoxContainer/TickSimAuthority") as CheckBox
+	if ab != null:
+		ab.set_pressed_no_signal(PlayTickEngine.tick_authoritative)
+
+
+func _stop_tick_sim_playback_cleanup() -> void:
+	_sim_playback_active = false
+	_playback_snapshots.clear()
+	_playback_snap_index = 0
+	_playback_alpha = 0.0
+	_clear_sim_playback_markers()
+
+
+func _ensure_sim_playback_layer() -> void:
+	if _sim_playback_root != null:
+		return
+	if field_grid == null:
+		return
+	_sim_playback_root = Node2D.new()
+	_sim_playback_root.name = "SimPlaybackMarkers"
+	_sim_playback_root.z_index = 38
+	(field_grid as Node).add_child(_sim_playback_root)
+
+
+func _clear_sim_playback_markers() -> void:
+	_sim_playback_markers.clear()
+	if _sim_playback_root == null:
+		return
+	for c in _sim_playback_root.get_children():
+		c.queue_free()
+
+
+func _sim_world_pos_for_playback(pd: Dictionary) -> Vector2:
+	if field_grid == null:
+		return Vector2.ZERO
+	var g_row := int(pd.get("global_row", 0))
+	var g_col := int(pd.get("global_col", 0))
+	var offense_home := game_state.possession_team == "home"
+	var is_def := str(pd.get("side", "")) == "def"
+	var disp_r: int
+	if is_def:
+		disp_r = _preview_display_row_for_defense(g_row, offense_home)
+	else:
+		disp_r = int(field_grid.call("perspective_row", g_row, offense_home))
+		disp_r = clampi(disp_r, 0, FieldGrid.TOTAL_ROWS - 1)
+	return field_grid.call("world_pos_from_tile", disp_r, g_col) as Vector2
+
+
+func _maybe_begin_tick_sim_playback(play_result: Dictionary) -> void:
+	if not PlayTickEngine.visual_playback_enabled:
+		return
+	var snaps: Array = play_result.get("tick_snapshots", []) as Array
+	if snaps.is_empty():
+		return
+	_clear_sim_playback_markers()
+	_playback_snapshots = snaps.duplicate(true)
+	_playback_snap_index = 0
+	_playback_alpha = 0.0
+	_ensure_sim_playback_layer()
+	var snap0: Dictionary = snaps[0] as Dictionary
+	for p in snap0.get("players", []):
+		if typeof(p) != TYPE_DICTIONARY:
+			continue
+		var pid := str(p.get("player_id", ""))
+		if pid.is_empty():
+			continue
+		var panel := Panel.new()
+		panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		panel.custom_minimum_size = SIM_PLAYBACK_MARKER_SIZE
+		panel.size = SIM_PLAYBACK_MARKER_SIZE
+		var sb := StyleBoxFlat.new()
+		var is_def := str(p.get("side", "")) == "def"
+		sb.bg_color = Color(0.35, 0.85, 1.0, 0.88) if not is_def else Color(1.0, 0.55, 0.2, 0.88)
+		sb.set_corner_radius_all(10)
+		panel.add_theme_stylebox_override("panel", sb)
+		var lbl := Label.new()
+		lbl.text = str(p.get("role", "")).substr(0, 3)
+		lbl.custom_minimum_size = SIM_PLAYBACK_MARKER_SIZE
+		lbl.size = SIM_PLAYBACK_MARKER_SIZE
+		lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		lbl.add_theme_font_size_override("font_size", SIM_PLAYBACK_MARKER_FONT)
+		lbl.add_theme_color_override("font_color", Color(0.05, 0.05, 0.05, 1.0))
+		panel.add_child(lbl)
+		var wp := _sim_world_pos_for_playback(p)
+		panel.position = wp - SIM_PLAYBACK_MARKER_SIZE * 0.5
+		_sim_playback_root.add_child(panel)
+		_sim_playback_markers[pid] = panel
+	_sim_playback_active = _playback_snapshots.size() >= 2
+
+
+func _tick_sim_playback(delta: float) -> void:
+	if not _sim_playback_active or field_grid == null or _sim_playback_root == null:
+		return
+	if _playback_snapshots.size() < 2:
+		_sim_playback_active = false
+		return
+	_playback_alpha += delta / SimPlaybackController.seconds_per_tick()
+	while _playback_alpha >= 1.0 and _sim_playback_active:
+		_playback_alpha -= 1.0
+		_playback_snap_index += 1
+		if _playback_snap_index >= _playback_snapshots.size() - 1:
+			_sim_playback_active = false
+			return
+	if not _sim_playback_active:
+		return
+	var a: Dictionary = _playback_snapshots[_playback_snap_index] as Dictionary
+	var b: Dictionary = _playback_snapshots[_playback_snap_index + 1] as Dictionary
+	var blend := SimPlaybackController.blend_snapshots(a, b, _playback_alpha)
+	for pd in blend.get("players", []):
+		if typeof(pd) != TYPE_DICTIONARY:
+			continue
+		var pid := str(pd.get("player_id", ""))
+		var panel: Control = _sim_playback_markers.get(pid, null) as Control
+		if panel == null:
+			continue
+		var wp := _sim_world_pos_for_playback(pd)
+		panel.position = wp - SIM_PLAYBACK_MARKER_SIZE * 0.5
 
 
 func _format_time(seconds_total: int) -> String:

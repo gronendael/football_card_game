@@ -32,3 +32,15 @@ func _on_opp_hud_toggled(toggled_on: bool) -> void:
 
 func _on_play_calc_log_toggled(toggled_on: bool) -> void:
 	play_calc_log_panel.visible = toggled_on
+
+
+func _on_tick_sim_playback_toggled(toggled_on: bool) -> void:
+	var gs := get_parent() as Node
+	if gs != null and gs.has_method("set_tick_sim_playback_enabled"):
+		gs.call("set_tick_sim_playback_enabled", toggled_on)
+
+
+func _on_tick_sim_authority_toggled(toggled_on: bool) -> void:
+	var gs := get_parent() as Node
+	if gs != null and gs.has_method("set_tick_sim_authority_enabled"):
+		gs.call("set_tick_sim_authority_enabled", toggled_on)

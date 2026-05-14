@@ -40,6 +40,11 @@ static func build(
 	return ctx
 
 
+## Public wrapper for UI (field lineup chips) — same rules as sim slotting.
+static func lineup_slots(team: Array[Dictionary], formation: Dictionary) -> Array[Dictionary]:
+	return _assign_slots(team, formation)
+
+
 static func _assign_slots(team: Array[Dictionary], formation: Dictionary) -> Array[Dictionary]:
 	var pos_arr: Variant = formation.get("positions", [])
 	if typeof(pos_arr) != TYPE_ARRAY:

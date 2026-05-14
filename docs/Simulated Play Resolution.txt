@@ -1,0 +1,5 @@
+This reference has moved to Markdown for easier linking and maintenance:
+
+  docs/Simulated_Play_Resolution.md
+
+The old numeric walkthrough (run lane, crease, YAC, pass pressure, etc.) lives there, with pointers to the real implementation in scripts/resolution/.

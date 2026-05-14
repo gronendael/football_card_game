@@ -93,7 +93,7 @@ layout_mode = 0
 offset_left = 1808.0
 offset_top = 8.0
 offset_right = 1954.0
-offset_bottom = 179.0
+offset_bottom = 240.0
 script = ExtResource("12_rvs2r")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="DebugMenu" unique_id=254363725]
@@ -119,6 +119,14 @@ text = "Play Calc Log"
 [node name="OppHUD" type="CheckBox" parent="DebugMenu/VBoxContainer" unique_id=1799391259]
 layout_mode = 2
 text = "Opponent HUD"
+
+[node name="TickSimPlayback" type="CheckBox" parent="DebugMenu/VBoxContainer" unique_id=881900001]
+layout_mode = 2
+text = "Tick sim playback"
+
+[node name="TickSimAuthority" type="CheckBox" parent="DebugMenu/VBoxContainer" unique_id=881900002]
+layout_mode = 2
+text = "Tick sim authority"
 
 [node name="GameManagers" type="Node" parent="." unique_id=35103829]
 
@@ -753,9 +761,9 @@ text = "Next"
 
 [node name="PlayInfoHUD" type="Panel" parent="HUDGroup" unique_id=1248807706]
 offset_left = 1792.0
-offset_top = 193.0
+offset_top = 304.0
 offset_right = 2392.0
-offset_bottom = 517.0
+offset_bottom = 628.0
 
 [node name="PlayLog" type="Label" parent="HUDGroup/PlayInfoHUD" unique_id=1471580771]
 layout_mode = 0
@@ -912,10 +920,10 @@ scroll_following = true
 
 [node name="PhaseLogPanel" type="Panel" parent="HUDGroup" unique_id=1411194701]
 clip_contents = true
-offset_left = 1800.0
-offset_top = 536.0
-offset_right = 2400.0
-offset_bottom = 808.0
+offset_left = 1792.0
+offset_top = 648.0
+offset_right = 2392.0
+offset_bottom = 920.0
 
 [node name="PhaseLogTitle" type="Label" parent="HUDGroup/PhaseLogPanel" unique_id=1411194702]
 layout_mode = 0
@@ -972,3 +980,5 @@ text = "Targeting"
 [connection signal="toggled" from="DebugMenu/VBoxContainer/PhaseLog" to="DebugMenu" method="_on_phase_log_toggled"]
 [connection signal="toggled" from="DebugMenu/VBoxContainer/PlayCalcLog" to="DebugMenu" method="_on_play_calc_log_toggled"]
 [connection signal="toggled" from="DebugMenu/VBoxContainer/OppHUD" to="DebugMenu" method="_on_opp_hud_toggled"]
+[connection signal="toggled" from="DebugMenu/VBoxContainer/TickSimPlayback" to="DebugMenu" method="_on_tick_sim_playback_toggled"]
+[connection signal="toggled" from="DebugMenu/VBoxContainer/TickSimAuthority" to="DebugMenu" method="_on_tick_sim_authority_toggled"]

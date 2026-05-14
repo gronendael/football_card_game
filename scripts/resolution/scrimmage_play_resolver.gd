@@ -41,7 +41,7 @@ func resolve(
 
 	var key_matchups: Array = []
 	for e in log.events:
-		if str(e.get("code", "")) in ["pass_ol_dl", "run_ol_dl", "route_sep"]:
+		if str(e.get("code", "")) in ["pass_ol_dl", "run_ol_dl", "route_sep", "pass_pressure_tick", "pass_protection", "qb_pressure"]:
 			key_matchups.append(e.duplicate(true))
 
 	return {

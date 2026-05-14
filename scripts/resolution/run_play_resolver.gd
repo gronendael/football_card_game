@@ -2,9 +2,9 @@ extends RefCounted
 class_name RunPlayResolver
 
 var _matchup := MatchupResolver.new()
-var _blocking := BlockingResolver.new()
 var _tackle := TackleResolver.new()
 var _turnover := TurnoverResolver.new()
+var _calc := ScrimmageSimCalculators.new()
 
 
 func resolve(ctx: PlaySimContext, play_row: Dictionary, selected_ball_carrier_id: String, log: PlayEventLog) -> Dictionary:
@@ -15,8 +15,9 @@ func resolve(ctx: PlaySimContext, play_row: Dictionary, selected_ball_carrier_id
 		log.add("run_abort", "No ball carrier", {}, {})
 		return _fail_run(tmin, tmax, log)
 
-	var lane := _matchup.pick_run_lane_matchup(ctx, log)
-	var crease := _blocking.run_crease_score(ctx, lane, log)
+	var lane_crease := _calc.run_lane_and_crease(ctx, log)
+	var lane: Dictionary = lane_crease.get("lane", {}) as Dictionary
+	var crease: float = float(lane_crease.get("crease", 0.0))
 	var rv := ctx.stat_view_for(rb)
 	var base := crease * 0.42 + float(rv.speed()) * 0.55 + float(rv.agility()) * 0.35 + float(rv.strength()) * 0.2
 	base += float(ResolutionBalanceConstants.noise_medium(ctx.rng)) * 0.35

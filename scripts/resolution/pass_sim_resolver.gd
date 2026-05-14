@@ -2,23 +2,35 @@ extends RefCounted
 class_name PassSimResolver
 
 var _matchup := MatchupResolver.new()
-var _blocking := BlockingResolver.new()
 var _routes := RouteResolver.new()
 var _tackle := TackleResolver.new()
 var _turnover := TurnoverResolver.new()
+var _calc := ScrimmageSimCalculators.new()
 
 
 func map_pressure(protection_score: float) -> int:
-	if protection_score >= 22.0:
-		return 0
-	if protection_score >= 18.0:
-		return 1
-	if protection_score >= 14.0:
-		return 2
-	return 3
+	return ScrimmageSimCalculators.map_pressure(protection_score)
 
 
 func resolve(ctx: PlaySimContext, play_row: Dictionary, log: PlayEventLog) -> Dictionary:
+	var pp := _calc.pass_rush_and_protection(ctx, log, true)
+	return _resolve_after_pass_front(ctx, play_row, log, pp)
+
+
+## Throw after tick sim dropback: use last sampled rush / protection / pressure (no second pass-front RNG).
+func resolve_with_locked_pass_front(
+	ctx: PlaySimContext,
+	play_row: Dictionary,
+	log: PlayEventLog,
+	rush: Dictionary,
+	pressure: int,
+	protection: float
+) -> Dictionary:
+	var pp := {"rush": rush, "pressure": pressure, "protection": protection}
+	return _resolve_after_pass_front(ctx, play_row, log, pp)
+
+
+func _resolve_after_pass_front(ctx: PlaySimContext, play_row: Dictionary, log: PlayEventLog, pp: Dictionary) -> Dictionary:
 	var tmin := int(play_row.get("tile_delta_min", 0))
 	var tmax := int(play_row.get("tile_delta_max", 10))
 	var qb := ctx.qb_player()
@@ -26,14 +38,14 @@ func resolve(ctx: PlaySimContext, play_row: Dictionary, log: PlayEventLog) -> Di
 		log.add("pass_abort", "No QB assigned", {}, {})
 		return _fail_pass_dict(tmin, tmax, log, "Pass — no QB")
 
-	var rush := _matchup.pick_pass_rush_matchup(ctx, log)
-	var prot := _blocking.pass_protection_score(ctx, rush, log)
-	var pressure := map_pressure(prot)
+	var rush: Dictionary = pp.get("rush", {}) as Dictionary
+	var pressure := int(pp.get("pressure", 0))
+	var prot: float = float(pp.get("protection", 18.0))
 	log.add(
 		"qb_pressure",
 		"QB %s pressure level %d" % [ctx.format_player_slot(qb, ctx.role_for_player_id(str(qb.get("id", "")))), pressure],
 		{"primary_id": str(qb.get("id", "")), "pos": "QB"},
-		{"pressure": pressure}
+		{"pressure": pressure, "protection": prot}
 	)
 
 	var route_list := _routes.receiver_separations(ctx, _matchup, log)

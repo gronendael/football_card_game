@@ -2,7 +2,7 @@ extends RefCounted
 class_name MatchupResolver
 
 
-func pick_pass_rush_matchup(ctx: PlaySimContext, log: PlayEventLog) -> Dictionary:
+func pick_pass_rush_matchup(ctx: PlaySimContext, log: PlayEventLog, emit_log: bool = true) -> Dictionary:
 	var dls := ctx.all_slots_role_prefix(ctx.defense_slots, "DL")
 	var ols := ctx.all_slots_role_prefix(ctx.offense_slots, "OL")
 	if dls.is_empty() or ols.is_empty():
@@ -24,16 +24,17 @@ func pick_pass_rush_matchup(ctx: PlaySimContext, log: PlayEventLog) -> Dictionar
 			worst_ol_blk = blk
 			worst_ol = pl2
 	var margin := float(ctx.stat_view_for(best_dl).pass_rush() - ctx.stat_view_for(worst_ol).blocking())
-	log.add(
-		"pass_ol_dl",
-		"DL %s vs OL %s (pass rush edge %.1f)" % [
-			ctx.format_player_slot(best_dl, ctx.role_for_player_id(str(best_dl.get("id", "")))),
-			ctx.format_player_slot(worst_ol, ctx.role_for_player_id(str(worst_ol.get("id", "")))),
-			margin,
-		],
-		{"primary_id": str(best_dl.get("id", "")), "secondary_id": str(worst_ol.get("id", "")), "pos": "DL"},
-		{"margin": margin}
-	)
+	if emit_log:
+		log.add(
+			"pass_ol_dl",
+			"DL %s vs OL %s (pass rush edge %.1f)" % [
+				ctx.format_player_slot(best_dl, ctx.role_for_player_id(str(best_dl.get("id", "")))),
+				ctx.format_player_slot(worst_ol, ctx.role_for_player_id(str(worst_ol.get("id", "")))),
+				margin,
+			],
+			{"primary_id": str(best_dl.get("id", "")), "secondary_id": str(worst_ol.get("id", "")), "pos": "DL"},
+			{"margin": margin}
+		)
 	return {"dl": best_dl, "ol": worst_ol, "margin": margin}
 
 

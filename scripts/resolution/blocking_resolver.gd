@@ -2,7 +2,7 @@ extends RefCounted
 class_name BlockingResolver
 
 
-func pass_protection_score(ctx: PlaySimContext, matchup: Dictionary, log: PlayEventLog) -> float:
+func pass_protection_score(ctx: PlaySimContext, matchup: Dictionary, log: PlayEventLog, emit_log: bool = true) -> float:
 	var ols := ctx.all_slots_role_prefix(ctx.offense_slots, "OL")
 	if ols.is_empty():
 		return 20.0
@@ -17,12 +17,13 @@ func pass_protection_score(ctx: PlaySimContext, matchup: Dictionary, log: PlayEv
 	var rush_edge: float = float(matchup.get("margin", 0.0))
 	var pressure_adj := rush_edge * 0.9
 	var score := prot - pressure_adj + float(ResolutionBalanceConstants.noise_small(ctx.rng)) * 0.4
-	log.add(
-		"pass_protection",
-		"Pass protection score %.1f (rush edge %.1f)" % [score, rush_edge],
-		{},
-		{"protection": score, "rush_edge": rush_edge}
-	)
+	if emit_log:
+		log.add(
+			"pass_protection",
+			"Pass protection score %.1f (rush edge %.1f)" % [score, rush_edge],
+			{},
+			{"protection": score, "rush_edge": rush_edge}
+		)
 	return score
 
 

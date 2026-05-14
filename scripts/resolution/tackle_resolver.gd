@@ -6,7 +6,8 @@ func resolve_yards_after_catch(
 	ctx: PlaySimContext,
 	ball_carrier: Dictionary,
 	defender: Dictionary,
-	log: PlayEventLog
+	log: PlayEventLog,
+	carrier_prior_broken_chain: int = 0
 ) -> Dictionary:
 	if defender.is_empty():
 		var yac0 := ctx.rng.randi_range(2, 8)
@@ -25,6 +26,7 @@ func resolve_yards_after_catch(
 	var tackle_p := float(dv.tackling() + dv.strength()) * 0.35 + float(dv.awareness()) * 0.15
 	var break_p := float(bv.agility() + bv.carrying()) * 0.35 + float(bv.strength()) * 0.2
 	var margin := tackle_p - break_p + float(ResolutionBalanceConstants.noise_medium(ctx.rng)) * 0.4
+	margin += float(carrier_prior_broken_chain) * 0.18
 	var broken := 0
 	var yac := 0
 	if margin < 0.8:
@@ -61,6 +63,29 @@ func resolve_yards_after_catch(
 			{"yac": yac}
 		)
 	return {"yac": yac, "tackled_by": str(defender.get("id", "")), "broken": broken}
+
+
+func roll_shed_block(ctx: PlaySimContext, defender: Dictionary, blocker: Dictionary, log: PlayEventLog) -> bool:
+	if defender.is_empty() or blocker.is_empty():
+		return true
+	var dv := ctx.stat_view_for(defender)
+	var bv := ctx.stat_view_for(blocker)
+	var shed_score := float(dv.strength()) * 0.22 + float(dv.agility()) * 0.32 + float(dv.block_shedding()) * 0.38
+	var hold_score := float(bv.strength()) * 0.28 + float(bv.blocking()) * 0.42 + float(bv.agility()) * 0.12
+	var margin := shed_score - hold_score + float(ResolutionBalanceConstants.noise_medium(ctx.rng)) * 0.35
+	var ok := margin >= 0.45
+	log.add(
+		"shed_block" if ok else "shed_block_fail",
+		"%s %s block vs %s (margin %.2f)" % [
+			ctx.format_player_slot(defender, ctx.role_for_player_id(str(defender.get("id", "")))),
+			"shed" if ok else "held",
+			ctx.format_player_slot(blocker, ctx.role_for_player_id(str(blocker.get("id", "")))),
+			margin,
+		],
+		{"primary_id": str(defender.get("id", "")), "secondary_id": str(blocker.get("id", ""))},
+		{"margin": margin, "shed": ok}
+	)
+	return ok
 
 
 func pick_pass_tackler(ctx: PlaySimContext, target_wr: Dictionary, matchups: MatchupResolver) -> Dictionary:
