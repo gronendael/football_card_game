@@ -1,8 +1,4 @@
 ---
-alwaysApply: true
----
-
----
 description: Enforce gameplay/doc sync on implementation changes
 alwaysApply: true
 ---
@@ -32,11 +28,22 @@ Update all relevant docs from this list based on what changed:
 - docs/Todo List.md
 - docs/Abbreviations.md
 - docs/Ideas.md
-- Implementation_Plan.md
+- docs/Implementation_Plan.md
+- docs/Worldbuilding.md
+- docs/Systems.md
+- docs/Data_Architecture.md
+- docs/Player_Generation.md
+- docs/Balancing.md
+- docs/Progression.md
+- docs/Art_Direction.md
 
 ## Mapping guardrail (minimum expectations)
 - Game flow/phases/conversions/clock/turnovers/downs -> docs/Gameplay_Summary.md + Implementation_Plan.md
-- Stats/properties/schema/field names -> docs/Properties.md + Implementation_Plan.md
+- Stats/properties/schema/field names -> docs/Properties.md + Implementation_Plan.md + Balancing.md
+- Species/archetypes/traits/synergies/generation -> docs/Systems.md + Data_Architecture.md + Player_Generation.md + Properties.md
+- Training/recruitment/monetization -> docs/Progression.md + Gameplay_Summary.md
+- Lore/setting/tone -> docs/Worldbuilding.md + Gameplay_Summary.md
+- Art/visual readability -> docs/Art_Direction.md + Screens.md
 - Team roles, formations, lineups, setup rules -> docs/Team_Setup.md + Implementation_Plan.md
 - UI/HUD/screen behavior -> docs/Screens.md + Implementation_Plan.md
 - New work items / follow-ups -> docs/Todo List.md

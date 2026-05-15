@@ -79,6 +79,13 @@ func clear_field() -> void:
 	placements_changed.emit(0)
 
 
+func get_cell_center_local(gr: int, gc: int) -> Vector2:
+	var cell := _cell_at(gr, gc)
+	if cell == null:
+		return Vector2.ZERO
+	return cell.position + cell.size * 0.5
+
+
 func _cell_at(gr: int, gc: int) -> FormationEditorCell:
 	if gr < 0 or gr >= ROWS or gc < 0 or gc >= COLS:
 		return null
@@ -94,6 +101,12 @@ func _count_placed() -> int:
 		if not cell.role.is_empty():
 			n += 1
 	return n
+
+
+func set_tokens_editable(editable: bool) -> void:
+	var mf := Control.MOUSE_FILTER_STOP if editable else Control.MOUSE_FILTER_IGNORE
+	for cell in _cells:
+		cell.mouse_filter = mf
 
 
 func count_role_on_field(role_key: String) -> int:

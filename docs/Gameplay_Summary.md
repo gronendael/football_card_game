@@ -1,5 +1,10 @@
-Mobile Football Game - Master Gameplay Summary
+IFL — Intergalactic Football League — Master Gameplay Summary
 Merged version including finalized design decisions.
+
+## Setting
+
+The game is a **strategic football management and live-play experience** inside the **Intergalactic Football League (IFL)**: professional franchises from multiple worlds field **unique generated rosters**. Tone is grounded sports broadcast, not superhero combat, fantasy magic, or parody. Lore detail stays light in V1 — see [Worldbuilding.md](Worldbuilding.md).
+
 GAMEPLAY SUMMARY
 
 PRE-GAME
@@ -31,7 +36,7 @@ PLAY EXECUTION & RESOLUTION
 - After both teams are Ready in the card phase (or after auto-ready), queued cards execute then the play resolves
 - Game clock follows **GAME CLOCK** (offense-only scrimmage rule; conversions / dead ball per that section)
 - Based on the Plays & Cards selected modifiers are applied to players, cards, plays, coordinatores, etc.
-- **Scrimmage (run/pass):** default resolution remains the **whole-play** stat sim in `scripts/resolution/` (fast path, suitable for balance/Monte Carlo). A **tick-based sim** (`scripts/simulation/play_tick_engine.gd`, **4 sim ticks per second**) can run in parallel (records `tick_snapshots` + `tick_sim_event_log` on the play result) or, when **Tick sim authority** is enabled in the Debug menu, **replace** run/pass outcome with the tick engine while keeping the same `PlayResult` shape. With authority on **pass** plays, protection/pressure is re-sampled each dropback tick (`pass_pressure_tick` in the tick log), then adjusted by **DL proximity to the QB** (≤2 tiles, Chebyshev) before pressure mapping; the throw uses one full matchup sample plus `resolve_with_locked_pass_front` so outcomes match that final pressure. With authority **off** on **pass**, the tick loop still runs for **dropback-length only** and logs parallel `pass_pressure_tick` lines, which are also appended to the play **`breakdown`** (yards still from the whole-play resolver). **Tick sim playback** (Debug menu) replays last resolve snapshots on the field with interpolated tile motion; game state still updates from the resolved play only.
+- **Scrimmage (run/pass):** default resolution remains the **whole-play** stat sim in `scripts/resolution/` (fast path, suitable for balance/Monte Carlo). A **tick-based sim** (`scripts/simulation/play_tick_engine.gd`, **4 sim ticks per second**) can run in parallel (records `tick_snapshots` + `tick_sim_event_log` on the play result) or, when **Tick sim authority** is enabled in the Debug menu, **replace** run/pass outcome with the tick engine while keeping the same `PlayResult` shape. With authority on **pass** plays, protection/pressure is re-sampled each dropback tick (`pass_pressure_tick` in the tick log), then adjusted by **DL proximity to the QB** (≤2 tiles, Chebyshev) before pressure mapping; the throw uses one full matchup sample plus `resolve_with_locked_pass_front` so outcomes match that final pressure. With authority **off** on **pass**, the tick loop still runs for **dropback-length only** and logs parallel `pass_pressure_tick` lines, which are also appended to the play **`breakdown`** (yards still from the whole-play resolver). **Tick sim playback** (Debug menu) replays last resolve snapshots on the field with interpolated tile motion; **`_apply_play_result`** (yards, TD, conversion UI, field refresh) runs **after** playback finishes. Marker perspective uses possession at snap (`_playback_offense_seat`), not live post-score state. **Ball carrier:** gold ring on the playback marker plus **🏈** on the carrier (LOS chip hidden until playback ends). Offense run/pass plays in `plays.json` ship with default routes and progression; **Play Creator** can override. Pass targets use **progression reads** (`PassTargetSelector`: coverage beat + awareness/pressure, not legacy misread). Tick movement honors `start_action` (`run_block` slides to nearest defender; `pass_block` holds until a defender is adjacent). **Defense `cover_zone`** tick movement ([scripts/simulation/zone_coverage_runner.gd](../scripts/simulation/zone_coverage_runner.gd)): monitor box on the defender (±2 rows, ±1 column), drift toward deepest receiver on the defender’s side of the field (middle column uses both sides), overlapping zones resolve by **nearest** defender to the receiver; vs pass after the ball leaves the QB for the catcher (`pass_done`), zone defenders **pursue** the ball carrier; vs run they pursue after the RB **crosses LOS** (`carrier.row <= los_row_engine`) or earlier on an **awareness** roll. See [scripts/play_authoring.gd](../scripts/play_authoring.gd), [scripts/play_route_templates.gd](../scripts/play_route_templates.gd).
 - **Scrimmage formulas (reference):** worked run/pass chain and thresholds are summarized in [docs/Simulated_Play_Resolution.md](Simulated_Play_Resolution.md).
 - The Offense may progress zones, regress zones, or end up in the same zone based on the Play Resolution
 - A Change of Possession may occur due to a Turnover, Running out of Downs (Turnover on Downs), 1st Half ends, Punt play, Kickoff Play
@@ -222,10 +227,12 @@ REWARDS (To be fleshed out later)
 
 FINALIZED GLOBAL DESIGN DECISIONS
 •	User is the Head Coach. Only Offensive and Defensive Coordinators exist.
+•	**Players are unique generated individuals per franchise** — not globally shared collectible cards (see [Systems.md](Systems.md)).
+•	All player stats use a **1–10** scale ([Balancing.md](Balancing.md), [Properties.md](Properties.md)).
 •	Automatic substitutions occur between possessions, timeouts, and injuries.
 •	Games target 3 to 5 minutes.
-•	Training-based evolution, not automatic game evolution.
-•	Optional rewarded ads only. No forced ads.
+•	Training-based evolution, not automatic per-game stat inflation; species influences **training efficiency** more than starting dominance.
+•	Optional rewarded ads only. No forced ads. Monetization design: [Progression.md](Progression.md) (recruitment/cosmetics, not pay-to-win stats).
 •	No contracts.
 •	Roster limit: 50. Lineup: 12 to 22.
 •	Deck size: 8 to 16 cards. Playbook: 3 to 12 plays.
@@ -289,23 +296,24 @@ Recognition should come from:
 -- Position
 -- Archetype
 -- Traits
--- Visual indicators
+-- Species
+-- Visual identity
 -- Gameplay behavior
--- Team identity
+-- Team reputation
 The game does NOT rely on all Teams owning identical Players like a traditional trading card game.
 PLAYER RECOGNITION
 
 Players should become recognizable through:
 -- Archetype labels
 -- Trait keywords
+-- Species silhouette and tags
 -- Playstyle
 -- Performance during Games
 -- Visual presentation
 
 Example:
-Marcus Reed
-WR
-Deep Threat
+Keth Varo (Velox)
+WR — Deep Threat
 Traits:
 -- Burner
 -- Sideline Specialist
@@ -314,6 +322,37 @@ Experienced Players should quickly understand:
 -- Strong deep threat
 -- Dangerous vertical receiver
 -- High explosive-play potential
+
+SPECIES
+Species are shared **templates**; each roster holds **unique instances**. Species influence:
+-- Gameplay tendencies (soft)
+-- Stat **roll weights** at generation (small)
+-- **Training efficiency** and growth affinities (primary identity)
+-- Trait and archetype likelihood
+-- Visual silhouette
+-- Natural synergies (capped — [Balancing.md](Balancing.md))
+
+Species do NOT: large flat starting bonuses, hard position locks, mandatory meta species, magic, or non-football mechanics.
+
+Examples (template families): fast/agile, large/powerful, tactical/intelligent, durable/endurance-focused — each expressed through **development**, not dominant starts.
+
+TRAINING & LONG-TERM PROGRESSION
+-- Species grants small **XP gain multipliers** toward favored stats (e.g. Speed, Awareness).
+-- Two players of the same species should still differ (variance, traits, archetype).
+-- Rare outliers (powerful speed build on a “heavy” species, hybrid archetypes) are intentional.
+-- Keep all modifiers small on the **1–10** scale ([Balancing.md](Balancing.md)).
+
+SYNERGIES
+Soft bonuses only; no exact “meta six” like hero collectors:
+-- Species synergies
+-- Archetype synergies
+-- Coordinator synergies
+-- Position group chemistry
+-- Team identity / homeworld culture
+Details: [Systems.md](Systems.md).
+
+MONETIZATION (design)
+Away from shared hero/card collection. Toward recruitment, prospect discovery, species packs (pool access), regional scouting, cosmetics, coordinators, training, team/stadium branding. Avoid pay-to-win. See [Progression.md](Progression.md).
 
 ARCHETYPES
 Each Position contains multiple Archetypes that define gameplay tendencies and strengths.
@@ -380,8 +419,8 @@ Examples:
 -- Power RB consistently breaking tackles
 
 PLAYER GENERATION RULES
-Players are generated around strong identities instead of evenly distributed stats.
-Archetypes should create clear strengths and weaknesses.
+Players are **procedurally generated** around strong identities instead of evenly distributed stats ([Player_Generation.md](Player_Generation.md), [Data_Architecture.md](Data_Architecture.md)).
+Archetypes should create clear strengths and weaknesses on the **1–10** scale.
 
 Bad Example:
 
@@ -399,13 +438,14 @@ Possession WR
 -- Lower explosive-play ability
 
 SCOUTING & OPPONENT RECOGNITION
-Pre-game scouting may highlight important opposing Players.
+Pre-game scouting may highlight important opposing Players (archetype, species, outlier builds).
 
 Examples:
 -- Elite Deep Threat WR
 -- Ball Hawk CB
 -- Mobile QB
 -- Elite Pass Rusher
+-- Regional prospect notes (recruitment meta)
 
 Goal:
 
@@ -414,7 +454,7 @@ Encourage strategic planning and player recognition over time.
 FIELD STRUCTURE
 LOCAL FIELD VIEW
 - The simulation uses one shared engine orientation; the **on-field view mirrors** when you are assigned **Away** so **your offense always advances toward the top** of the screen (same seat as Home). Future multiplayer uses the same rule per client.
-- **Formation preview:** field markers come from play `formation_id` (relative to LOS). Before call: selecting team sees only its tentative formation (defense also keeps the called offense view once offense is called). After call: both sides can see called formations as phase rules allow. Offense chips are white/rounded, defense chips red/near-square, with same-tile fan-out and a one-row perspective shift for defense readability.
+- **Field lineup markers:** when offense/defense play ids are visible, chips on formation tiles show **slotted roster display names** (from `PlaySimContext.lineup_slots`; white rounded offense, red defense, fan-out, defense perspective row shift). See [Screens.md](Screens.md). **Tick sim playback** (Debug) animates separate markers from `tick_snapshots`.
 ZONES
 Zones represent major field progression.
 Zones are used for:

@@ -2,7 +2,7 @@ extends CanvasLayer
 class_name FormationTool
 
 const FORMATIONS_PATH := "res://data/formations.json"
-const FORMATION_TOOL_LIST_W := 420
+const FORMATION_TOOL_LIST_W := 560
 const FORMATION_TOOL_COL1_W := 200
 const FORMATION_TOOL_PALETTE_COL_W := 128
 const FORMATION_TOOL_GRID_COL_W := 280
@@ -25,7 +25,11 @@ var _list_view: VBoxContainer
 var _shell_view: VBoxContainer
 var _editor_view: VBoxContainer
 
-var _item_list: ItemList
+var _formation_tree: Tree
+var _filter_type: OptionButton
+var _filter_tags: LineEdit
+var _sort_col: int = 0
+var _sort_asc: bool = true
 var _shell_list: ItemList
 
 var _name_edit: LineEdit
@@ -114,10 +118,47 @@ func _build_list_view() -> VBoxContainer:
 	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	vb.add_child(title)
 
-	_item_list = ItemList.new()
-	_item_list.custom_minimum_size = Vector2(FORMATION_TOOL_LIST_W, 360)
-	_item_list.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	vb.add_child(_item_list)
+	var filter_row := HBoxContainer.new()
+	filter_row.add_theme_constant_override("separation", 8)
+	vb.add_child(filter_row)
+	var type_lbl := Label.new()
+	type_lbl.text = "Type"
+	filter_row.add_child(type_lbl)
+	_filter_type = OptionButton.new()
+	_filter_type.add_item("All", 0)
+	_filter_type.add_item("Offense", 1)
+	_filter_type.add_item("Defense", 2)
+	_filter_type.add_item("Special", 3)
+	_filter_type.custom_minimum_size = Vector2(120, 0)
+	_filter_type.item_selected.connect(func(_idx: int) -> void: _refresh_formation_list())
+	filter_row.add_child(_filter_type)
+	var tags_lbl := Label.new()
+	tags_lbl.text = "Tags"
+	filter_row.add_child(tags_lbl)
+	_filter_tags = LineEdit.new()
+	_filter_tags.placeholder_text = "e.g. run, pass"
+	_filter_tags.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_filter_tags.text_changed.connect(_on_filter_tags_changed)
+	filter_row.add_child(_filter_tags)
+
+	_formation_tree = Tree.new()
+	_formation_tree.columns = 3
+	_formation_tree.column_titles_visible = true
+	_formation_tree.hide_root = true
+	_formation_tree.set_column_title(0, "ID")
+	_formation_tree.set_column_title(1, "Name")
+	_formation_tree.set_column_title(2, "Type")
+	_formation_tree.set_column_custom_minimum_width(0, 140)
+	_formation_tree.set_column_custom_minimum_width(1, 220)
+	_formation_tree.set_column_custom_minimum_width(2, 88)
+	_formation_tree.set_column_expand(0, false)
+	_formation_tree.set_column_expand(1, true)
+	_formation_tree.set_column_expand(2, false)
+	_formation_tree.custom_minimum_size = Vector2(FORMATION_TOOL_LIST_W, 360)
+	_formation_tree.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_formation_tree.column_title_clicked.connect(_on_formation_tree_column_title_clicked)
+	_formation_tree.item_activated.connect(_on_formation_tree_item_activated)
+	vb.add_child(_formation_tree)
 
 	var row := HBoxContainer.new()
 	vb.add_child(row)
@@ -275,17 +316,120 @@ func _show_list() -> void:
 	_list_view.visible = true
 	_shell_view.visible = false
 	_editor_view.visible = false
-	_refresh_item_list()
+	_refresh_formation_list()
 
 
-func _refresh_item_list() -> void:
-	_item_list.clear()
+func _on_filter_tags_changed(_new_text: String) -> void:
+	_refresh_formation_list()
+
+
+func _on_formation_tree_column_title_clicked(column: int, _mouse_button_index: int) -> void:
+	if _sort_col == column:
+		_sort_asc = not _sort_asc
+	else:
+		_sort_col = column
+		_sort_asc = true
+	_refresh_formation_list()
+
+
+func _on_formation_tree_item_activated() -> void:
+	_on_edit_pressed()
+
+
+func _formation_type_filter_value() -> String:
+	match _filter_type.selected:
+		1:
+			return "offense"
+		2:
+			return "defense"
+		3:
+			return "special"
+		_:
+			return ""
+
+
+func _formation_matches_tag_filter(d: Dictionary) -> bool:
+	var raw := _filter_tags.text.strip_edges()
+	if raw.is_empty():
+		return true
+	var tags: Variant = d.get("tags", [])
+	if typeof(tags) != TYPE_ARRAY:
+		return false
+	var tag_low: Array[String] = []
+	for t in tags:
+		tag_low.append(str(t).to_lower())
+	var tokens: Array[String] = []
+	for part in raw.split(",", false):
+		var needle := part.strip_edges().to_lower()
+		if not needle.is_empty():
+			tokens.append(needle)
+	if tokens.is_empty():
+		return true
+	for needle in tokens:
+		for tl in tag_low:
+			if needle in tl or tl in needle:
+				return true
+	return false
+
+
+func _formation_passes_filters(index: int) -> bool:
+	var d: Dictionary = _data[index] as Dictionary
+	var want_side := _formation_type_filter_value()
+	if not want_side.is_empty() and str(d.get("side", "")) != want_side:
+		return false
+	return _formation_matches_tag_filter(d)
+
+
+func _formation_sort_less(a: int, b: int) -> bool:
+	var da: Dictionary = _data[a] as Dictionary
+	var db: Dictionary = _data[b] as Dictionary
+	var av := ""
+	var bv := ""
+	match _sort_col:
+		0:
+			av = str(da.get("id", ""))
+			bv = str(db.get("id", ""))
+		1:
+			av = str(da.get("name", ""))
+			bv = str(db.get("name", ""))
+		2:
+			av = str(da.get("side", ""))
+			bv = str(db.get("side", ""))
+	if av == bv:
+		return a < b
+	if _sort_asc:
+		return av.nocasecmp_to(bv) < 0
+	return av.nocasecmp_to(bv) > 0
+
+
+func _formation_type_display(d: Dictionary) -> String:
+	var side := str(d.get("side", ""))
+	if side.is_empty():
+		return ""
+	return side.capitalize()
+
+
+func _selected_formation_data_index() -> int:
+	var item: TreeItem = _formation_tree.get_selected()
+	if item == null:
+		return -1
+	return int(item.get_metadata(0))
+
+
+func _refresh_formation_list() -> void:
+	_formation_tree.clear()
+	var indices: Array[int] = []
 	for i in _data.size():
-		var d: Dictionary = _data[i]
-		var sid := str(d.get("id", ""))
-		var nm := str(d.get("name", ""))
-		var sh := str(d.get("formation_shell", ""))
-		_item_list.add_item("%s — %s [%s]" % [sid, nm, sh])
+		if _formation_passes_filters(i):
+			indices.append(i)
+	indices.sort_custom(func(a: int, b: int) -> bool: return _formation_sort_less(a, b))
+	for i in indices:
+		var d: Dictionary = _data[i] as Dictionary
+		var row := _formation_tree.create_item()
+		row.set_text(0, str(d.get("id", "")))
+		row.set_text(1, str(d.get("name", "")))
+		row.set_text(2, _formation_type_display(d))
+		row.set_metadata(0, i)
 
 
 func _on_add_pressed() -> void:
@@ -320,11 +464,11 @@ func _open_editor_new() -> void:
 
 
 func _on_edit_pressed() -> void:
-	var sel := _item_list.get_selected_items()
-	if sel.is_empty():
+	var idx := _selected_formation_data_index()
+	if idx < 0:
 		return
 	_edit_is_new = false
-	_edit_index = sel[0]
+	_edit_index = idx
 	var src: Dictionary = _data[_edit_index]
 	_editing_id = str(src.get("id", ""))
 	_id_readout.text = _editing_id
@@ -372,10 +516,9 @@ func _rebuild_palette() -> void:
 
 
 func _on_delete_pressed() -> void:
-	var sel := _item_list.get_selected_items()
-	if sel.is_empty():
+	var idx := _selected_formation_data_index()
+	if idx < 0:
 		return
-	var idx := sel[0]
 	var dlg := ConfirmationDialog.new()
 	dlg.dialog_text = "Delete formation %s?" % str((_data[idx] as Dictionary).get("id", ""))
 	add_child(dlg)
@@ -386,7 +529,7 @@ func _on_delete_pressed() -> void:
 			_data = backup
 			push_error("Delete failed to write disk; reverted.")
 		dlg.queue_free()
-		_refresh_item_list()
+		_refresh_formation_list()
 	)
 	dlg.popup_centered()
 

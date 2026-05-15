@@ -150,39 +150,39 @@
 		"name": "Empty Backfield",
 		"positions": [
 			{
-				"delta_col": 0.0,
-				"delta_row": 1.0,
-				"role": "QB"
-			},
-			{
-				"delta_col": -1.0,
-				"delta_row": 0.0,
-				"role": "OL1"
-			},
-			{
-				"delta_col": 0.0,
-				"delta_row": 0.0,
-				"role": "OL2"
-			},
-			{
-				"delta_col": 1.0,
-				"delta_row": 0.0,
-				"role": "OL3"
-			},
-			{
-				"delta_col": -3.0,
-				"delta_row": 0.0,
+				"delta_col": -3,
+				"delta_row": 0,
 				"role": "WR1"
 			},
 			{
-				"delta_col": -2.0,
-				"delta_row": 0.0,
-				"role": "WR2"
+				"delta_col": -2,
+				"delta_row": 0,
+				"role": "TE1"
 			},
 			{
-				"delta_col": 3.0,
-				"delta_row": 0.0,
+				"delta_col": -1,
+				"delta_row": 0,
+				"role": "OL1"
+			},
+			{
+				"delta_col": 0,
+				"delta_row": 0,
+				"role": "OL2"
+			},
+			{
+				"delta_col": 1,
+				"delta_row": 0,
+				"role": "OL3"
+			},
+			{
+				"delta_col": 3,
+				"delta_row": 0,
 				"role": "WR3"
+			},
+			{
+				"delta_col": 0,
+				"delta_row": 1,
+				"role": "QB"
 			}
 		],
 		"side": "offense",
@@ -340,38 +340,38 @@
 		"name": "Dime",
 		"positions": [
 			{
-				"delta_col": 0,
-				"delta_row": -4,
+				"delta_col": 0.0,
+				"delta_row": -4.0,
 				"role": "S1"
 			},
 			{
-				"delta_col": -1,
-				"delta_row": -2,
+				"delta_col": -1.0,
+				"delta_row": -2.0,
 				"role": "LB1"
 			},
 			{
-				"delta_col": 1,
-				"delta_row": -2,
+				"delta_col": 1.0,
+				"delta_row": -2.0,
 				"role": "LB2"
 			},
 			{
-				"delta_col": -3,
-				"delta_row": -1,
+				"delta_col": -3.0,
+				"delta_row": -1.0,
 				"role": "CB1"
 			},
 			{
-				"delta_col": -1,
-				"delta_row": -1,
+				"delta_col": -1.0,
+				"delta_row": -1.0,
 				"role": "DL1"
 			},
 			{
-				"delta_col": 1,
-				"delta_row": -1,
+				"delta_col": 1.0,
+				"delta_row": -1.0,
 				"role": "DL2"
 			},
 			{
-				"delta_col": 3,
-				"delta_row": -1,
+				"delta_col": 3.0,
+				"delta_row": -1.0,
 				"role": "CB2"
 			}
 		],
@@ -532,38 +532,38 @@
 		"name": "Punt Team",
 		"positions": [
 			{
-				"delta_col": -3,
-				"delta_row": 0,
+				"delta_col": -3.0,
+				"delta_row": 0.0,
 				"role": "GUN1"
 			},
 			{
-				"delta_col": -1,
-				"delta_row": 0,
+				"delta_col": -1.0,
+				"delta_row": 0.0,
 				"role": "OL1"
 			},
 			{
-				"delta_col": 0,
-				"delta_row": 0,
+				"delta_col": 0.0,
+				"delta_row": 0.0,
 				"role": "OL2"
 			},
 			{
-				"delta_col": 1,
-				"delta_row": 0,
+				"delta_col": 1.0,
+				"delta_row": 0.0,
 				"role": "OL3"
 			},
 			{
-				"delta_col": 3,
-				"delta_row": 0,
+				"delta_col": 3.0,
+				"delta_row": 0.0,
 				"role": "GUN2"
 			},
 			{
-				"delta_col": 1,
-				"delta_row": 1,
+				"delta_col": 1.0,
+				"delta_row": 1.0,
 				"role": "RB1"
 			},
 			{
-				"delta_col": 0,
-				"delta_row": 3,
+				"delta_col": 0.0,
+				"delta_row": 3.0,
 				"role": "P"
 			}
 		],
@@ -628,38 +628,38 @@
 		"name": "Punt Return",
 		"positions": [
 			{
-				"delta_col": 0,
-				"delta_row": -7,
+				"delta_col": 0.0,
+				"delta_row": -7.0,
 				"role": "RET1"
 			},
 			{
-				"delta_col": 0,
-				"delta_row": -3,
+				"delta_col": 0.0,
+				"delta_row": -3.0,
 				"role": "LB1"
 			},
 			{
-				"delta_col": -3,
-				"delta_row": -1,
+				"delta_col": -3.0,
+				"delta_row": -1.0,
 				"role": "CB1"
 			},
 			{
-				"delta_col": -1,
-				"delta_row": -1,
+				"delta_col": -1.0,
+				"delta_row": -1.0,
 				"role": "DL1"
 			},
 			{
-				"delta_col": 0,
-				"delta_row": -1,
+				"delta_col": 0.0,
+				"delta_row": -1.0,
 				"role": "DL2"
 			},
 			{
-				"delta_col": 1,
-				"delta_row": -1,
+				"delta_col": 1.0,
+				"delta_row": -1.0,
 				"role": "DL3"
 			},
 			{
-				"delta_col": 3,
-				"delta_row": -1,
+				"delta_col": 3.0,
+				"delta_row": -1.0,
 				"role": "CB2"
 			}
 		],
@@ -675,38 +675,38 @@
 		"name": "Kickoff",
 		"positions": [
 			{
-				"delta_col": -3,
-				"delta_row": 0,
+				"delta_col": -3.0,
+				"delta_row": 0.0,
 				"role": "ST4"
 			},
 			{
-				"delta_col": -2,
-				"delta_row": 0,
+				"delta_col": -2.0,
+				"delta_row": 0.0,
 				"role": "ST3"
 			},
 			{
-				"delta_col": -1,
-				"delta_row": 0,
+				"delta_col": -1.0,
+				"delta_row": 0.0,
 				"role": "ST1"
 			},
 			{
-				"delta_col": 0,
-				"delta_row": 0,
+				"delta_col": 0.0,
+				"delta_row": 0.0,
 				"role": "K"
 			},
 			{
-				"delta_col": 1,
-				"delta_row": 0,
+				"delta_col": 1.0,
+				"delta_row": 0.0,
 				"role": "ST2"
 			},
 			{
-				"delta_col": 2,
-				"delta_row": 0,
+				"delta_col": 2.0,
+				"delta_row": 0.0,
 				"role": "ST5"
 			},
 			{
-				"delta_col": 3,
-				"delta_row": 0,
+				"delta_col": 3.0,
+				"delta_row": 0.0,
 				"role": "ST6"
 			}
 		],
@@ -722,38 +722,38 @@
 		"name": "Kickoff Return",
 		"positions": [
 			{
-				"delta_col": 0,
-				"delta_row": -9,
+				"delta_col": 0.0,
+				"delta_row": -9.0,
 				"role": "RET1"
 			},
 			{
-				"delta_col": 0,
-				"delta_row": -7,
+				"delta_col": 0.0,
+				"delta_row": -7.0,
 				"role": "ST6"
 			},
 			{
-				"delta_col": -2,
-				"delta_row": -5,
+				"delta_col": -2.0,
+				"delta_row": -5.0,
 				"role": "ST1"
 			},
 			{
-				"delta_col": -1,
-				"delta_row": -5,
+				"delta_col": -1.0,
+				"delta_row": -5.0,
 				"role": "ST2"
 			},
 			{
-				"delta_col": 0,
-				"delta_row": -5,
+				"delta_col": 0.0,
+				"delta_row": -5.0,
 				"role": "ST5"
 			},
 			{
-				"delta_col": 1,
-				"delta_row": -5,
+				"delta_col": 1.0,
+				"delta_row": -5.0,
 				"role": "ST3"
 			},
 			{
-				"delta_col": 2,
-				"delta_row": -5,
+				"delta_col": 2.0,
+				"delta_row": -5.0,
 				"role": "ST4"
 			}
 		],
@@ -769,38 +769,38 @@
 		"name": "I Formation",
 		"positions": [
 			{
-				"delta_col": -3,
-				"delta_row": 0,
+				"delta_col": -3.0,
+				"delta_row": 0.0,
 				"role": "WR1"
 			},
 			{
-				"delta_col": -1,
-				"delta_row": 0,
+				"delta_col": -1.0,
+				"delta_row": 0.0,
 				"role": "OL1"
 			},
 			{
-				"delta_col": 0,
-				"delta_row": 0,
+				"delta_col": 0.0,
+				"delta_row": 0.0,
 				"role": "OL2"
 			},
 			{
-				"delta_col": 1,
-				"delta_row": 0,
+				"delta_col": 1.0,
+				"delta_row": 0.0,
 				"role": "OL3"
 			},
 			{
-				"delta_col": 3,
-				"delta_row": 0,
+				"delta_col": 3.0,
+				"delta_row": 0.0,
 				"role": "WR2"
 			},
 			{
-				"delta_col": 0,
-				"delta_row": 1,
+				"delta_col": 0.0,
+				"delta_row": 1.0,
 				"role": "QB"
 			},
 			{
-				"delta_col": 0,
-				"delta_row": 2,
+				"delta_col": 0.0,
+				"delta_row": 2.0,
 				"role": "RB1"
 			}
 		],

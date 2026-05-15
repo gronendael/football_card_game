@@ -1,0 +1,9 @@
+---
+description: 
+alwaysApply: true
+---
+
+For all Tools:
+- Lists should be sortable columns e.g. ID, Name, Tags, etc.
+- Include filters for 2 to 3 most likely properties to filter by
+- Include a search field that searches by Name or Description beside the Filters

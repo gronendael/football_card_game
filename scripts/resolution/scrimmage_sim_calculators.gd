@@ -67,6 +67,19 @@ static func chebyshev(a: Vector2i, b: Vector2i) -> int:
 	return maxi(absi(a.x - b.x), absi(a.y - b.y))
 
 
+## Tackle attempts require the same tile (Chebyshev 0).
+static func can_attempt_tackle(defender_pos: Vector2i, carrier_pos: Vector2i) -> bool:
+	return chebyshev(defender_pos, carrier_pos) == 0
+
+
+## Max throw reach (Chebyshev tiles) from QB throw_power (1–10), relative to field depth.
+static func max_throw_distance_cheb(throw_power: int) -> int:
+	var p := clampi(throw_power, 1, 10)
+	var min_d := int(round(float(SimConstants.TILE_ROWS_TOTAL) * 0.35))
+	var max_d := int(round(float(SimConstants.TILE_ROWS_TOTAL) * 0.92))
+	return clampi(int(lerpf(float(min_d), float(max_d), float(p - 1) / 9.0)), min_d, max_d)
+
+
 static func step_toward(from: Vector2i, to: Vector2i) -> Vector2i:
 	if from == to:
 		return from

@@ -75,12 +75,30 @@ Same `tile_delta_min` / `tile_delta_max` clamp on final net rows toward goal.
 1. **Pass rush matchup** — DL vs worst OL margin (`MatchupResolver.pick_pass_rush_matchup`).
 2. **Protection score** — OL blocking blend + QB awareness − rush edge + noise (`BlockingResolver.pass_protection_score`).
 3. **Pressure 0–3** — `ScrimmageSimCalculators.map_pressure(protection_score)` thresholds: ≥22 → 0, ≥18 → 1, ≥14 → 2, else 3.
-4. **Separation** — per route / checkdown (`RouteResolver.receiver_separations`); tick sim can use `ScrimmageSimCalculators.separation_wr_vs_cb` for single pairs.
-5. **Target** — pressure can force a worse read (`PassSimResolver`).
-6. **INT** — `TurnoverResolver.roll_interception` (pressure, coverage, separation, safety).
-7. **Completion %** — roll vs blended accuracy / pressure / separation / coverage.
-8. **Air yards** — `round(2 + sep*2.2 + receiver_speed*0.25 + throw_q*0.35)`, clamped to play min/max.
-9. **YAC / fumble** — same tackle helper + strip check on the receiver.
+4. **Separation** — per route / checkdown. **Tick authority at throw:** `PlayTickEngine._receiver_separations_from_world` (live grid distance, man cover, `separation_tier`) passes routes into `PassSimResolver.resolve_with_locked_pass_front`. Formation-only stats via `RouteResolver.receiver_separations` otherwise.
+5. **Sack (tick authority)** — Each dropback/throw tick: if a defender shares the QB’s **tile** (Chebyshev 0), `TackleResolver.roll_qb_sack_attempt` uses the standard tackle margin (`< 0.8` = QB evades, else sack). Evade sets contact cooldown; sack ends the play (`PlayTickEngine._compose_sack_play_result`). **Engage** (blocks) stays **adjacent** (`ENGAGE_RANGE_TILES` = 1). **Run tackles** also require same tile (`ScrimmageSimCalculators.can_attempt_tackle`).
+6. **Target** — `PassTargetSelector.pick_throw_decision` walks progression (beat + read). If no clean read: Awareness roll → **unwilling throw** (best in-range receiver by `throw_power` max Chebyshev reach ~35–92% of field depth) or **throwaway** (incomplete). Forced primary on step 0 still allowed. `throw_accuracy` boosts completion on unwilling/forced throws; air yards clamped by `dist_from_qb` and arm.
+7. **INT** — `TurnoverResolver.roll_interception` (pressure, coverage, separation, safety).
+8. **Completion %** — roll vs blended accuracy / pressure / separation / coverage (penalties for unwilling/forced).
+9. **Air yards** — `round(2 + sep*2.2 + receiver_speed*0.25 + throw_q*0.35)`, clamped to play min/max and QB arm when grid `dist_from_qb` is known.
+10. **YAC / fumble** — same tackle helper + strip check on the receiver (fast path; tick YAC may add same-tile gate later).
+
+### Tick route movement (`RouteRunner`)
+
+- Single offense intent: **`route`** (Play Creator `start_action: route`; WR/TE when waypoints exist).
+- **RB (pass):** play `routes` waypoints → `route`; no waypoints → **`pass_block`**.
+- Waypoints are **indexed**, not popped; each tick **`step_toward`** the current segment cell (smoother than raw delta snaps).
+- After the final waypoint, the receiver **keeps moving** one tile per tick along **`route_stem_dir`** (last segment direction).
+
+### Tick cover zone (`ZoneCoverageRunner`)
+
+- **`intent_action: cover_zone`** from defense play **`role_assignments`** (`PlayAuthoring.start_action_for_role` on `ctx.defense_play_row`), else role defaults (e.g. **S** → zone). Any defensive role can be assigned zone.
+- **Monitor box** from defender’s current tile: ±**2** rows (field depth), ±**1** column (`SimConstants.ZONE_MONITOR_*`).
+- **Overlapping claims:** each WR/TE/RB in a zone is assigned to the **nearest** Manhattan-distance zone defender; others **drift** without chasing that receiver.
+- **Chase target:** among receivers this defender won, step toward **deepest** (smallest `global_row`, toward scoring end).
+- **Empty zone:** drift toward deepest receiver **on the defender’s side** (cols `< LOS_BASE_COL` vs `>` vs middle column `== LOS_BASE_COL` uses whole width). Drift **clamped** to anchor ±**3** rows, ±**1** column (`ZONE_DRIFT_*`).
+- **Pursue ball carrier:** Pass — after resolve (`pass_done`), carrier ≠ QB → pursue. Run — pursue when `carrier.global_row <= los_row_engine` **or** early via **awareness** roll while RB is still deeper than LOS.
+- **Separation:** Zone defenders in the monitor box set **`receiver_zone_pressure_tier`** on receivers; merged with man CB tier in `_receiver_separations_from_world`.
 
 ---
 

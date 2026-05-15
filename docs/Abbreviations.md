@@ -1,4 +1,5 @@
 ABBREVIATIONS
+IFL - Intergalactic Football League
 OFF - Offense; Team in Possession
 DEF - Defense; Team NOT in Possession
 KO - Kickoff
@@ -31,3 +32,5 @@ FUM - Fumble
 INT - Interception
 EL spot - Event log situation line arrows after perspective LOS row: **⬇️** = toward the **user’s** end of the field, **⬆️** = toward the **opponent** (midfield split in perspective row space; see [Properties.md](Properties.md) **Event log situation prefix**)
 SUB - Substitution (When a team removes a player from the team on the field and puts in another player from the Player Bench)
+
+Design docs (IFL): [Worldbuilding.md](Worldbuilding.md), [Systems.md](Systems.md), [Data_Architecture.md](Data_Architecture.md), [Player_Generation.md](Player_Generation.md), [Balancing.md](Balancing.md), [Progression.md](Progression.md), [Art_Direction.md](Art_Direction.md)

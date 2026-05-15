@@ -1,518 +1,2682 @@
 {
-  "run_01": {
-	"name": "Run Concept 1",
-	"formation_id": "off_i",
-	"side": "offense",
-	"play_type": "run",
-	"tile_delta_min": 0,
-	"tile_delta_max": 10,
-	"description": "Gap run; blocking determines lane."
-  },
-  "run_02": {
-	"name": "Run Concept 2",
-	"formation_id": "off_shotgun",
-	"side": "offense",
-	"play_type": "run",
-	"tile_delta_min": 0,
-	"tile_delta_max": 10,
-	"description": "Gap run; blocking determines lane."
-  },
-  "run_03": {
-	"name": "Run Concept 3",
-	"formation_id": "off_empty",
-	"side": "offense",
-	"play_type": "run",
-	"tile_delta_min": 0,
-	"tile_delta_max": 10,
-	"description": "Gap run; blocking determines lane."
-  },
-  "run_04": {
-	"name": "Run Concept 4",
-	"formation_id": "off_singleback",
-	"side": "offense",
-	"play_type": "run",
-	"tile_delta_min": 0,
-	"tile_delta_max": 10,
-	"description": "Gap run; blocking determines lane."
-  },
-  "run_05": {
-	"name": "Run Concept 5",
-	"formation_id": "off_pro",
-	"side": "offense",
-	"play_type": "run",
-	"tile_delta_min": 0,
-	"tile_delta_max": 10,
-	"description": "Gap run; blocking determines lane."
-  },
-  "run_06": {
-	"name": "Run Concept 6",
-	"formation_id": "off_i",
-	"side": "offense",
-	"play_type": "run",
-	"tile_delta_min": 0,
-	"tile_delta_max": 10,
-	"description": "Gap run; blocking determines lane."
-  },
-  "run_07": {
-	"name": "Run Concept 7",
-	"formation_id": "off_shotgun",
-	"side": "offense",
-	"play_type": "run",
-	"tile_delta_min": 0,
-	"tile_delta_max": 10,
-	"description": "Gap run; blocking determines lane."
-  },
-  "run_08": {
-	"name": "Run Concept 8",
-	"formation_id": "off_empty",
-	"side": "offense",
-	"play_type": "run",
-	"tile_delta_min": 0,
-	"tile_delta_max": 10,
-	"description": "Gap run; blocking determines lane."
-  },
-  "run_09": {
-	"name": "Run Concept 9",
-	"formation_id": "off_singleback",
-	"side": "offense",
-	"play_type": "run",
-	"tile_delta_min": 0,
-	"tile_delta_max": 10,
-	"description": "Gap run; blocking determines lane."
-  },
-  "run_10": {
-	"name": "Run Concept 10",
-	"formation_id": "off_pro",
-	"side": "offense",
-	"play_type": "run",
-	"tile_delta_min": 0,
-	"tile_delta_max": 10,
-	"description": "Gap run; blocking determines lane."
-  },
-  "run_11": {
-	"name": "Run Concept 11",
-	"formation_id": "off_i",
-	"side": "offense",
-	"play_type": "run",
-	"tile_delta_min": 0,
-	"tile_delta_max": 10,
-	"description": "Gap run; blocking determines lane."
-  },
-  "run_12": {
-	"name": "Run Concept 12",
-	"formation_id": "off_shotgun",
-	"side": "offense",
-	"play_type": "run",
-	"tile_delta_min": 0,
-	"tile_delta_max": 10,
-	"description": "Gap run; blocking determines lane."
-  },
-  "pass_01": {
-	"name": "Pass Concept 1",
-	"formation_id": "off_pro",
-	"side": "offense",
-	"play_type": "pass",
-	"tile_delta_min": 0,
-	"tile_delta_max": 13,
-	"description": "Routes: mixed depths; completion vs coverage."
-  },
-  "pass_02": {
-	"name": "Pass Concept 2",
-	"formation_id": "off_i",
-	"side": "offense",
-	"play_type": "pass",
-	"tile_delta_min": 0,
-	"tile_delta_max": 13,
-	"description": "Routes: mixed depths; completion vs coverage."
-  },
-  "pass_03": {
-	"name": "Pass Concept 3",
-	"formation_id": "off_shotgun",
-	"side": "offense",
-	"play_type": "pass",
-	"tile_delta_min": 0,
-	"tile_delta_max": 13,
-	"description": "Routes: mixed depths; completion vs coverage."
-  },
-  "pass_04": {
-	"name": "Pass Concept 4",
-	"formation_id": "off_empty",
-	"side": "offense",
-	"play_type": "pass",
-	"tile_delta_min": 0,
-	"tile_delta_max": 13,
-	"description": "Routes: mixed depths; completion vs coverage."
-  },
-  "pass_05": {
-	"name": "Pass Concept 5",
-	"formation_id": "off_singleback",
-	"side": "offense",
-	"play_type": "pass",
-	"tile_delta_min": 0,
-	"tile_delta_max": 13,
-	"description": "Routes: mixed depths; completion vs coverage."
-  },
-  "pass_06": {
-	"name": "Pass Concept 6",
-	"formation_id": "off_pro",
-	"side": "offense",
-	"play_type": "pass",
-	"tile_delta_min": 0,
-	"tile_delta_max": 13,
-	"description": "Routes: mixed depths; completion vs coverage."
-  },
-  "pass_07": {
-	"name": "Pass Concept 7",
-	"formation_id": "off_i",
-	"side": "offense",
-	"play_type": "pass",
-	"tile_delta_min": 0,
-	"tile_delta_max": 13,
-	"description": "Routes: mixed depths; completion vs coverage."
-  },
-  "pass_08": {
-	"name": "Pass Concept 8",
-	"formation_id": "off_shotgun",
-	"side": "offense",
-	"play_type": "pass",
-	"tile_delta_min": 0,
-	"tile_delta_max": 13,
-	"description": "Routes: mixed depths; completion vs coverage."
-  },
-  "pass_09": {
-	"name": "Pass Concept 9",
-	"formation_id": "off_empty",
-	"side": "offense",
-	"play_type": "pass",
-	"tile_delta_min": 0,
-	"tile_delta_max": 13,
-	"description": "Routes: mixed depths; completion vs coverage."
-  },
-  "pass_10": {
-	"name": "Pass Concept 10",
-	"formation_id": "off_singleback",
-	"side": "offense",
-	"play_type": "pass",
-	"tile_delta_min": 0,
-	"tile_delta_max": 13,
-	"description": "Routes: mixed depths; completion vs coverage."
-  },
-  "pass_11": {
-	"name": "Pass Concept 11",
-	"formation_id": "off_pro",
-	"side": "offense",
-	"play_type": "pass",
-	"tile_delta_min": 0,
-	"tile_delta_max": 13,
-	"description": "Routes: mixed depths; completion vs coverage."
-  },
-  "pass_12": {
-	"name": "Pass Concept 12",
-	"formation_id": "off_i",
-	"side": "offense",
-	"play_type": "pass",
-	"tile_delta_min": 0,
-	"tile_delta_max": 13,
-	"description": "Routes: mixed depths; completion vs coverage."
-  },
-  "run_def_01": {
-	"name": "Run Defense 1",
-	"formation_id": "def_43",
-	"side": "defense",
-	"play_type": "run_def",
-	"description": "Fill and spill run fits."
-  },
-  "run_def_02": {
-	"name": "Run Defense 2",
-	"formation_id": "def_34",
-	"side": "defense",
-	"play_type": "run_def",
-	"description": "Fill and spill run fits."
-  },
-  "run_def_03": {
-	"name": "Run Defense 3",
-	"formation_id": "def_43",
-	"side": "defense",
-	"play_type": "run_def",
-	"description": "Fill and spill run fits."
-  },
-  "run_def_04": {
-	"name": "Run Defense 4",
-	"formation_id": "def_34",
-	"side": "defense",
-	"play_type": "run_def",
-	"description": "Fill and spill run fits."
-  },
-  "run_def_05": {
-	"name": "Run Defense 5",
-	"formation_id": "def_43",
-	"side": "defense",
-	"play_type": "run_def",
-	"description": "Fill and spill run fits."
-  },
-  "run_def_06": {
-	"name": "Run Defense 6",
-	"formation_id": "def_34",
-	"side": "defense",
-	"play_type": "run_def",
-	"description": "Fill and spill run fits."
-  },
-  "run_def_07": {
-	"name": "Run Defense 7",
-	"formation_id": "def_43",
-	"side": "defense",
-	"play_type": "run_def",
-	"description": "Fill and spill run fits."
-  },
-  "run_def_08": {
-	"name": "Run Defense 8",
-	"formation_id": "def_34",
-	"side": "defense",
-	"play_type": "run_def",
-	"description": "Fill and spill run fits."
-  },
-  "run_def_09": {
-	"name": "Run Defense 9",
-	"formation_id": "def_43",
-	"side": "defense",
-	"play_type": "run_def",
-	"description": "Fill and spill run fits."
-  },
-  "run_def_10": {
-	"name": "Run Defense 10",
-	"formation_id": "def_34",
-	"side": "defense",
-	"play_type": "run_def",
-	"description": "Fill and spill run fits."
-  },
-  "run_def_11": {
-	"name": "Run Defense 11",
-	"formation_id": "def_43",
-	"side": "defense",
-	"play_type": "run_def",
-	"description": "Fill and spill run fits."
-  },
-  "run_def_12": {
-	"name": "Run Defense 12",
-	"formation_id": "def_34",
-	"side": "defense",
-	"play_type": "run_def",
-	"description": "Fill and spill run fits."
-  },
-  "pass_def_01": {
-	"name": "Pass Defense 1",
-	"formation_id": "def_nickel",
-	"side": "defense",
-	"play_type": "pass_def",
-	"description": "Coverage shell vs pass."
-  },
-  "pass_def_02": {
-	"name": "Pass Defense 2",
-	"formation_id": "def_dime",
-	"side": "defense",
-	"play_type": "pass_def",
-	"description": "Coverage shell vs pass."
-  },
-  "pass_def_03": {
-	"name": "Pass Defense 3",
-	"formation_id": "def_m2m",
-	"side": "defense",
-	"play_type": "pass_def",
-	"description": "Coverage shell vs pass."
-  },
-  "pass_def_04": {
-	"name": "Pass Defense 4",
-	"formation_id": "def_nickel",
-	"side": "defense",
-	"play_type": "pass_def",
-	"description": "Coverage shell vs pass."
-  },
-  "pass_def_05": {
-	"name": "Pass Defense 5",
-	"formation_id": "def_dime",
-	"side": "defense",
-	"play_type": "pass_def",
-	"description": "Coverage shell vs pass."
-  },
-  "pass_def_06": {
-	"name": "Pass Defense 6",
-	"formation_id": "def_m2m",
-	"side": "defense",
-	"play_type": "pass_def",
-	"description": "Coverage shell vs pass."
-  },
-  "pass_def_07": {
-	"name": "Pass Defense 7",
-	"formation_id": "def_nickel",
-	"side": "defense",
-	"play_type": "pass_def",
-	"description": "Coverage shell vs pass."
-  },
-  "pass_def_08": {
-	"name": "Pass Defense 8",
-	"formation_id": "def_dime",
-	"side": "defense",
-	"play_type": "pass_def",
-	"description": "Coverage shell vs pass."
-  },
-  "pass_def_09": {
-	"name": "Pass Defense 9",
-	"formation_id": "def_m2m",
-	"side": "defense",
-	"play_type": "pass_def",
-	"description": "Coverage shell vs pass."
-  },
-  "pass_def_10": {
-	"name": "Pass Defense 10",
-	"formation_id": "def_nickel",
-	"side": "defense",
-	"play_type": "pass_def",
-	"description": "Coverage shell vs pass."
-  },
-  "pass_def_11": {
-	"name": "Pass Defense 11",
-	"formation_id": "def_dime",
-	"side": "defense",
-	"play_type": "pass_def",
-	"description": "Coverage shell vs pass."
-  },
-  "pass_def_12": {
-	"name": "Pass Defense 12",
-	"formation_id": "def_m2m",
-	"side": "defense",
-	"play_type": "pass_def",
-	"description": "Coverage shell vs pass."
-  },
-  "kickoff_01": {
-	"name": "Kickoff 1",
-	"formation_id": "spe_kickoff",
-	"side": "special",
-	"play_type": "kickoff",
-	"description": "Kickoff placement variant."
-  },
-  "kickoff_ret_01": {
-	"name": "Kickoff Return 1",
-	"formation_id": "spe_kickoff_return",
-	"side": "defense",
-	"play_type": "kickoff_return",
-	"description": "Return lanes and wall."
-  },
-  "punt_01": {
-	"name": "Punt 1",
-	"formation_id": "spe_punt",
-	"side": "special",
-	"play_type": "punt",
-	"description": "Directional punt variant."
-  },
-  "punt_ret_01": {
-	"name": "Punt Return 1",
-	"formation_id": "spe_punt_return",
-	"side": "defense",
-	"play_type": "punt_return",
-	"description": "Return setup variant."
-  },
-  "kickoff_02": {
-	"name": "Kickoff 2",
-	"formation_id": "spe_kickoff",
-	"side": "special",
-	"play_type": "kickoff",
-	"description": "Kickoff placement variant."
-  },
-  "kickoff_ret_02": {
-	"name": "Kickoff Return 2",
-	"formation_id": "spe_kickoff_return",
-	"side": "defense",
-	"play_type": "kickoff_return",
-	"description": "Return lanes and wall."
-  },
-  "punt_02": {
-	"name": "Punt 2",
-	"formation_id": "spe_punt",
-	"side": "special",
-	"play_type": "punt",
-	"description": "Directional punt variant."
-  },
-  "punt_ret_02": {
-	"name": "Punt Return 2",
-	"formation_id": "spe_punt_return",
-	"side": "defense",
-	"play_type": "punt_return",
-	"description": "Return setup variant."
-  },
-  "kickoff_03": {
-	"name": "Kickoff 3",
-	"formation_id": "spe_kickoff",
-	"side": "special",
-	"play_type": "kickoff",
-	"description": "Kickoff placement variant."
-  },
-  "kickoff_ret_03": {
-	"name": "Kickoff Return 3",
-	"formation_id": "spe_kickoff_return",
-	"side": "defense",
-	"play_type": "kickoff_return",
-	"description": "Return lanes and wall."
-  },
-  "punt_03": {
-	"name": "Punt 3",
-	"formation_id": "spe_punt",
-	"side": "special",
-	"play_type": "punt",
-	"description": "Directional punt variant."
-  },
-  "punt_ret_03": {
-	"name": "Punt Return 3",
-	"formation_id": "spe_punt_return",
-	"side": "defense",
-	"play_type": "punt_return",
-	"description": "Return setup variant."
-  },
-  "fg_01": {
-	"name": "Field Goal 1",
-	"formation_id": "spe_spot_kick",
-	"side": "special",
-	"play_type": "spot_kick",
-	"enabled_zones": [
-	  4,
-	  5,
-	  6
-	],
-	"base_chance": {
-	  "4": 35,
-	  "5": 55,
-	  "6": 75
+	"fg_01": {
+		"base_chance": {
+			"4": 35.0,
+			"5": 55.0,
+			"6": 75.0
+		},
+		"description": "FG alignment variant.",
+		"enabled_zones": [
+			4.0,
+			5.0,
+			6.0
+		],
+		"formation_id": "spe_spot_kick",
+		"name": "Field Goal 1",
+		"play_type": "spot_kick",
+		"side": "special"
 	},
-	"description": "FG alignment variant."
-  },
-  "fg_xp_def_01": {
-	"name": "FG/XP Block 1",
-	"formation_id": "spe_fg_block",
-	"side": "defense",
-	"play_type": "fg_xp_def",
-	"description": "Rush lanes vs FG/XP."
-  },
-  "fg_02": {
-	"name": "Field Goal 2",
-	"formation_id": "spe_spot_kick",
-	"side": "special",
-	"play_type": "spot_kick",
-	"enabled_zones": [
-	  4,
-	  5,
-	  6
-	],
-	"base_chance": {
-	  "4": 35,
-	  "5": 55,
-	  "6": 75
+	"fg_02": {
+		"base_chance": {
+			"4": 35.0,
+			"5": 55.0,
+			"6": 75.0
+		},
+		"description": "FG alignment variant.",
+		"enabled_zones": [
+			4.0,
+			5.0,
+			6.0
+		],
+		"formation_id": "spe_spot_kick",
+		"name": "Field Goal 2",
+		"play_type": "spot_kick",
+		"side": "special"
 	},
-	"description": "FG alignment variant."
-  },
-  "fg_xp_def_02": {
-	"name": "FG/XP Block 2",
-	"formation_id": "spe_fg_block",
-	"side": "defense",
-	"play_type": "fg_xp_def",
-	"description": "Rush lanes vs FG/XP."
-  }
+	"fg_xp_def_01": {
+		"description": "Rush lanes vs FG/XP.",
+		"formation_id": "spe_fg_block",
+		"name": "FG/XP Block 1",
+		"play_type": "fg_xp_def",
+		"side": "defense"
+	},
+	"fg_xp_def_02": {
+		"description": "Rush lanes vs FG/XP.",
+		"formation_id": "spe_fg_block",
+		"name": "FG/XP Block 2",
+		"play_type": "fg_xp_def",
+		"side": "defense"
+	},
+	"kickoff_01": {
+		"description": "Kickoff placement variant.",
+		"formation_id": "spe_kickoff",
+		"name": "Kickoff 1",
+		"play_type": "kickoff",
+		"side": "special"
+	},
+	"kickoff_02": {
+		"description": "Kickoff placement variant.",
+		"formation_id": "spe_kickoff",
+		"name": "Kickoff 2",
+		"play_type": "kickoff",
+		"side": "special"
+	},
+	"kickoff_03": {
+		"description": "Kickoff placement variant.",
+		"formation_id": "spe_kickoff",
+		"name": "Kickoff 3",
+		"play_type": "kickoff",
+		"side": "special"
+	},
+	"kickoff_ret_01": {
+		"description": "Return lanes and wall.",
+		"formation_id": "spe_kickoff_return",
+		"name": "Kickoff Return 1",
+		"play_type": "kickoff_return",
+		"side": "defense"
+	},
+	"kickoff_ret_02": {
+		"description": "Return lanes and wall.",
+		"formation_id": "spe_kickoff_return",
+		"name": "Kickoff Return 2",
+		"play_type": "kickoff_return",
+		"side": "defense"
+	},
+	"kickoff_ret_03": {
+		"description": "Return lanes and wall.",
+		"formation_id": "spe_kickoff_return",
+		"name": "Kickoff Return 3",
+		"play_type": "kickoff_return",
+		"side": "defense"
+	},
+	"pass_01": {
+		"description": "Routes: mixed depths; completion vs coverage.",
+		"formation_id": "off_pro",
+		"name": "Pass Concept 1",
+		"play_type": "pass",
+		"qb_script": {
+			"dropback_ticks": 5.0,
+			"mode": "dropback_progression",
+			"progression": [
+				"WR1",
+				"RB1",
+				"RB2"
+			]
+		},
+		"receiver_progression": {
+			"primary": "WR1",
+			"secondary": "RB1",
+			"tertiary": "RB2"
+		},
+		"role_assignments": {
+			"OL1": {
+				"start_action": "pass_block"
+			},
+			"OL2": {
+				"start_action": "pass_block"
+			},
+			"OL3": {
+				"start_action": "pass_block"
+			},
+			"QB": {
+				"start_action": "pass_block"
+			},
+			"RB1": {
+				"start_action": "route"
+			},
+			"RB2": {
+				"start_action": "route"
+			},
+			"WR1": {
+				"start_action": "route"
+			}
+		},
+		"routes": {
+			"RB1": {
+				"waypoints": [
+					[
+						-1.0,
+						0.0
+					],
+					[
+						-1.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					]
+				]
+			},
+			"RB2": {
+				"waypoints": [
+					[
+						1.0,
+						0.0
+					],
+					[
+						1.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					]
+				]
+			},
+			"WR1": {
+				"waypoints": [
+					[
+						0.0,
+						-1.0
+					],
+					[
+						1.0,
+						0.0
+					],
+					[
+						0.0,
+						-1.0
+					],
+					[
+						0.0,
+						-2.0
+					]
+				]
+			}
+		},
+		"side": "offense",
+		"tile_delta_max": 13.0,
+		"tile_delta_min": 0.0
+	},
+	"pass_02": {
+		"description": "Routes: mixed depths; completion vs coverage.",
+		"formation_id": "off_i",
+		"name": "Pass Concept 2",
+		"play_type": "pass",
+		"qb_script": {
+			"dropback_ticks": 5.0,
+			"mode": "dropback_progression",
+			"progression": [
+				"WR1",
+				"WR2",
+				"RB1"
+			]
+		},
+		"receiver_progression": {
+			"primary": "WR1",
+			"secondary": "WR2",
+			"tertiary": "RB1"
+		},
+		"role_assignments": {
+			"OL1": {
+				"start_action": "pass_block"
+			},
+			"OL2": {
+				"start_action": "pass_block"
+			},
+			"OL3": {
+				"start_action": "pass_block"
+			},
+			"QB": {
+				"start_action": "pass_block"
+			},
+			"RB1": {
+				"start_action": "route"
+			},
+			"WR1": {
+				"start_action": "route"
+			},
+			"WR2": {
+				"start_action": "route"
+			}
+		},
+		"routes": {
+			"RB1": {
+				"waypoints": [
+					[
+						-1.0,
+						0.0
+					],
+					[
+						-1.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					]
+				]
+			},
+			"WR1": {
+				"waypoints": [
+					[
+						0.0,
+						-1.0
+					],
+					[
+						1.0,
+						0.0
+					],
+					[
+						0.0,
+						-1.0
+					],
+					[
+						0.0,
+						-2.0
+					]
+				]
+			},
+			"WR2": {
+				"waypoints": [
+					[
+						1.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					],
+					[
+						-1.0,
+						-1.0
+					]
+				]
+			}
+		},
+		"side": "offense",
+		"tile_delta_max": 13.0,
+		"tile_delta_min": 0.0
+	},
+	"pass_03": {
+		"description": "Routes: mixed depths; completion vs coverage.",
+		"formation_id": "off_shotgun",
+		"name": "Pass Concept 3",
+		"play_type": "pass",
+		"qb_script": {
+			"dropback_ticks": 5.0,
+			"mode": "dropback_progression",
+			"progression": [
+				"WR1",
+				"WR2",
+				"RB1"
+			]
+		},
+		"receiver_progression": {
+			"primary": "WR1",
+			"secondary": "WR2",
+			"tertiary": "RB1"
+		},
+		"role_assignments": {
+			"OL1": {
+				"start_action": "pass_block"
+			},
+			"OL2": {
+				"start_action": "pass_block"
+			},
+			"OL3": {
+				"start_action": "pass_block"
+			},
+			"QB": {
+				"start_action": "pass_block"
+			},
+			"RB1": {
+				"start_action": "route"
+			},
+			"WR1": {
+				"start_action": "route"
+			},
+			"WR2": {
+				"start_action": "route"
+			}
+		},
+		"routes": {
+			"RB1": {
+				"waypoints": [
+					[
+						-1.0,
+						0.0
+					],
+					[
+						-1.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					]
+				]
+			},
+			"WR1": {
+				"waypoints": [
+					[
+						0.0,
+						-1.0
+					],
+					[
+						1.0,
+						0.0
+					],
+					[
+						0.0,
+						-1.0
+					],
+					[
+						0.0,
+						-2.0
+					]
+				]
+			},
+			"WR2": {
+				"waypoints": [
+					[
+						1.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					],
+					[
+						-1.0,
+						-1.0
+					]
+				]
+			}
+		},
+		"side": "offense",
+		"tile_delta_max": 13.0,
+		"tile_delta_min": 0.0
+	},
+	"pass_04": {
+		"description": "Routes: mixed depths; completion vs coverage.",
+		"formation_id": "off_empty",
+		"name": "Pass Concept 4",
+		"play_type": "pass",
+		"qb_script": {
+			"dropback_ticks": 5.0,
+			"mode": "dropback_progression",
+			"progression": [
+				"WR1",
+				"TE1",
+				"WR3"
+			]
+		},
+		"receiver_progression": {
+			"primary": "WR1",
+			"secondary": "TE1",
+			"tertiary": "WR3"
+		},
+		"role_assignments": {
+			"OL1": {
+				"start_action": "pass_block"
+			},
+			"OL2": {
+				"start_action": "pass_block"
+			},
+			"OL3": {
+				"start_action": "pass_block"
+			},
+			"QB": {
+				"start_action": "pass_block"
+			},
+			"TE1": {
+				"start_action": "route"
+			},
+			"WR1": {
+				"start_action": "route"
+			},
+			"WR3": {
+				"start_action": "route"
+			}
+		},
+		"routes": {
+			"TE1": {
+				"waypoints": [
+					[
+						0.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					],
+					[
+						1.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					]
+				]
+			},
+			"WR1": {
+				"waypoints": [
+					[
+						0.0,
+						-1.0
+					],
+					[
+						1.0,
+						0.0
+					],
+					[
+						0.0,
+						-1.0
+					],
+					[
+						0.0,
+						-2.0
+					]
+				]
+			},
+			"WR3": {
+				"waypoints": [
+					[
+						0.0,
+						-1.0
+					],
+					[
+						0.0,
+						-2.0
+					],
+					[
+						0.0,
+						-1.0
+					],
+					[
+						1.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					]
+				]
+			}
+		},
+		"side": "offense",
+		"tile_delta_max": 13.0,
+		"tile_delta_min": 0.0
+	},
+	"pass_05": {
+		"description": "Routes: mixed depths; completion vs coverage.",
+		"formation_id": "off_singleback",
+		"name": "Pass Concept 5",
+		"play_type": "pass",
+		"qb_script": {
+			"dropback_ticks": 5.0,
+			"mode": "dropback_progression",
+			"progression": [
+				"WR1",
+				"WR2",
+				"RB1"
+			]
+		},
+		"receiver_progression": {
+			"primary": "WR1",
+			"secondary": "WR2",
+			"tertiary": "RB1"
+		},
+		"role_assignments": {
+			"OL1": {
+				"start_action": "pass_block"
+			},
+			"OL2": {
+				"start_action": "pass_block"
+			},
+			"OL3": {
+				"start_action": "pass_block"
+			},
+			"QB": {
+				"start_action": "pass_block"
+			},
+			"RB1": {
+				"start_action": "route"
+			},
+			"WR1": {
+				"start_action": "route"
+			},
+			"WR2": {
+				"start_action": "route"
+			}
+		},
+		"routes": {
+			"RB1": {
+				"waypoints": [
+					[
+						-1.0,
+						0.0
+					],
+					[
+						-1.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					]
+				]
+			},
+			"WR1": {
+				"waypoints": [
+					[
+						0.0,
+						-1.0
+					],
+					[
+						1.0,
+						0.0
+					],
+					[
+						0.0,
+						-1.0
+					],
+					[
+						0.0,
+						-2.0
+					]
+				]
+			},
+			"WR2": {
+				"waypoints": [
+					[
+						1.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					],
+					[
+						-1.0,
+						-1.0
+					]
+				]
+			}
+		},
+		"side": "offense",
+		"tile_delta_max": 13.0,
+		"tile_delta_min": 0.0
+	},
+	"pass_06": {
+		"description": "Routes: mixed depths; completion vs coverage.",
+		"formation_id": "off_pro",
+		"name": "Pass Concept 6",
+		"play_type": "pass",
+		"qb_script": {
+			"dropback_ticks": 5.0,
+			"mode": "dropback_progression",
+			"progression": [
+				"WR1",
+				"RB1",
+				"RB2"
+			]
+		},
+		"receiver_progression": {
+			"primary": "WR1",
+			"secondary": "RB1",
+			"tertiary": "RB2"
+		},
+		"role_assignments": {
+			"OL1": {
+				"start_action": "pass_block"
+			},
+			"OL2": {
+				"start_action": "pass_block"
+			},
+			"OL3": {
+				"start_action": "pass_block"
+			},
+			"QB": {
+				"start_action": "pass_block"
+			},
+			"RB1": {
+				"start_action": "route"
+			},
+			"RB2": {
+				"start_action": "route"
+			},
+			"WR1": {
+				"start_action": "route"
+			}
+		},
+		"routes": {
+			"RB1": {
+				"waypoints": [
+					[
+						-1.0,
+						0.0
+					],
+					[
+						-1.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					]
+				]
+			},
+			"RB2": {
+				"waypoints": [
+					[
+						1.0,
+						0.0
+					],
+					[
+						1.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					]
+				]
+			},
+			"WR1": {
+				"waypoints": [
+					[
+						0.0,
+						-1.0
+					],
+					[
+						1.0,
+						0.0
+					],
+					[
+						0.0,
+						-1.0
+					],
+					[
+						0.0,
+						-2.0
+					]
+				]
+			}
+		},
+		"side": "offense",
+		"tile_delta_max": 13.0,
+		"tile_delta_min": 0.0
+	},
+	"pass_07": {
+		"description": "Routes: mixed depths; completion vs coverage.",
+		"formation_id": "off_i",
+		"name": "Pass Concept 7",
+		"play_type": "pass",
+		"qb_script": {
+			"dropback_ticks": 5.0,
+			"mode": "dropback_progression",
+			"progression": [
+				"WR1",
+				"WR2",
+				"RB1"
+			]
+		},
+		"receiver_progression": {
+			"primary": "WR1",
+			"secondary": "WR2",
+			"tertiary": "RB1"
+		},
+		"role_assignments": {
+			"OL1": {
+				"start_action": "pass_block"
+			},
+			"OL2": {
+				"start_action": "pass_block"
+			},
+			"OL3": {
+				"start_action": "pass_block"
+			},
+			"QB": {
+				"start_action": "pass_block"
+			},
+			"RB1": {
+				"start_action": "route"
+			},
+			"WR1": {
+				"start_action": "route"
+			},
+			"WR2": {
+				"start_action": "route"
+			}
+		},
+		"routes": {
+			"RB1": {
+				"waypoints": [
+					[
+						-1.0,
+						0.0
+					],
+					[
+						-1.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					]
+				]
+			},
+			"WR1": {
+				"waypoints": [
+					[
+						0.0,
+						-1.0
+					],
+					[
+						1.0,
+						0.0
+					],
+					[
+						0.0,
+						-1.0
+					],
+					[
+						0.0,
+						-2.0
+					]
+				]
+			},
+			"WR2": {
+				"waypoints": [
+					[
+						1.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					],
+					[
+						-1.0,
+						-1.0
+					]
+				]
+			}
+		},
+		"side": "offense",
+		"tile_delta_max": 13.0,
+		"tile_delta_min": 0.0
+	},
+	"pass_08": {
+		"description": "Routes: mixed depths; completion vs coverage.",
+		"formation_id": "off_shotgun",
+		"name": "Pass Concept 8",
+		"play_type": "pass",
+		"qb_script": {
+			"dropback_ticks": 5.0,
+			"mode": "dropback_progression",
+			"progression": [
+				"WR1",
+				"WR2",
+				"RB1"
+			]
+		},
+		"receiver_progression": {
+			"primary": "WR1",
+			"secondary": "WR2",
+			"tertiary": "RB1"
+		},
+		"role_assignments": {
+			"OL1": {
+				"start_action": "pass_block"
+			},
+			"OL2": {
+				"start_action": "pass_block"
+			},
+			"OL3": {
+				"start_action": "pass_block"
+			},
+			"QB": {
+				"start_action": "pass_block"
+			},
+			"RB1": {
+				"start_action": "route"
+			},
+			"WR1": {
+				"start_action": "route"
+			},
+			"WR2": {
+				"start_action": "route"
+			}
+		},
+		"routes": {
+			"RB1": {
+				"waypoints": [
+					[
+						-1.0,
+						0.0
+					],
+					[
+						-1.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					]
+				]
+			},
+			"WR1": {
+				"waypoints": [
+					[
+						0.0,
+						-1.0
+					],
+					[
+						1.0,
+						0.0
+					],
+					[
+						0.0,
+						-1.0
+					],
+					[
+						0.0,
+						-2.0
+					]
+				]
+			},
+			"WR2": {
+				"waypoints": [
+					[
+						1.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					],
+					[
+						-1.0,
+						-1.0
+					]
+				]
+			}
+		},
+		"side": "offense",
+		"tile_delta_max": 13.0,
+		"tile_delta_min": 0.0
+	},
+	"pass_09": {
+		"description": "Routes: mixed depths; completion vs coverage.",
+		"formation_id": "off_empty",
+		"name": "Pass Concept 9",
+		"play_type": "pass",
+		"qb_script": {
+			"dropback_ticks": 5.0,
+			"mode": "dropback_progression",
+			"progression": [
+				"WR1",
+				"TE1",
+				"WR3"
+			]
+		},
+		"receiver_progression": {
+			"primary": "WR1",
+			"secondary": "TE1",
+			"tertiary": "WR3"
+		},
+		"role_assignments": {
+			"OL1": {
+				"start_action": "pass_block"
+			},
+			"OL2": {
+				"start_action": "pass_block"
+			},
+			"OL3": {
+				"start_action": "pass_block"
+			},
+			"QB": {
+				"start_action": "pass_block"
+			},
+			"TE1": {
+				"start_action": "route"
+			},
+			"WR1": {
+				"start_action": "route"
+			},
+			"WR3": {
+				"start_action": "route"
+			}
+		},
+		"routes": {
+			"TE1": {
+				"waypoints": [
+					[
+						0.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					],
+					[
+						1.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					]
+				]
+			},
+			"WR1": {
+				"waypoints": [
+					[
+						0.0,
+						-1.0
+					],
+					[
+						1.0,
+						0.0
+					],
+					[
+						0.0,
+						-1.0
+					],
+					[
+						0.0,
+						-2.0
+					]
+				]
+			},
+			"WR3": {
+				"waypoints": [
+					[
+						0.0,
+						-1.0
+					],
+					[
+						0.0,
+						-2.0
+					],
+					[
+						0.0,
+						-1.0
+					],
+					[
+						1.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					]
+				]
+			}
+		},
+		"side": "offense",
+		"tile_delta_max": 13.0,
+		"tile_delta_min": 0.0
+	},
+	"pass_10": {
+		"description": "Routes: mixed depths; completion vs coverage.",
+		"formation_id": "off_singleback",
+		"name": "Pass Concept 10",
+		"play_type": "pass",
+		"qb_script": {
+			"dropback_ticks": 5.0,
+			"mode": "dropback_progression",
+			"progression": [
+				"WR1",
+				"WR2",
+				"RB1"
+			]
+		},
+		"receiver_progression": {
+			"primary": "WR1",
+			"secondary": "WR2",
+			"tertiary": "RB1"
+		},
+		"role_assignments": {
+			"OL1": {
+				"start_action": "pass_block"
+			},
+			"OL2": {
+				"start_action": "pass_block"
+			},
+			"OL3": {
+				"start_action": "pass_block"
+			},
+			"QB": {
+				"start_action": "pass_block"
+			},
+			"RB1": {
+				"start_action": "route"
+			},
+			"WR1": {
+				"start_action": "route"
+			},
+			"WR2": {
+				"start_action": "route"
+			}
+		},
+		"routes": {
+			"RB1": {
+				"waypoints": [
+					[
+						-1.0,
+						0.0
+					],
+					[
+						-1.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					]
+				]
+			},
+			"WR1": {
+				"waypoints": [
+					[
+						0.0,
+						-1.0
+					],
+					[
+						1.0,
+						0.0
+					],
+					[
+						0.0,
+						-1.0
+					],
+					[
+						0.0,
+						-2.0
+					]
+				]
+			},
+			"WR2": {
+				"waypoints": [
+					[
+						1.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					],
+					[
+						-1.0,
+						-1.0
+					]
+				]
+			}
+		},
+		"side": "offense",
+		"tile_delta_max": 13.0,
+		"tile_delta_min": 0.0
+	},
+	"pass_11": {
+		"description": "Routes: mixed depths; completion vs coverage.",
+		"formation_id": "off_pro",
+		"name": "Pass Concept 11",
+		"play_type": "pass",
+		"qb_script": {
+			"dropback_ticks": 5.0,
+			"mode": "dropback_progression",
+			"progression": [
+				"WR1",
+				"RB1",
+				"RB2"
+			]
+		},
+		"receiver_progression": {
+			"primary": "WR1",
+			"secondary": "RB1",
+			"tertiary": "RB2"
+		},
+		"role_assignments": {
+			"OL1": {
+				"start_action": "pass_block"
+			},
+			"OL2": {
+				"start_action": "pass_block"
+			},
+			"OL3": {
+				"start_action": "pass_block"
+			},
+			"QB": {
+				"start_action": "pass_block"
+			},
+			"RB1": {
+				"start_action": "route"
+			},
+			"RB2": {
+				"start_action": "route"
+			},
+			"WR1": {
+				"start_action": "route"
+			}
+		},
+		"routes": {
+			"RB1": {
+				"waypoints": [
+					[
+						-1.0,
+						0.0
+					],
+					[
+						-1.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					]
+				]
+			},
+			"RB2": {
+				"waypoints": [
+					[
+						1.0,
+						0.0
+					],
+					[
+						1.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					]
+				]
+			},
+			"WR1": {
+				"waypoints": [
+					[
+						0.0,
+						-1.0
+					],
+					[
+						1.0,
+						0.0
+					],
+					[
+						0.0,
+						-1.0
+					],
+					[
+						0.0,
+						-2.0
+					]
+				]
+			}
+		},
+		"side": "offense",
+		"tile_delta_max": 13.0,
+		"tile_delta_min": 0.0
+	},
+	"pass_12": {
+		"description": "Routes: mixed depths; completion vs coverage.",
+		"formation_id": "off_i",
+		"name": "Pass Concept 12",
+		"play_type": "pass",
+		"qb_script": {
+			"dropback_ticks": 5.0,
+			"mode": "dropback_progression",
+			"progression": [
+				"WR1",
+				"WR2",
+				"RB1"
+			]
+		},
+		"receiver_progression": {
+			"primary": "WR1",
+			"secondary": "WR2",
+			"tertiary": "RB1"
+		},
+		"role_assignments": {
+			"OL1": {
+				"start_action": "pass_block"
+			},
+			"OL2": {
+				"start_action": "pass_block"
+			},
+			"OL3": {
+				"start_action": "pass_block"
+			},
+			"QB": {
+				"start_action": "pass_block"
+			},
+			"RB1": {
+				"start_action": "route"
+			},
+			"WR1": {
+				"start_action": "route"
+			},
+			"WR2": {
+				"start_action": "route"
+			}
+		},
+		"routes": {
+			"RB1": {
+				"waypoints": [
+					[
+						-1.0,
+						0.0
+					],
+					[
+						-1.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					]
+				]
+			},
+			"WR1": {
+				"waypoints": [
+					[
+						0.0,
+						-1.0
+					],
+					[
+						1.0,
+						0.0
+					],
+					[
+						0.0,
+						-1.0
+					],
+					[
+						0.0,
+						-2.0
+					]
+				]
+			},
+			"WR2": {
+				"waypoints": [
+					[
+						1.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					],
+					[
+						-1.0,
+						-1.0
+					]
+				]
+			}
+		},
+		"side": "offense",
+		"tile_delta_max": 13.0,
+		"tile_delta_min": 0.0
+	},
+	"pass_def_01": {
+		"description": "Coverage shell vs pass.",
+		"formation_id": "def_nickel",
+		"name": "Pass Defense 1",
+		"play_type": "pass_def",
+		"side": "defense"
+	},
+	"pass_def_02": {
+		"description": "Coverage shell vs pass.",
+		"formation_id": "def_dime",
+		"name": "Pass Defense 2",
+		"play_type": "pass_def",
+		"side": "defense"
+	},
+	"pass_def_03": {
+		"description": "Coverage shell vs pass.",
+		"formation_id": "def_m2m",
+		"name": "Pass Defense 3",
+		"play_type": "pass_def",
+		"side": "defense"
+	},
+	"pass_def_04": {
+		"description": "Coverage shell vs pass.",
+		"formation_id": "def_nickel",
+		"name": "Pass Defense 4",
+		"play_type": "pass_def",
+		"side": "defense"
+	},
+	"pass_def_05": {
+		"description": "Coverage shell vs pass.",
+		"formation_id": "def_dime",
+		"name": "Pass Defense 5",
+		"play_type": "pass_def",
+		"side": "defense"
+	},
+	"pass_def_06": {
+		"description": "Coverage shell vs pass.",
+		"formation_id": "def_m2m",
+		"name": "Pass Defense 6",
+		"play_type": "pass_def",
+		"side": "defense"
+	},
+	"pass_def_07": {
+		"description": "Coverage shell vs pass.",
+		"formation_id": "def_nickel",
+		"name": "Pass Defense 7",
+		"play_type": "pass_def",
+		"side": "defense"
+	},
+	"pass_def_08": {
+		"description": "Coverage shell vs pass.",
+		"formation_id": "def_dime",
+		"name": "Pass Defense 8",
+		"play_type": "pass_def",
+		"side": "defense"
+	},
+	"pass_def_09": {
+		"description": "Coverage shell vs pass.",
+		"formation_id": "def_m2m",
+		"name": "Pass Defense 9",
+		"play_type": "pass_def",
+		"side": "defense"
+	},
+	"pass_def_10": {
+		"description": "Coverage shell vs pass.",
+		"formation_id": "def_nickel",
+		"name": "Pass Defense 10",
+		"play_type": "pass_def",
+		"side": "defense"
+	},
+	"pass_def_11": {
+		"description": "Coverage shell vs pass.",
+		"formation_id": "def_dime",
+		"name": "Pass Defense 11",
+		"play_type": "pass_def",
+		"side": "defense"
+	},
+	"pass_def_12": {
+		"description": "Coverage shell vs pass.",
+		"formation_id": "def_m2m",
+		"name": "Pass Defense 12",
+		"play_type": "pass_def",
+		"side": "defense"
+	},
+	"play_off_67239": {
+		"description": "",
+		"formation_id": "off_empty",
+		"name": "Go Deep",
+		"play_type": "pass",
+		"qb_script": {
+			"dropback_ticks": 7,
+			"mode": "handoff",
+			"progression": [
+				"WR1",
+				"TE1",
+				"WR3"
+			]
+		},
+		"receiver_progression": {
+			"primary": "WR1",
+			"secondary": "TE1",
+			"tertiary": "WR3"
+		},
+		"role_assignments": {
+			"OL1": {
+				"start_action": "pass_block"
+			},
+			"OL2": {
+				"start_action": "pass_block"
+			},
+			"OL3": {
+				"start_action": "pass_block"
+			},
+			"QB": {
+				"start_action": "drop_back"
+			},
+			"TE1": {
+				"start_action": "route"
+			},
+			"WR1": {
+				"start_action": "route"
+			},
+			"WR3": {
+				"start_action": "route"
+			}
+		},
+		"routes": {
+			"TE1": {
+				"waypoints": [
+					[
+						0,
+						-1
+					],
+					[
+						0,
+						-1
+					],
+					[
+						0,
+						-1
+					],
+					[
+						1,
+						-1
+					],
+					[
+						1,
+						-1
+					]
+				]
+			},
+			"WR1": {
+				"waypoints": [
+					[
+						0,
+						-1
+					],
+					[
+						0,
+						-1
+					],
+					[
+						0,
+						-1
+					],
+					[
+						0,
+						-1
+					],
+					[
+						0,
+						-1
+					]
+				]
+			},
+			"WR3": {
+				"waypoints": [
+					[
+						0,
+						-1
+					],
+					[
+						0,
+						-1
+					],
+					[
+						0,
+						-1
+					],
+					[
+						0,
+						-1
+					],
+					[
+						0,
+						-1
+					]
+				]
+			}
+		},
+		"side": "offense",
+		"tile_delta_max": 13,
+		"tile_delta_min": 0
+	},
+	"punt_01": {
+		"description": "Directional punt variant.",
+		"formation_id": "spe_punt",
+		"name": "Punt 1",
+		"play_type": "punt",
+		"side": "special"
+	},
+	"punt_02": {
+		"description": "Directional punt variant.",
+		"formation_id": "spe_punt",
+		"name": "Punt 2",
+		"play_type": "punt",
+		"side": "special"
+	},
+	"punt_03": {
+		"description": "Directional punt variant.",
+		"formation_id": "spe_punt",
+		"name": "Punt 3",
+		"play_type": "punt",
+		"side": "special"
+	},
+	"punt_ret_01": {
+		"description": "Return setup variant.",
+		"formation_id": "spe_punt_return",
+		"name": "Punt Return 1",
+		"play_type": "punt_return",
+		"side": "defense"
+	},
+	"punt_ret_02": {
+		"description": "Return setup variant.",
+		"formation_id": "spe_punt_return",
+		"name": "Punt Return 2",
+		"play_type": "punt_return",
+		"side": "defense"
+	},
+	"punt_ret_03": {
+		"description": "Return setup variant.",
+		"formation_id": "spe_punt_return",
+		"name": "Punt Return 3",
+		"play_type": "punt_return",
+		"side": "defense"
+	},
+	"run_01": {
+		"ball_carrier_role": "RB1",
+		"description": "Gap run; blocking determines lane.",
+		"formation_id": "off_i",
+		"name": "Run Concept 1",
+		"play_type": "run",
+		"role_assignments": {
+			"OL1": {
+				"start_action": "run_block"
+			},
+			"OL2": {
+				"start_action": "run_block"
+			},
+			"OL3": {
+				"start_action": "run_block"
+			},
+			"QB": {
+				"start_action": "run_block"
+			},
+			"RB1": {
+				"start_action": "carry"
+			},
+			"WR1": {
+				"start_action": "route"
+			},
+			"WR2": {
+				"start_action": "run_block"
+			}
+		},
+		"routes": {
+			"RB1": {
+				"waypoints": [
+					[
+						0.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					],
+					[
+						-1.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					]
+				]
+			},
+			"WR1": {
+				"waypoints": [
+					[
+						0.0,
+						-1.0
+					],
+					[
+						-1.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					]
+				]
+			}
+		},
+		"side": "offense",
+		"tile_delta_max": 10.0,
+		"tile_delta_min": 0.0
+	},
+	"run_02": {
+		"ball_carrier_role": "RB1",
+		"description": "Gap run; blocking determines lane.",
+		"formation_id": "off_shotgun",
+		"name": "Run Concept 2",
+		"play_type": "run",
+		"role_assignments": {
+			"OL1": {
+				"start_action": "run_block"
+			},
+			"OL2": {
+				"start_action": "run_block"
+			},
+			"OL3": {
+				"start_action": "run_block"
+			},
+			"QB": {
+				"start_action": "run_block"
+			},
+			"RB1": {
+				"start_action": "carry"
+			},
+			"WR1": {
+				"start_action": "route"
+			},
+			"WR2": {
+				"start_action": "run_block"
+			}
+		},
+		"routes": {
+			"RB1": {
+				"waypoints": [
+					[
+						0.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					],
+					[
+						-1.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					]
+				]
+			},
+			"WR1": {
+				"waypoints": [
+					[
+						0.0,
+						-1.0
+					],
+					[
+						-1.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					]
+				]
+			}
+		},
+		"side": "offense",
+		"tile_delta_max": 10.0,
+		"tile_delta_min": 0.0
+	},
+	"run_03": {
+		"ball_carrier_role": "",
+		"description": "Gap run; blocking determines lane.",
+		"formation_id": "off_empty",
+		"name": "Run Concept 3",
+		"play_type": "run",
+		"role_assignments": {
+			"OL1": {
+				"start_action": "run_block"
+			},
+			"OL2": {
+				"start_action": "run_block"
+			},
+			"OL3": {
+				"start_action": "run_block"
+			},
+			"QB": {
+				"start_action": "run_block"
+			},
+			"TE1": {
+				"start_action": "run_block"
+			},
+			"WR1": {
+				"start_action": "route"
+			},
+			"WR3": {
+				"start_action": "route"
+			}
+		},
+		"routes": {
+			"WR1": {
+				"waypoints": [
+					[
+						0.0,
+						-1.0
+					],
+					[
+						-1.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					]
+				]
+			},
+			"WR3": {
+				"waypoints": [
+					[
+						0.0,
+						-1.0
+					],
+					[
+						-1.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					]
+				]
+			}
+		},
+		"side": "offense",
+		"tile_delta_max": 10.0,
+		"tile_delta_min": 0.0
+	},
+	"run_04": {
+		"ball_carrier_role": "RB1",
+		"description": "Gap run; blocking determines lane.",
+		"formation_id": "off_singleback",
+		"name": "Run Concept 4",
+		"play_type": "run",
+		"role_assignments": {
+			"OL1": {
+				"start_action": "run_block"
+			},
+			"OL2": {
+				"start_action": "run_block"
+			},
+			"OL3": {
+				"start_action": "run_block"
+			},
+			"QB": {
+				"start_action": "run_block"
+			},
+			"RB1": {
+				"start_action": "carry"
+			},
+			"WR1": {
+				"start_action": "route"
+			},
+			"WR2": {
+				"start_action": "run_block"
+			}
+		},
+		"routes": {
+			"RB1": {
+				"waypoints": [
+					[
+						0.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					],
+					[
+						-1.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					]
+				]
+			},
+			"WR1": {
+				"waypoints": [
+					[
+						0.0,
+						-1.0
+					],
+					[
+						-1.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					]
+				]
+			}
+		},
+		"side": "offense",
+		"tile_delta_max": 10.0,
+		"tile_delta_min": 0.0
+	},
+	"run_05": {
+		"ball_carrier_role": "RB1",
+		"description": "Gap run; blocking determines lane.",
+		"formation_id": "off_pro",
+		"name": "Run Concept 5",
+		"play_type": "run",
+		"role_assignments": {
+			"OL1": {
+				"start_action": "run_block"
+			},
+			"OL2": {
+				"start_action": "run_block"
+			},
+			"OL3": {
+				"start_action": "run_block"
+			},
+			"QB": {
+				"start_action": "run_block"
+			},
+			"RB1": {
+				"start_action": "carry"
+			},
+			"RB2": {
+				"start_action": "run_block"
+			},
+			"WR1": {
+				"start_action": "route"
+			}
+		},
+		"routes": {
+			"RB1": {
+				"waypoints": [
+					[
+						0.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					],
+					[
+						-1.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					]
+				]
+			},
+			"RB2": {
+				"waypoints": [
+					[
+						0.0,
+						-1.0
+					],
+					[
+						1.0,
+						0.0
+					],
+					[
+						0.0,
+						-1.0
+					]
+				]
+			},
+			"WR1": {
+				"waypoints": [
+					[
+						0.0,
+						-1.0
+					],
+					[
+						-1.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					]
+				]
+			}
+		},
+		"side": "offense",
+		"tile_delta_max": 10.0,
+		"tile_delta_min": 0.0
+	},
+	"run_06": {
+		"ball_carrier_role": "RB1",
+		"description": "Gap run; blocking determines lane.",
+		"formation_id": "off_i",
+		"name": "Run Concept 6",
+		"play_type": "run",
+		"role_assignments": {
+			"OL1": {
+				"start_action": "run_block"
+			},
+			"OL2": {
+				"start_action": "run_block"
+			},
+			"OL3": {
+				"start_action": "run_block"
+			},
+			"QB": {
+				"start_action": "run_block"
+			},
+			"RB1": {
+				"start_action": "carry"
+			},
+			"WR1": {
+				"start_action": "route"
+			},
+			"WR2": {
+				"start_action": "run_block"
+			}
+		},
+		"routes": {
+			"RB1": {
+				"waypoints": [
+					[
+						0.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					],
+					[
+						-1.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					]
+				]
+			},
+			"WR1": {
+				"waypoints": [
+					[
+						0.0,
+						-1.0
+					],
+					[
+						-1.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					]
+				]
+			}
+		},
+		"side": "offense",
+		"tile_delta_max": 10.0,
+		"tile_delta_min": 0.0
+	},
+	"run_07": {
+		"ball_carrier_role": "RB1",
+		"description": "Gap run; blocking determines lane.",
+		"formation_id": "off_shotgun",
+		"name": "Run Concept 7",
+		"play_type": "run",
+		"role_assignments": {
+			"OL1": {
+				"start_action": "run_block"
+			},
+			"OL2": {
+				"start_action": "run_block"
+			},
+			"OL3": {
+				"start_action": "run_block"
+			},
+			"QB": {
+				"start_action": "run_block"
+			},
+			"RB1": {
+				"start_action": "carry"
+			},
+			"WR1": {
+				"start_action": "route"
+			},
+			"WR2": {
+				"start_action": "run_block"
+			}
+		},
+		"routes": {
+			"RB1": {
+				"waypoints": [
+					[
+						0.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					],
+					[
+						-1.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					]
+				]
+			},
+			"WR1": {
+				"waypoints": [
+					[
+						0.0,
+						-1.0
+					],
+					[
+						-1.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					]
+				]
+			}
+		},
+		"side": "offense",
+		"tile_delta_max": 10.0,
+		"tile_delta_min": 0.0
+	},
+	"run_08": {
+		"ball_carrier_role": "",
+		"description": "Gap run; blocking determines lane.",
+		"formation_id": "off_empty",
+		"name": "Run Concept 8",
+		"play_type": "run",
+		"role_assignments": {
+			"OL1": {
+				"start_action": "run_block"
+			},
+			"OL2": {
+				"start_action": "run_block"
+			},
+			"OL3": {
+				"start_action": "run_block"
+			},
+			"QB": {
+				"start_action": "run_block"
+			},
+			"TE1": {
+				"start_action": "run_block"
+			},
+			"WR1": {
+				"start_action": "route"
+			},
+			"WR3": {
+				"start_action": "route"
+			}
+		},
+		"routes": {
+			"WR1": {
+				"waypoints": [
+					[
+						0.0,
+						-1.0
+					],
+					[
+						-1.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					]
+				]
+			},
+			"WR3": {
+				"waypoints": [
+					[
+						0.0,
+						-1.0
+					],
+					[
+						-1.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					]
+				]
+			}
+		},
+		"side": "offense",
+		"tile_delta_max": 10.0,
+		"tile_delta_min": 0.0
+	},
+	"run_09": {
+		"ball_carrier_role": "RB1",
+		"description": "Gap run; blocking determines lane.",
+		"formation_id": "off_singleback",
+		"name": "Run Concept 9",
+		"play_type": "run",
+		"role_assignments": {
+			"OL1": {
+				"start_action": "run_block"
+			},
+			"OL2": {
+				"start_action": "run_block"
+			},
+			"OL3": {
+				"start_action": "run_block"
+			},
+			"QB": {
+				"start_action": "run_block"
+			},
+			"RB1": {
+				"start_action": "carry"
+			},
+			"WR1": {
+				"start_action": "route"
+			},
+			"WR2": {
+				"start_action": "run_block"
+			}
+		},
+		"routes": {
+			"RB1": {
+				"waypoints": [
+					[
+						0.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					],
+					[
+						-1.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					]
+				]
+			},
+			"WR1": {
+				"waypoints": [
+					[
+						0.0,
+						-1.0
+					],
+					[
+						-1.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					]
+				]
+			}
+		},
+		"side": "offense",
+		"tile_delta_max": 10.0,
+		"tile_delta_min": 0.0
+	},
+	"run_10": {
+		"ball_carrier_role": "RB1",
+		"description": "Gap run; blocking determines lane.",
+		"formation_id": "off_pro",
+		"name": "Run Concept 10",
+		"play_type": "run",
+		"role_assignments": {
+			"OL1": {
+				"start_action": "run_block"
+			},
+			"OL2": {
+				"start_action": "run_block"
+			},
+			"OL3": {
+				"start_action": "run_block"
+			},
+			"QB": {
+				"start_action": "run_block"
+			},
+			"RB1": {
+				"start_action": "carry"
+			},
+			"RB2": {
+				"start_action": "run_block"
+			},
+			"WR1": {
+				"start_action": "route"
+			}
+		},
+		"routes": {
+			"RB1": {
+				"waypoints": [
+					[
+						0.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					],
+					[
+						-1.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					]
+				]
+			},
+			"RB2": {
+				"waypoints": [
+					[
+						0.0,
+						-1.0
+					],
+					[
+						1.0,
+						0.0
+					],
+					[
+						0.0,
+						-1.0
+					]
+				]
+			},
+			"WR1": {
+				"waypoints": [
+					[
+						0.0,
+						-1.0
+					],
+					[
+						-1.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					]
+				]
+			}
+		},
+		"side": "offense",
+		"tile_delta_max": 10.0,
+		"tile_delta_min": 0.0
+	},
+	"run_11": {
+		"ball_carrier_role": "RB1",
+		"description": "Gap run; blocking determines lane.",
+		"formation_id": "off_i",
+		"name": "Run Concept 11",
+		"play_type": "run",
+		"role_assignments": {
+			"OL1": {
+				"start_action": "run_block"
+			},
+			"OL2": {
+				"start_action": "run_block"
+			},
+			"OL3": {
+				"start_action": "run_block"
+			},
+			"QB": {
+				"start_action": "run_block"
+			},
+			"RB1": {
+				"start_action": "carry"
+			},
+			"WR1": {
+				"start_action": "route"
+			},
+			"WR2": {
+				"start_action": "run_block"
+			}
+		},
+		"routes": {
+			"RB1": {
+				"waypoints": [
+					[
+						0.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					],
+					[
+						-1.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					]
+				]
+			},
+			"WR1": {
+				"waypoints": [
+					[
+						0.0,
+						-1.0
+					],
+					[
+						-1.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					]
+				]
+			}
+		},
+		"side": "offense",
+		"tile_delta_max": 10.0,
+		"tile_delta_min": 0.0
+	},
+	"run_12": {
+		"ball_carrier_role": "RB1",
+		"description": "Gap run; blocking determines lane.",
+		"formation_id": "off_shotgun",
+		"name": "Run Concept 12",
+		"play_type": "run",
+		"role_assignments": {
+			"OL1": {
+				"start_action": "run_block"
+			},
+			"OL2": {
+				"start_action": "run_block"
+			},
+			"OL3": {
+				"start_action": "run_block"
+			},
+			"QB": {
+				"start_action": "run_block"
+			},
+			"RB1": {
+				"start_action": "carry"
+			},
+			"WR1": {
+				"start_action": "route"
+			},
+			"WR2": {
+				"start_action": "run_block"
+			}
+		},
+		"routes": {
+			"RB1": {
+				"waypoints": [
+					[
+						0.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					],
+					[
+						-1.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					]
+				]
+			},
+			"WR1": {
+				"waypoints": [
+					[
+						0.0,
+						-1.0
+					],
+					[
+						-1.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					]
+				]
+			}
+		},
+		"side": "offense",
+		"tile_delta_max": 10.0,
+		"tile_delta_min": 0.0
+	},
+	"run_def_01": {
+		"description": "Fill and spill run fits.",
+		"formation_id": "def_43",
+		"name": "Run Defense 1",
+		"play_type": "run_def",
+		"side": "defense"
+	},
+	"run_def_02": {
+		"description": "Fill and spill run fits.",
+		"formation_id": "def_34",
+		"name": "Run Defense 2",
+		"play_type": "run_def",
+		"side": "defense"
+	},
+	"run_def_03": {
+		"description": "Fill and spill run fits.",
+		"formation_id": "def_43",
+		"name": "Run Defense 3",
+		"play_type": "run_def",
+		"side": "defense"
+	},
+	"run_def_04": {
+		"description": "Fill and spill run fits.",
+		"formation_id": "def_34",
+		"name": "Run Defense 4",
+		"play_type": "run_def",
+		"side": "defense"
+	},
+	"run_def_05": {
+		"description": "Fill and spill run fits.",
+		"formation_id": "def_43",
+		"name": "Run Defense 5",
+		"play_type": "run_def",
+		"side": "defense"
+	},
+	"run_def_06": {
+		"description": "Fill and spill run fits.",
+		"formation_id": "def_34",
+		"name": "Run Defense 6",
+		"play_type": "run_def",
+		"side": "defense"
+	},
+	"run_def_07": {
+		"description": "Fill and spill run fits.",
+		"formation_id": "def_43",
+		"name": "Run Defense 7",
+		"play_type": "run_def",
+		"side": "defense"
+	},
+	"run_def_08": {
+		"description": "Fill and spill run fits.",
+		"formation_id": "def_34",
+		"name": "Run Defense 8",
+		"play_type": "run_def",
+		"side": "defense"
+	},
+	"run_def_09": {
+		"description": "Fill and spill run fits.",
+		"formation_id": "def_43",
+		"name": "Run Defense 9",
+		"play_type": "run_def",
+		"side": "defense"
+	},
+	"run_def_10": {
+		"description": "Fill and spill run fits.",
+		"formation_id": "def_34",
+		"name": "Run Defense 10",
+		"play_type": "run_def",
+		"side": "defense"
+	},
+	"run_def_11": {
+		"description": "Fill and spill run fits.",
+		"formation_id": "def_43",
+		"name": "Run Defense 11",
+		"play_type": "run_def",
+		"side": "defense"
+	},
+	"run_def_12": {
+		"description": "Fill and spill run fits.",
+		"formation_id": "def_34",
+		"name": "Run Defense 12",
+		"play_type": "run_def",
+		"side": "defense"
+	}
 }

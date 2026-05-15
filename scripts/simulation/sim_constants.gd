@@ -11,8 +11,14 @@ const COLS := 7
 const LOS_BASE_COL := 3
 ## Chebyshev distance for coverage “nearby” reactions (spec: within 2 tiles).
 const COVERAGE_NEAR_TILES := 2
-## Chebyshev distance to attempt tackle / engagement.
-const TACKLE_RANGE_TILES := 1
+## Chebyshev distance for OL/DL engage and skill blocks (adjacent tile).
+const ENGAGE_RANGE_TILES := 1
+## Cover zone: monitor ±rows / ±cols from defender (Chebyshev-like box).
+const ZONE_MONITOR_ROWS_HALF := 2
+const ZONE_MONITOR_COLS_HALF := 1
+## Max drift from snap anchor while zoning (empty zone / return).
+const ZONE_DRIFT_ROWS_HALF := 3
+const ZONE_DRIFT_COLS_HALF := 1
 
 const BALL_IN_POSSESSION := "ball_in_possession"
 const BALL_HANDOFF := "handoff_in_progress"

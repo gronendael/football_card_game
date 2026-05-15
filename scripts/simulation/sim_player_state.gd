@@ -10,14 +10,22 @@ var global_col: int = 0
 var intent_action: String = ""
 var active_state: String = "idle"
 var engaged_with_player_id: String = ""
-## Step deltas (col, row); row negative = toward scoring end.
+## Step deltas (col, row); row negative = toward scoring end. Not consumed during sim.
 var route_waypoints: Array[Vector2i] = []
+var route_waypoint_index: int = 0
+## Last segment direction; used after final waypoint.
+var route_stem_dir: Vector2i = Vector2i(0, -1)
 var facing: Vector2i = Vector2i(0, -1)
 ## Progressive penalty after broken tackles (spec).
 var broken_tackle_chain: int = 0
 ## Assigned man coverage target (defender player_id).
 var man_cover_target_id: String = ""
 var separation_tier: String = SimConstants.SEP_OPEN
+## Snap anchor for cover_zone drift cap (engine tile).
+var zone_anchor_col: int = 0
+var zone_anchor_row: int = 0
+## Offense: worst coverage tier applied by any zone defender this tick (pass separation).
+var receiver_zone_pressure_tier: String = SimConstants.SEP_OPEN
 
 
 func grid_pos() -> Vector2i:
@@ -39,4 +47,9 @@ func to_dict() -> Dictionary:
 		"man_cover_target_id": man_cover_target_id,
 		"separation_tier": separation_tier,
 		"broken_tackle_chain": broken_tackle_chain,
+		"route_waypoint_index": route_waypoint_index,
+		"route_stem_dir_col": route_stem_dir.x,
+		"route_stem_dir_row": route_stem_dir.y,
+		"route_waypoints_remaining": maxi(0, route_waypoints.size() - route_waypoint_index),
+		"receiver_zone_pressure_tier": receiver_zone_pressure_tier,
 	}

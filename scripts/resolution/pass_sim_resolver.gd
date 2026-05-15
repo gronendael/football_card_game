@@ -6,6 +6,7 @@ var _routes := RouteResolver.new()
 var _tackle := TackleResolver.new()
 var _turnover := TurnoverResolver.new()
 var _calc := ScrimmageSimCalculators.new()
+var _target_sel := PassTargetSelector.new()
 
 
 func map_pressure(protection_score: float) -> int:
@@ -24,13 +25,20 @@ func resolve_with_locked_pass_front(
 	log: PlayEventLog,
 	rush: Dictionary,
 	pressure: int,
-	protection: float
+	protection: float,
+	precomputed_routes: Array = []
 ) -> Dictionary:
 	var pp := {"rush": rush, "pressure": pressure, "protection": protection}
-	return _resolve_after_pass_front(ctx, play_row, log, pp)
+	return _resolve_after_pass_front(ctx, play_row, log, pp, precomputed_routes)
 
 
-func _resolve_after_pass_front(ctx: PlaySimContext, play_row: Dictionary, log: PlayEventLog, pp: Dictionary) -> Dictionary:
+func _resolve_after_pass_front(
+	ctx: PlaySimContext,
+	play_row: Dictionary,
+	log: PlayEventLog,
+	pp: Dictionary,
+	precomputed_routes: Array = []
+) -> Dictionary:
 	var tmin := int(play_row.get("tile_delta_min", 0))
 	var tmax := int(play_row.get("tile_delta_max", 10))
 	var qb := ctx.qb_player()
@@ -48,39 +56,63 @@ func _resolve_after_pass_front(ctx: PlaySimContext, play_row: Dictionary, log: P
 		{"pressure": pressure, "protection": prot}
 	)
 
-	var route_list := _routes.receiver_separations(ctx, _matchup, log)
+	var route_list: Array[Dictionary] = []
+	if not precomputed_routes.is_empty():
+		for entry in precomputed_routes:
+			if typeof(entry) == TYPE_DICTIONARY:
+				route_list.append(entry as Dictionary)
+	else:
+		route_list = _routes.receiver_separations(ctx, _matchup, log)
 	if route_list.is_empty():
 		log.add("pass_abort", "No eligible receivers", {}, {})
 		return _fail_pass_dict(tmin, tmax, log, "Pass — no receivers")
 
-	route_list.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
-		return float(a.get("separation", 0.0)) > float(b.get("separation", 0.0))
-	)
+	var prog_order: Array[String] = PlayAuthoring.progression_roles(play_row)
+	if prog_order.is_empty():
+		prog_order = PlayRouteTemplates.filtered_progression(PlayAuthoring.offense_roles(ctx))
+	route_list = _filter_route_list_to_progression(route_list, prog_order)
+	if route_list.is_empty():
+		log.add("pass_abort", "No receivers in progression", {}, {})
+		return _fail_pass_dict(tmin, tmax, log, "Pass — no progression targets")
+
+	var decision: Dictionary = _target_sel.pick_throw_decision(ctx, play_row, route_list, pressure, log)
+	if decision.is_empty():
+		log.add("pass_abort", "No throw decision (no receivers)", {}, {})
+		return _fail_pass_dict(tmin, tmax, log, "Pass — no receiver")
+	var throw_type := str(decision.get("throw_type", PassTargetSelector.THROW_READ))
+	if throw_type == PassTargetSelector.THROW_THROWAWAY:
+		log.add("incomplete", "Throwaway — incomplete", {}, {})
+		return {
+			"tile_delta": 0,
+			"score_delta": 0,
+			"success": false,
+			"result_text": "Throwaway — incomplete",
+			"incomplete_pass": true,
+			"pressure_level": pressure,
+			"target_receiver_id": "",
+			"tackled_by_id": "",
+			"broken_tackles": 0,
+			"turnover_outcome": {"occurred": false, "calc_lines": []},
+			"throw_type": throw_type,
+		}
+	var target: Dictionary = decision.get("receiver", {}) as Dictionary
+	if target.is_empty():
+		log.add("pass_abort", "No throw target", {}, {})
+		return _fail_pass_dict(tmin, tmax, log, "Pass — no target")
+	var sep: float = float(decision.get("separation", 0.0))
+	var cover_cb: Dictionary = decision.get("defender", {}) as Dictionary
+	var recv_role := str(decision.get("recv_role", "WR"))
 
 	var qv := ctx.stat_view_for(qb)
-	var misread := ctx.rng.randi_range(1, 10) > qv.awareness() + 3 - pressure
-	var pick_idx := 1 if misread and route_list.size() > 1 else 0
-	var chosen: Dictionary = route_list[mini(pick_idx, route_list.size() - 1)]
-	var target: Dictionary = chosen.get("receiver", {}) as Dictionary
-	var sep: float = float(chosen.get("separation", 0.0))
-	var cover_cb: Dictionary = chosen.get("defender", {}) as Dictionary
+	var throw_acc: int = qv.throw_accuracy()
+	var throw_pwr: int = qv.throw_power()
+	var max_arm: int = int(decision.get("max_throw_cheb", ScrimmageSimCalculators.max_throw_distance_cheb(throw_pwr)))
 
-	var recv_role := str(chosen.get("recv_role", "WR"))
-	log.add(
-		"qb_target",
-		"QB %s targeted %s" % [
-			ctx.format_player_slot(qb, ctx.role_for_player_id(str(qb.get("id", "")))),
-			ctx.format_player_slot(target, recv_role),
-		],
-		{"primary_id": str(qb.get("id", "")), "secondary_id": str(target.get("id", "")), "pos": "QB"},
-		{"misread": misread}
-	)
-
-	var acc_eff := float(qv.throw_accuracy()) * (1.0 - 0.18 * float(pressure))
-	var throw_q := acc_eff + float(qv.throw_power()) * 0.35 + float(ResolutionBalanceConstants.noise_medium(ctx.rng)) * 0.25
+	var acc_eff := float(throw_acc) * (1.0 - 0.18 * float(pressure))
+	var throw_q := acc_eff + float(throw_pwr) * 0.35 + float(ResolutionBalanceConstants.noise_medium(ctx.rng)) * 0.25
 
 	var safety := _matchup.safety_player(ctx)
-	if _turnover.roll_interception(ctx, qb, target, cover_cb, sep, pressure, safety, log):
+	if throw_type != PassTargetSelector.THROW_THROWAWAY and _turnover.roll_interception(ctx, qb, target, cover_cb, sep, pressure, safety, log):
 		return {
 			"tile_delta": 0,
 			"score_delta": 0,
@@ -103,7 +135,14 @@ func _resolve_after_pass_front(ctx: PlaySimContext, play_row: Dictionary, log: P
 	var tv := ctx.stat_view_for(target)
 	var cv := ctx.stat_view_for(cover_cb) if not cover_cb.is_empty() else PlayerStatView.from_dict({})
 	var complete_pct := 32.0 + throw_q * 3.2 + sep * 9.0 - float(pressure) * 7.0 - float(cv.coverage()) * 1.4
-	complete_pct = clampf(complete_pct, 6.0, 93.0)
+	match throw_type:
+		PassTargetSelector.THROW_UNWILLING:
+			complete_pct -= 22.0
+			complete_pct += float(throw_acc) * 2.8
+		PassTargetSelector.THROW_FORCED_PRIMARY:
+			complete_pct -= 10.0
+			complete_pct += float(throw_acc) * 1.4
+	complete_pct = clampf(complete_pct, 4.0, 93.0)
 	var comp_roll := ctx.rng.randf() * 100.0
 	if comp_roll >= complete_pct:
 		log.add("incomplete", "Pass incomplete (roll %.1f vs %.1f%%)" % [comp_roll, complete_pct], {}, {})
@@ -123,6 +162,10 @@ func _resolve_after_pass_front(ctx: PlaySimContext, play_row: Dictionary, log: P
 	log.add("completion", "Completion (roll %.1f vs %.1f%%)" % [comp_roll, complete_pct], {}, {})
 
 	var air := int(round(2.0 + sep * 2.2 + float(tv.speed()) * 0.25 + throw_q * 0.35))
+	var dist_qb := int(decision.get("dist_from_qb", -1))
+	if dist_qb >= 0:
+		air = mini(air, dist_qb + 1)
+		air = mini(air, max_arm)
 	air = clampi(air, tmin, tmax)
 
 	var tackler := _tackle.pick_pass_tackler(ctx, target, _matchup)
@@ -166,6 +209,7 @@ func _resolve_after_pass_front(ctx: PlaySimContext, play_row: Dictionary, log: P
 		"tackled_by_id": str(yac_res.get("tackled_by", "")),
 		"broken_tackles": int(yac_res.get("broken", 0)),
 		"turnover_outcome": {"occurred": false, "calc_lines": []},
+		"throw_type": throw_type,
 	}
 
 
@@ -182,3 +226,14 @@ func _fail_pass_dict(_tmin: int, _tmax: int, log: PlayEventLog, result_label: St
 		"broken_tackles": 0,
 		"turnover_outcome": {"occurred": false, "calc_lines": []},
 	}
+
+
+func _filter_route_list_to_progression(route_list: Array[Dictionary], prog_order: Array[String]) -> Array[Dictionary]:
+	if prog_order.is_empty():
+		return route_list
+	var out: Array[Dictionary] = []
+	for e in route_list:
+		var role := str(e.get("recv_role", ""))
+		if role in prog_order:
+			out.append(e)
+	return out

@@ -1,7 +1,8 @@
 ### PLAYERS & COACHES
-Player - An indivdual player that users may add/remove from their team
-- Players have a number of stats that effect play outcomes during a game (e.g. speed, strength, agility, toughness, tackling, blocking, hands, stamina, etc.)
-- **Prototype match data:** [data/players.json](data/players.json) assigns each player a **franchise** `team` id (same id space as [data/teams.json](data/teams.json)); `home` / `away` are seats only. Each team row lists **`roster_player_ids`** (17) used to build offense/defense field packages for the sim.
+Player — a **unique generated athlete** on the user’s franchise roster (not a globally shared collectible every user owns).
+- Players have stats on a **1–10** scale that affect play outcomes (speed, strength, agility, toughness, tackling, blocking, stamina, etc.) — see [Balancing.md](Balancing.md).
+- Identity: position, archetype, traits, **species**, visual profile ([Systems.md](Systems.md)).
+- **Prototype match data:** [data/players.json](data/players.json) is a static legacy roster; each row has a **franchise** `team` id ([data/teams.json](data/teams.json)); `home` / `away` are seats only. Each team row lists **`roster_player_ids`** (17) for offense/defense field packages in sim.
 - May have additional player, team, play, or game boosts/modifiers/buffs/debuffs
 
 Coordinator - A coach assigned as either the Offensive Coordinator (OC) or Defensive Coordinator (DC).
@@ -13,7 +14,7 @@ Coordinator - A coach assigned as either the Offensive Coordinator (OC) or Defen
 -- OC slots / DC slots (see coach row `max_playbook_offense_slots` / `max_playbook_defense_slots`; prototype uses **4** each) choose catalog offense/defense plays for [data/playbooks/](data/playbooks/)
 - Team row in [data/teams.json](data/teams.json): **`off_coord_id`**, **`def_coord_id`**, **`playbook_id`**
 
-Roster - A list of all players and coaches on the user's Team that they have accumulated over the course of playing the app.
+Roster - All players and coaches belonging to the user's **franchise** (recruited/generated over time; unique instances).
 - Roster Limit: 50 players
 
 Lineup - A list of players from the user's Roster that play in games
@@ -88,6 +89,7 @@ Positions - All of the positions that should be occupied by a player on the fiel
 
 - Defensive Plays - Plays that can be run when the team is NOT in possession of the ball
 -- Uses Defensive Positions only
+-- Tick sim: optional **`role_assignments`** per defensive role with **`start_action`** (e.g. **`cover_zone`**, **`cover_man`**) — same JSON shape as offense; loaded via **`PlaySimContext.defense_play_row`**. If omitted, role defaults apply (see tick sim / `PlayTickEngine._default_intent`).
 
 - Kickoff Plays - Plays that can be run for Kickoffs
 -- Uses Kicker and Returner positions

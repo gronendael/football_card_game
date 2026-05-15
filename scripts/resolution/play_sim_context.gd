@@ -6,12 +6,15 @@ var possession_team: String = "home"
 var offense_play_id: String = ""
 var defense_play_id: String = ""
 var offense_play_row: Dictionary = {}
+var defense_play_row: Dictionary = {}
 var current_zone: int = 4
 ## Maps franchise id (e.g. "bees") -> display name for calc logs.
 var franchise_labels: Dictionary = {}
 ## Each entry: { "role": String, "delta_col": int, "player": Dictionary }
 var offense_slots: Array[Dictionary] = []
 var defense_slots: Array[Dictionary] = []
+var off_formation: Dictionary = {}
+var def_formation: Dictionary = {}
 
 
 static func build(
@@ -25,7 +28,8 @@ static func build(
 	defense_players: Array[Dictionary],
 	off_formation: Dictionary,
 	def_formation: Dictionary,
-	franchise_display: Dictionary
+	franchise_display: Dictionary,
+	def_row: Dictionary = {}
 ) -> PlaySimContext:
 	var ctx := PlaySimContext.new()
 	ctx.rng = p_rng
@@ -33,8 +37,11 @@ static func build(
 	ctx.offense_play_id = off_pid
 	ctx.defense_play_id = def_pid
 	ctx.offense_play_row = off_row
+	ctx.defense_play_row = def_row.duplicate(true)
 	ctx.current_zone = zone
 	ctx.franchise_labels = franchise_display.duplicate(true)
+	ctx.off_formation = off_formation
+	ctx.def_formation = def_formation
 	ctx.offense_slots = _assign_slots(offense_players, off_formation)
 	ctx.defense_slots = _assign_slots(defense_players, def_formation)
 	return ctx
@@ -167,6 +174,11 @@ func qb_player() -> Dictionary:
 
 
 func rb_player_for_run(selected_ball_carrier_id: String) -> Dictionary:
+	var bcr := PlayAuthoring.ball_carrier_role(offense_play_row)
+	if not bcr.is_empty():
+		var by_role := PlayAuthoring.player_for_role(self, bcr)
+		if not by_role.is_empty():
+			return by_role
 	if not selected_ball_carrier_id.is_empty():
 		var found := _find_player_by_id(offense_slots, selected_ball_carrier_id)
 		if not found.is_empty():

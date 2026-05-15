@@ -1,9 +1,4 @@
 ---
-description: 
-alwaysApply: true
----
-
----
 description: Use docs as persistent gameplay context
 alwaysApply: true
 ---
@@ -16,6 +11,13 @@ Use these docs as project reference context:
 - docs/Tools.md
 - docs/Abbreviations.md
 - docs/Implementation_Plan.md
+- docs/Worldbuilding.md
+- docs/Systems.md
+- docs/Data_Architecture.md
+- docs/Player_Generation.md
+- docs/Balancing.md
+- docs/Progression.md
+- docs/Art_Direction.md
 
 Working rules:
 1) Before changing gameplay/data/UI behavior, read the relevant docs first.

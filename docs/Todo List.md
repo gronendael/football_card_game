@@ -53,10 +53,15 @@ PLAYBOOK
 OPPONENT AI
 
 PROGRESSION
+- See docs/Progression.md (training, recruitment, franchise meta)
+- Species training affinities + 1-10 progression pacing (Balancing.md)
+- data/species.json, archetypes.json, traits.json (Data_Architecture.md)
 
 ECONOMY
+- IFL franchise economy (light V1) — Progression.md
 
 MONETIZATION
+- Recruitment, cosmetics, scouting — not shared hero collection (Progression.md)
 
 
 

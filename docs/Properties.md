@@ -1,8 +1,12 @@
 PROPERTIES
+
+IFL data model: unique generated **player instances** per franchise; shared **species / archetype / trait** templates. Stats are **1–10** integers. See [Data_Architecture.md](Data_Architecture.md), [Balancing.md](Balancing.md).
+
 ### TEAM
 - ID
 - Team Name
-- Location (City, State)
+- Homeworld / Origin (replaces primary “real-world location” role in lore; may include city/station label)
+- Location (City, State) — legacy display; prefer Homeworld in generated content
 - Stadium Name
 - Icon
 - Logo
@@ -21,23 +25,35 @@ PROPERTIES
 - Level/Ranking
 - Fan Support (earned over time; higher the rank, the more people at the game, and therefore the more noise that can disrupt the opponent; Home Field Advantage)
 
+### SPECIES (template — target `data/species.json`)
+- species_id, display_name, description
+- stat_roll_weights: { stat_key: float } — roll **probabilities**, not flat starting bonuses
+- training_affinities: { stat_key: float } — XP multipliers (~1.0–1.15)
+- archetype_weights, trait_weights (by position bucket)
+- synergy_tags[], visual_profile_keys[]
+
 ### PLAYERS
 BIO
-- ID
+- ID (unique per generated player; franchise-scoped in target schema)
+- species_id (required for generated players)
 - First Name
 - Last Name
 - Age
-- College (can give synergies with others from same college)
-- Hometown (City, State, Country) (can give synergies with others from same Hometown)
-- Current Team ID
+- homeworld, origin_region (synergy / flavor; replaces primary role of hometown)
+- academy_id (optional; development program — replaces primary role of college for synergies)
+- College (legacy prototype field; optional synergy tag until migration)
+- Hometown (legacy prototype field; optional synergy tag until migration)
+- Current Team ID (franchise id)
 - Picture/Image
 - Jersey Number
 - Height
 - Weight
 - Experience (Number of years played or Rookie)
 - XP/Level
-- Archetypes (List of archtypes that can give small bonuses or synergies; Power Back RB + Run Blocking OL, Ball Hawk CB + Pass Rush DL, Deep Threat WR + Gunslinger QB)
-- Traits (List of traits that can give small bonuses or synergies'; Deep Threat WR + Spread Offense OC, Pass Rush DL + Blitz Heavy DC)
+- Archetypes (shared catalog ids; small bonuses/synergies — Power Back RB + Run Blocking OL, Ball Hawk CB + Pass Rush DL, Deep Threat WR + Gunslinger QB)
+- Traits (shared catalog ids; small bonuses/synergies — Deep Threat WR + Spread Offense OC, Pass Rush DL + Blitz Heavy DC)
+- development (target): training_affinities snapshot, growth_log[]
+- career (target): games_played, awards[] — persistent history per instance
 
 CORE GLOBAL (1-10)
 - Speed
@@ -70,7 +86,7 @@ SPECIAL TEAMS (1-10)
 - Kick Power
 - Kick Accuracy
 
-**Prototype `data/players.json`:** each row uses **franchise** `team` (id from `data/teams.json`, not `home`/`away`), **global numeric string `id`** (e.g. `0001`), bio fields **`first_name`**, **`last_name`**, **`age`**, **`college`**, **`hometown`**, **`jersey_number`**, **`height`**, **`weight`**, and stat keys in **snake_case** matching this section: `speed`, `strength`, `stamina`, `awareness`, `acceleration`, `catching`, `carrying`, `agility`, `toughness`, `tackling`, `throw_power`, `throw_accuracy`, `blocking`, `route_running`, `pass_rush`, `coverage`, `block_shedding`, `kick_power`, `kick_accuracy` — all **1–10** integers. **`teams.json`** lists **`roster_player_ids`** (17 per franchise: offensive field group, defensive field group, kicker, punter, returner order used by the match field split). `PlayerStatView` reads these keys directly (legacy `passing` / `ball_security` still supported if present). Skills object optional; omitted in generated rosters.
+**Prototype `data/players.json`:** static legacy roster (placeholder human names until procedural generation). Each row uses **franchise** `team` (id from `data/teams.json`, not `home`/`away`), numeric string **`id`** (e.g. `0001`), optional **`species_id`** (catalog [data/species.json](data/species.json); loaded by [scripts/species_catalog.gd](../scripts/species_catalog.gd)), bio fields **`first_name`**, **`last_name`**, **`age`**, **`college`**, **`hometown`**, **`jersey_number`**, **`height`**, **`weight`**, and stat keys in **snake_case** matching this section: `speed`, `strength`, `stamina`, `awareness`, `acceleration`, `catching`, `carrying`, `agility`, `toughness`, `tackling`, `throw_power`, `throw_accuracy`, `blocking`, `route_running`, `pass_rush`, `coverage`, `block_shedding`, `kick_power`, `kick_accuracy` — all **1–10** integers. **`teams.json`** lists **`roster_player_ids`** (17 per franchise: offensive field group, defensive field group, kicker, punter, returner order used by the match field split). `PlayerStatView` reads these keys directly (legacy `passing` / `ball_security` still supported if present). Skills object optional; omitted in generated rosters.
 
 SKILLS (List of Special Skills the player has which give boosts)
 - ID
@@ -131,7 +147,7 @@ SPECIALTIES (List of specialties the coach has which gives boosts to players, pl
 - Name
 - Type (Run, Short Pass, Deep Pass, **Spot kick** (FG + XP), Kickoff, Punt)
 - **Formation ID** (references [data/formations.json](data/formations.json))
-- Data: [data/plays.json](data/plays.json) (no per-play tile min/max on advancement; resolver defines ranges). Defense entries live in the same file with `side: "defense"` and ids such as `run_def`, `man_to_man`, `zone`, `fg_def` (aligned with engine play-type selection). Runtime lookup: [scripts/plays_catalog.gd](../scripts/plays_catalog.gd) (`formation_id_for`).
+- Data: [data/plays.json](data/plays.json) (legacy rows: `name`, `formation_id`, `side`, `play_type`, `tile_delta_min`/`tile_delta_max`, `description`). **Play Creator** (Tools) may add optional offense authoring: `role_assignments` (`{role: {start_action}}`), `routes` (`{role: {waypoints: [[col,row],…]}}`), `ball_carrier_role`, `receiver_progression` (`primary`/`secondary`/`tertiary` role keys), `qb_script` (`mode`, `dropback_ticks`, `handoff_role`, `progression[]`). [scripts/play_authoring.gd](../scripts/play_authoring.gd), [scripts/play_route_templates.gd](../scripts/play_route_templates.gd) (runtime fill for missing fields), and [scripts/pass_target_selector.gd](../scripts/pass_target_selector.gd) (progression reads). All offense **run**/**pass** rows in `plays.json` include default routes/assignments/progression; Play Creator does not auto-fill new plays. Defense entries live in the same file with `side: "defense"` and ids such as `run_def_01`, `pass_def_01`, `fg_def` (aligned with engine play-type selection); optional defense **`role_assignments`** / **`start_action`** (e.g. `cover_zone`, `cover_man`) are read into **`PlaySimContext.defense_play_row`** for tick sim ([scripts/simulation/zone_coverage_runner.gd](../scripts/simulation/zone_coverage_runner.gd)). Runtime lookup: [scripts/plays_catalog.gd](../scripts/plays_catalog.gd) (`formation_id_for`, `all_play_ids`).
 - Run Path
 -- Tile path the RB will take for a Run Play
 - Routes (List of 3-5 routes)
@@ -367,7 +383,7 @@ Special (Offense; Field Goals/Extra Points)
 - QB (holder)
 - RB1
 - RB2
-- OL1
+- OL1-
 - OL2
 - OL3
 - OL4

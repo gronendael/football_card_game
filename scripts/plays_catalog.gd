@@ -25,6 +25,13 @@ func get_play(play_id: String) -> Dictionary:
 	return d if typeof(d) == TYPE_DICTIONARY else {}
 
 
+func all_play_ids() -> Array[String]:
+	var out: Array[String] = []
+	for k in _plays.keys():
+		out.append(str(k))
+	return out
+
+
 func formation_id_for(play_id: String) -> String:
 	return str(get_play(play_id).get("formation_id", ""))
 

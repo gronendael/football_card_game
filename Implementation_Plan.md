@@ -1,5 +1,7 @@
 # Godot 4 Mobile Prototype Implementation Plan (Transfer Snapshot)
 
+> **Canonical doc:** [docs/Implementation_Plan.md](docs/Implementation_Plan.md) (includes IFL product vision and links to Worldbuilding, Systems, Data_Architecture, Player_Generation, Balancing, Progression, Art_Direction).
+
 ## Current Goal
 
 Deliver a stable 2v2 mobile-first prototype with:

@@ -153,6 +153,7 @@ var _player_tokens: Dictionary = {}
 var _opponent_flat_def_mod: int = 10
 var _staff_data: Dictionary = {}
 var _formations_catalog: FormationsCatalog
+var _species_catalog: SpeciesCatalog
 var _plays_catalog: PlaysCatalog
 var _team_playbook_ids: Dictionary = {}
 var _team_playbook_max: Dictionary = {}
@@ -246,6 +247,8 @@ var _sim_tick_paused: bool = false
 var _game_clock_hold_after_rule_stop: bool = false
 ## Until the first scrimmage snap of each half (play + card queue resolved into `_resolve_play`), do not run the game clock during offense play-selection windows. Reset after halftime second-half kickoff and on full game restart.
 var _defer_scrimmage_game_clock_until_first_snap: bool = true
+## True until first ▶ unpause or Sim — keeps play clock and game clock idle at launch.
+var _awaiting_first_unpause: bool = true
 var _abandoned_game: bool = false
 var _sim_presnap_runoff_applied: bool = false
 var _calc_log_entries: Array = []
@@ -266,6 +269,10 @@ var _playback_snapshots: Array = []
 var _playback_snap_index: int = 0
 var _playback_alpha: float = 0.0
 var _sim_playback_markers: Dictionary = {}
+var _pending_play_result_after_playback: Dictionary = {}
+var _playback_offense_seat: String = ""
+var _playback_hold_remaining: float = 0.0
+var _sim_playback_ball_badge: Label
 ## Per franchise id for the current match: off_field/def_field (7 each), kicker, punter, returner dicts from roster order.
 var _match_field_packages: Dictionary = {}
 const ACTION_WINDOW_SECONDS := 10.0
@@ -441,6 +448,8 @@ func _is_ai_controlled_team(team: String, include_user_autoplay: bool = false) -
 	return true
 
 func _maybe_run_ai_inputs(include_user_autoplay: bool = false) -> void:
+	if _playback_blocks_game_flow():
+		return
 	if _ai_think_lock:
 		return
 	if game_state.phase == GameState.PHASE_GAME_OVER or game_state.phase == GameState.PHASE_HALFTIME:
@@ -555,6 +564,12 @@ func _ready() -> void:
 		player_details_panel.visible = false
 	_hide_card_info_panel()
 	_sync_debug_tick_sim_checkboxes()
+	_awaiting_first_unpause = true
+	_manual_pause_active = true
+	_auto_pause_after_sim_stop = false
+	_sim_running = false
+	_sync_game_clock_scrimmage_policy()
+	_update_ui()
 
 func _process(delta: float) -> void:
 	_tick_sim_playback(delta)
@@ -848,6 +863,10 @@ func _load_data() -> void:
 		_plays_catalog = PlaysCatalog.new()
 	if not _plays_catalog.load_from_json("res://data/plays.json"):
 		push_error("plays.json failed to load")
+	if _species_catalog == null:
+		_species_catalog = SpeciesCatalog.new()
+	if not _species_catalog.load_from_json("res://data/species.json"):
+		push_error("species.json failed to load or validate")
 	player_data.load_from_json("res://data/players.json")
 	_rebuild_match_field_packages()
 	coach_data.load_catalog("res://data/coaches_catalog.json")
@@ -1434,6 +1453,8 @@ func _wire_buttons() -> void:
 	if tools_menu_button:
 		var pm := tools_menu_button.get_popup()
 		pm.add_item("Formation tool…", 0)
+		pm.add_item("Test Play…", 1)
+		pm.add_item("Play Creator…", 2)
 		pm.id_pressed.connect(_on_tools_menu_id_pressed)
 	if user_tos_button:
 		user_tos_button.pressed.connect(func(): _call_timeout(_user_team))
@@ -1752,7 +1773,8 @@ func _begin_turn_if_needed() -> void:
 	_selected_defense_play = ""
 	game_state.pending_play_type = GameState.PENDING_NONE
 	_advance_both_teams_resources()
-	_start_turn_action_timer(ACTION_WINDOW_SECONDS)
+	if not _awaiting_first_unpause:
+		_start_turn_action_timer(ACTION_WINDOW_SECONDS)
 	_sync_game_clock_scrimmage_policy()
 
 func _evaluate_inaction_streaks_for_completed_turn() -> void:
@@ -1848,6 +1870,7 @@ func _build_scrimmage_play_sim_context(offense_play_id: String, defense_play_id:
 		def_f = _formations_catalog.get_by_id("def_43")
 	if off_f.is_empty() or def_f.is_empty():
 		push_error("Scrimmage sim: formations missing for play/defense ids")
+	var def_row: Dictionary = _plays_catalog.get_play(defense_play_id) as Dictionary
 	return PlaySimContext.build(
 		rng,
 		poss,
@@ -1859,7 +1882,8 @@ func _build_scrimmage_play_sim_context(offense_play_id: String, defense_play_id:
 		def_players,
 		off_f,
 		def_f,
-		labels
+		labels,
+		def_row
 	)
 
 
@@ -1901,6 +1925,7 @@ func _resolve_play() -> void:
 		return
 
 	var play_result: Dictionary
+	var defer_apply := false
 	if pbucket == BUCKET_SPOT_KICK and current_phase_level >= 2:
 		var kicker := _kicker_for_fg_attempt()
 		var kicker_id := str(kicker.get("id", ""))
@@ -1959,14 +1984,15 @@ func _resolve_play() -> void:
 		play_result["result_text"] = "%s: %+d tile rows toward goal." % [str(play_result.get("play_type", "")), tile_delta]
 		if not str(play_result.get("tackled_by_id", "")).is_empty():
 			_last_defender_id = str(play_result.get("tackled_by_id", ""))
-		_maybe_begin_tick_sim_playback(play_result)
+		defer_apply = _maybe_begin_tick_sim_playback(play_result)
 
 	if pbucket == BUCKET_SPOT_KICK and current_phase_level >= 2:
 		_calc_log_push_breakdown_slide("Field goal — resolver", play_result)
 	else:
 		_calc_log_push_breakdown_slide("Scrimmage — resolver & matchup", play_result)
 
-	_apply_play_result(play_result)
+	if not defer_apply:
+		_apply_play_result(play_result)
 
 func _build_punt_return_modifiers() -> Dictionary:
 	var offense := game_state.possession_team
@@ -3019,8 +3045,14 @@ func _update_player_details(player_id: String) -> void:
 	var int_bonus := _skill_chance_bonus_pct(p, "ball_hawk", "interception_pct")
 	var frozen_rope_bonus := float(_skill_level(p, "frozen_rope")) * 1.0
 
-	player_details_label.text = "Name: %s\nTeam: %s\n\nSkills: %s\n\n%s\n\nDerived:\nFumble Force Bonus: +%.1f%%\nInterception Bonus: +%.1f%%\nFrozen Rope Passing Bonus: +%.1f" % [
+	var species_id := PlayerData.species_id_from_dict(p)
+	var species_line := species_id
+	if _species_catalog != null:
+		species_line = _species_catalog.display_name_for(species_id)
+
+	player_details_label.text = "Name: %s\nSpecies: %s\nTeam: %s\n\nSkills: %s\n\n%s\n\nDerived:\nFumble Force Bonus: +%.1f%%\nInterception Bonus: +%.1f%%\nFrozen Rope Passing Bonus: +%.1f" % [
 		PlayerStatView.display_name_from_dict(p),
+		species_line,
 		str(p.get("team", "unknown")),
 		skills_text,
 		"\n".join(stat_lines),
@@ -3691,19 +3723,12 @@ func _make_field_lineup_marker_ui(world_center: Vector2, role: String, is_square
 	_field_lineup_marker_root.add_child(p)
 
 
-func _refresh_field_lineup_markers() -> void:
-	_ensure_field_lineup_marker_layer()
-	if _field_lineup_marker_root == null:
-		return
-	for c in _field_lineup_marker_root.get_children():
-		c.queue_free()
-	if not _should_show_field_lineup_markers():
-		return
+func _build_field_lineup_marker_specs() -> Array[Dictionary]:
+	var specs: Array[Dictionary] = []
 	if _formations_catalog == null or _plays_catalog == null or field_grid == null:
-		return
+		return specs
 	var los_eng := _preview_los_engine_row()
 	var offense_home := game_state.possession_team == "home"
-	var specs: Array[Dictionary] = []
 	var visible := _preview_visible_play_ids_for_viewer(_user_team)
 	var offense_play := str(visible.get("offense_play", ""))
 	var defense_play := str(visible.get("defense_play", ""))
@@ -3712,9 +3737,72 @@ func _refresh_field_lineup_markers() -> void:
 	if not defense_play.is_empty():
 		specs.append_array(_field_lineup_marker_specs_from_play(defense_play, los_eng, offense_home))
 	if specs.is_empty():
-		return
+		return specs
 	_apply_intragroup_fanout(specs)
 	_separate_offense_defense(specs)
+	return specs
+
+
+func _make_tick_style_marker_panel(world_center: Vector2, role_label: String, is_defense: bool) -> Panel:
+	var panel := Panel.new()
+	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	panel.custom_minimum_size = SIM_PLAYBACK_MARKER_SIZE
+	panel.size = SIM_PLAYBACK_MARKER_SIZE
+	panel.position = world_center - SIM_PLAYBACK_MARKER_SIZE * 0.5
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = Color(0.35, 0.85, 1.0, 0.88) if not is_defense else Color(1.0, 0.55, 0.2, 0.88)
+	sb.set_corner_radius_all(10)
+	sb.set_border_width_all(0)
+	panel.add_theme_stylebox_override("panel", sb)
+	panel.set_meta("playback_stylebox", sb)
+	var lbl := Label.new()
+	var abbrev := role_label.strip_edges()
+	if abbrev.length() > 3:
+		abbrev = abbrev.substr(0, 3)
+	lbl.text = abbrev
+	lbl.custom_minimum_size = SIM_PLAYBACK_MARKER_SIZE
+	lbl.size = SIM_PLAYBACK_MARKER_SIZE
+	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	lbl.add_theme_font_size_override("font_size", SIM_PLAYBACK_MARKER_FONT)
+	lbl.add_theme_color_override("font_color", Color(0.05, 0.05, 0.05, 1.0))
+	panel.add_child(lbl)
+	return panel
+
+
+func _spawn_tick_style_marker_at(world_center: Vector2, role_label: String, is_defense: bool, track_player_id: String = "") -> void:
+	_ensure_sim_playback_layer()
+	if _sim_playback_root == null:
+		return
+	var panel := _make_tick_style_marker_panel(world_center, role_label, is_defense)
+	_sim_playback_root.add_child(panel)
+	if not track_player_id.is_empty():
+		_sim_playback_markers[track_player_id] = panel
+
+
+func _refresh_field_lineup_markers() -> void:
+	_ensure_field_lineup_marker_layer()
+	if _field_lineup_marker_root != null:
+		for c in _field_lineup_marker_root.get_children():
+			c.queue_free()
+	if _playback_blocks_game_flow():
+		return
+	if not _should_show_field_lineup_markers():
+		_clear_sim_playback_markers()
+		return
+	var specs := _build_field_lineup_marker_specs()
+	if specs.is_empty():
+		_clear_sim_playback_markers()
+		return
+	if PlayTickEngine.visual_playback_enabled:
+		_clear_sim_playback_markers()
+		for m in specs:
+			_spawn_tick_style_marker_at(
+				m["world"] as Vector2,
+				str(m["role"]),
+				bool(m["sq"]),
+			)
+		return
 	for m in specs:
 		var pl: Dictionary = m.get("player", {}) as Dictionary
 		_make_field_lineup_marker_ui(m["world"] as Vector2, str(m["role"]), bool(m["sq"]), pl)
@@ -3722,6 +3810,11 @@ func _refresh_field_lineup_markers() -> void:
 
 func set_tick_sim_playback_enabled(v: bool) -> void:
 	PlayTickEngine.visual_playback_enabled = v
+	if not v:
+		_stop_tick_sim_playback_cleanup()
+	elif not _sim_playback_active:
+		_clear_sim_playback_markers()
+	_refresh_field_lineup_markers()
 
 
 func set_tick_sim_authority_enabled(v: bool) -> void:
@@ -3742,6 +3835,9 @@ func _stop_tick_sim_playback_cleanup() -> void:
 	_playback_snapshots.clear()
 	_playback_snap_index = 0
 	_playback_alpha = 0.0
+	_playback_offense_seat = ""
+	_playback_hold_remaining = 0.0
+	_pending_play_result_after_playback = {}
 	_clear_sim_playback_markers()
 
 
@@ -3762,6 +3858,92 @@ func _clear_sim_playback_markers() -> void:
 		return
 	for c in _sim_playback_root.get_children():
 		c.queue_free()
+	_set_los_ball_chip_visible_for_playback(false)
+	if _sim_playback_ball_badge != null and is_instance_valid(_sim_playback_ball_badge):
+		_sim_playback_ball_badge.visible = false
+
+
+func _set_los_ball_chip_visible_for_playback(hide_los_chip: bool) -> void:
+	if ball_chip:
+		ball_chip.visible = not hide_los_chip
+
+
+func _ensure_sim_playback_ball_badge() -> void:
+	if _sim_playback_ball_badge != null and is_instance_valid(_sim_playback_ball_badge):
+		return
+	if field_grid == null:
+		return
+	_sim_playback_ball_badge = Label.new()
+	_sim_playback_ball_badge.name = "SimPlaybackBallBadge"
+	_sim_playback_ball_badge.text = "🏈"
+	_sim_playback_ball_badge.visible = false
+	_sim_playback_ball_badge.z_index = 41
+	_sim_playback_ball_badge.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_sim_playback_ball_badge.add_theme_font_size_override("font_size", 14)
+	field_grid.add_child(_sim_playback_ball_badge)
+
+
+func _set_playback_carrier_highlight(panel: Panel, on: bool) -> void:
+	var sb: StyleBoxFlat = panel.get_meta("playback_stylebox", null) as StyleBoxFlat
+	if sb == null:
+		return
+	var w := 3 if on else 0
+	sb.set_border_width_all(w)
+	sb.border_color = Color(1.0, 0.92, 0.2, 1.0) if on else Color(0, 0, 0, 0)
+
+
+func _apply_playback_snap(snap: Dictionary) -> void:
+	if field_grid == null or _sim_playback_root == null:
+		return
+	_ensure_sim_playback_ball_badge()
+	var carrier_id := str(snap.get("ball_carrier_id", ""))
+	var plist: Array = snap.get("players", []) as Array
+	var seen: Dictionary = {}
+	for pd_v in plist:
+		if typeof(pd_v) != TYPE_DICTIONARY:
+			continue
+		var pd: Dictionary = pd_v
+		var pid := str(pd.get("player_id", ""))
+		if pid.is_empty():
+			continue
+		seen[pid] = true
+		var is_def := str(pd.get("side", "")) == "def"
+		var wp := _sim_world_pos_for_playback(pd)
+		var panel: Control = _sim_playback_markers.get(pid, null) as Control
+		if panel == null:
+			_spawn_tick_style_marker_at(wp, str(pd.get("role", "")), is_def, pid)
+			panel = _sim_playback_markers.get(pid, null) as Control
+		if panel == null:
+			continue
+		panel.position = wp - SIM_PLAYBACK_MARKER_SIZE * 0.5
+		if panel is Panel:
+			_set_playback_carrier_highlight(panel as Panel, pid == carrier_id)
+	for pid in _sim_playback_markers.keys():
+		if seen.has(pid):
+			continue
+		var stale: Control = _sim_playback_markers[pid] as Control
+		if is_instance_valid(stale):
+			stale.queue_free()
+		_sim_playback_markers.erase(pid)
+	if _sim_playback_ball_badge != null:
+		if carrier_id.is_empty():
+			_sim_playback_ball_badge.visible = false
+		else:
+			var car_pd: Dictionary = {}
+			for pd_v2 in plist:
+				if typeof(pd_v2) == TYPE_DICTIONARY and str(pd_v2.get("player_id", "")) == carrier_id:
+					car_pd = pd_v2
+					break
+			if car_pd.is_empty():
+				_sim_playback_ball_badge.visible = false
+			else:
+				var wp2 := _sim_world_pos_for_playback(car_pd)
+				_sim_playback_ball_badge.position = wp2 + Vector2(-6, -20)
+				_sim_playback_ball_badge.visible = true
+
+
+func _playback_blocks_game_flow() -> bool:
+	return not _pending_play_result_after_playback.is_empty() or _sim_playback_active or _playback_hold_remaining > 0.0
 
 
 func _sim_world_pos_for_playback(pd: Dictionary) -> Vector2:
@@ -3769,7 +3951,8 @@ func _sim_world_pos_for_playback(pd: Dictionary) -> Vector2:
 		return Vector2.ZERO
 	var g_row := int(pd.get("global_row", 0))
 	var g_col := int(pd.get("global_col", 0))
-	var offense_home := game_state.possession_team == "home"
+	var offense_seat := _playback_offense_seat if not _playback_offense_seat.is_empty() else game_state.possession_team
+	var offense_home := offense_seat == "home"
 	var is_def := str(pd.get("side", "")) == "def"
 	var disp_r: int
 	if is_def:
@@ -3780,76 +3963,70 @@ func _sim_world_pos_for_playback(pd: Dictionary) -> Vector2:
 	return field_grid.call("world_pos_from_tile", disp_r, g_col) as Vector2
 
 
-func _maybe_begin_tick_sim_playback(play_result: Dictionary) -> void:
+func _maybe_begin_tick_sim_playback(play_result: Dictionary) -> bool:
 	if not PlayTickEngine.visual_playback_enabled:
-		return
+		return false
 	var snaps: Array = play_result.get("tick_snapshots", []) as Array
 	if snaps.is_empty():
-		return
+		return false
+	_playback_offense_seat = game_state.possession_team
 	_clear_sim_playback_markers()
 	_playback_snapshots = snaps.duplicate(true)
 	_playback_snap_index = 0
 	_playback_alpha = 0.0
 	_ensure_sim_playback_layer()
 	var snap0: Dictionary = snaps[0] as Dictionary
-	for p in snap0.get("players", []):
-		if typeof(p) != TYPE_DICTIONARY:
-			continue
-		var pid := str(p.get("player_id", ""))
-		if pid.is_empty():
-			continue
-		var panel := Panel.new()
-		panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		panel.custom_minimum_size = SIM_PLAYBACK_MARKER_SIZE
-		panel.size = SIM_PLAYBACK_MARKER_SIZE
-		var sb := StyleBoxFlat.new()
-		var is_def := str(p.get("side", "")) == "def"
-		sb.bg_color = Color(0.35, 0.85, 1.0, 0.88) if not is_def else Color(1.0, 0.55, 0.2, 0.88)
-		sb.set_corner_radius_all(10)
-		panel.add_theme_stylebox_override("panel", sb)
-		var lbl := Label.new()
-		lbl.text = str(p.get("role", "")).substr(0, 3)
-		lbl.custom_minimum_size = SIM_PLAYBACK_MARKER_SIZE
-		lbl.size = SIM_PLAYBACK_MARKER_SIZE
-		lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		lbl.add_theme_font_size_override("font_size", SIM_PLAYBACK_MARKER_FONT)
-		lbl.add_theme_color_override("font_color", Color(0.05, 0.05, 0.05, 1.0))
-		panel.add_child(lbl)
-		var wp := _sim_world_pos_for_playback(p)
-		panel.position = wp - SIM_PLAYBACK_MARKER_SIZE * 0.5
-		_sim_playback_root.add_child(panel)
-		_sim_playback_markers[pid] = panel
-	_sim_playback_active = _playback_snapshots.size() >= 2
+	_apply_playback_snap(snap0)
+	_set_los_ball_chip_visible_for_playback(true)
+	if _playback_snapshots.size() >= 2:
+		_sim_playback_active = true
+		_playback_hold_remaining = 0.0
+	else:
+		_sim_playback_active = false
+		_playback_hold_remaining = SimPlaybackController.seconds_per_tick()
+	_pending_play_result_after_playback = play_result.duplicate(true)
+	return true
+
+
+func _finish_tick_sim_playback_flow() -> void:
+	_sim_playback_active = false
+	_playback_hold_remaining = 0.0
+	_playback_offense_seat = ""
+	if _pending_play_result_after_playback.is_empty():
+		_refresh_field_lineup_markers()
+		return
+	var pr: Dictionary = _pending_play_result_after_playback
+	_pending_play_result_after_playback = {}
+	_apply_play_result(pr)
 
 
 func _tick_sim_playback(delta: float) -> void:
+	if _playback_hold_remaining > 0.0:
+		_playback_hold_remaining -= delta
+		if _playback_snapshots.size() > 0:
+			_apply_playback_snap(_playback_snapshots[0] as Dictionary)
+		if _playback_hold_remaining > 0.0:
+			return
+		_finish_tick_sim_playback_flow()
+		return
 	if not _sim_playback_active or field_grid == null or _sim_playback_root == null:
 		return
 	if _playback_snapshots.size() < 2:
-		_sim_playback_active = false
+		_finish_tick_sim_playback_flow()
 		return
 	_playback_alpha += delta / SimPlaybackController.seconds_per_tick()
 	while _playback_alpha >= 1.0 and _sim_playback_active:
 		_playback_alpha -= 1.0
 		_playback_snap_index += 1
 		if _playback_snap_index >= _playback_snapshots.size() - 1:
-			_sim_playback_active = false
+			_finish_tick_sim_playback_flow()
 			return
 	if not _sim_playback_active:
 		return
 	var a: Dictionary = _playback_snapshots[_playback_snap_index] as Dictionary
 	var b: Dictionary = _playback_snapshots[_playback_snap_index + 1] as Dictionary
 	var blend := SimPlaybackController.blend_snapshots(a, b, _playback_alpha)
-	for pd in blend.get("players", []):
-		if typeof(pd) != TYPE_DICTIONARY:
-			continue
-		var pid := str(pd.get("player_id", ""))
-		var panel: Control = _sim_playback_markers.get(pid, null) as Control
-		if panel == null:
-			continue
-		var wp := _sim_world_pos_for_playback(pd)
-		panel.position = wp - SIM_PLAYBACK_MARKER_SIZE * 0.5
+	_apply_playback_snap(blend)
 
 
 func _format_time(seconds_total: int) -> String:
@@ -3934,9 +4111,26 @@ func _update_sim_ui() -> void:
 	_update_sim_stats_ui()
 	_update_sim_step_controls()
 
+func _resume_after_launch_pause() -> void:
+	if not _awaiting_first_unpause:
+		return
+	_awaiting_first_unpause = false
+	_ensure_turn_action_timer_after_unpause()
+
+
+func _ensure_turn_action_timer_after_unpause() -> void:
+	if not show_action_timer_bar:
+		return
+	if game_state.phase != PHASE_PLAY_SELECTION and game_state.phase != PHASE_CARD_QUEUE:
+		return
+	if not _turn_action_timer_active:
+		_start_turn_action_timer(ACTION_WINDOW_SECONDS)
+
+
 func _on_start_sim_pressed() -> void:
 	_sim_running = not _sim_running
 	if _sim_running:
+		_resume_after_launch_pause()
 		_manual_pause_active = false
 		_auto_pause_after_sim_stop = false
 		_sim_tick_paused = false
@@ -3974,6 +4168,8 @@ func _on_pause_sim_pressed() -> void:
 		_manual_pause_active = not _manual_pause_active
 		if not _manual_pause_active:
 			_auto_pause_after_sim_stop = false
+			_resume_after_launch_pause()
+			_ensure_turn_action_timer_after_unpause()
 		_sync_game_clock_scrimmage_policy()
 	_update_ui()
 
@@ -4003,6 +4199,8 @@ func _on_restart_pressed() -> void:
 	_auto_pause_after_sim_stop = false
 	_game_clock_hold_after_rule_stop = false
 	_defer_scrimmage_game_clock_until_first_snap = true
+	_awaiting_first_unpause = true
+	_manual_pause_active = true
 	_abandoned_game = false
 	_phase_log_lines.clear()
 	_phase_log_end_recorded = false
@@ -4022,6 +4220,7 @@ func _on_restart_pressed() -> void:
 	_begin_turn_if_needed()
 	_append_phase_log("User=%s (%s), Opponent=%s" % [_team_display_name(_user_team), _user_team.capitalize(), _team_display_name("away" if _user_team == "home" else "home")], "start_game")
 	result_text.text = "Ready."
+	_sync_game_clock_scrimmage_policy()
 	_update_ui()
 
 func _on_reset_stats_pressed() -> void:
@@ -4045,14 +4244,52 @@ func _on_quit_pressed() -> void:
 
 
 func _on_tools_menu_id_pressed(id: int) -> void:
-	if id != 0:
+	if id == 0:
+		if _formations_catalog == null:
+			push_error("Formations not loaded")
+			return
+		var t := FORMATION_TOOL_SCENE.instantiate() as FormationTool
+		t.setup(_formations_catalog, Callable(self, "_formation_tool_after_save"))
+		add_child(t)
 		return
-	if _formations_catalog == null:
-		push_error("Formations not loaded")
+	if id == 1:
+		_open_test_play_screen()
 		return
-	var t := FORMATION_TOOL_SCENE.instantiate() as FormationTool
-	t.setup(_formations_catalog, Callable(self, "_formation_tool_after_save"))
+	if id == 2:
+		_open_play_creator_tool()
+		return
+
+
+func _open_test_play_screen(offense_play_id: String = "") -> void:
+	if _plays_catalog == null or _formations_catalog == null:
+		push_error("Plays/formations not loaded")
+		return
+	var t := TestPlayScreen.new()
+	t.setup(_plays_catalog, _formations_catalog, offense_play_id)
 	add_child(t)
+
+
+func _open_play_creator_tool() -> void:
+	if _plays_catalog == null or _formations_catalog == null:
+		push_error("Plays/formations not loaded")
+		return
+	var t := PlayCreatorTool.new()
+	t.setup(
+		_plays_catalog,
+		_formations_catalog,
+		Callable(self, "_play_creator_after_save"),
+		Callable(self, "_play_creator_test_play")
+	)
+	add_child(t)
+
+
+func _play_creator_after_save() -> void:
+	if _plays_catalog and not _plays_catalog.load_from_json("res://data/plays.json"):
+		push_error("Failed to reload plays.json after Play Creator save")
+
+
+func _play_creator_test_play(play_id: String) -> void:
+	_open_test_play_screen(play_id)
 
 
 func _formation_tool_after_save() -> void:

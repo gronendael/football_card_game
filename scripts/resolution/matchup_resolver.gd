@@ -99,7 +99,7 @@ func pair_wr_cb(ctx: PlaySimContext) -> Array[Dictionary]:
 					best_d = d
 					best_cb = cb_pl
 					def_role = str(s.get("role", "CB"))
-		pairs.append({"wr": wr_pl, "cb": best_cb, "slot": wr_slot, "def_role": def_role})
+		pairs.append({"wr": wr_pl, "cb": best_cb, "defender": best_cb, "slot": wr_slot, "def_role": def_role})
 	return pairs
 
 

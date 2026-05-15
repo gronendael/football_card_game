@@ -1,0 +1,70 @@
+[
+	{
+		"id": "sp_velox",
+		"display_name": "Velox",
+		"description": "Fast, agile athletes; excel in open space and quick-twitch skills.",
+		"stat_roll_weights": {
+			"speed": 1.15,
+			"agility": 1.12,
+			"acceleration": 1.1,
+			"strength": 0.92
+		},
+		"training_affinities": {
+			"speed": 1.12,
+			"agility": 1.1,
+			"acceleration": 1.08
+		},
+		"synergy_tags": ["velox", "pace"]
+	},
+	{
+		"id": "sp_gravik",
+		"display_name": "Gravik",
+		"description": "Large, powerful builds; strong in contact and line play.",
+		"stat_roll_weights": {
+			"strength": 1.15,
+			"toughness": 1.12,
+			"blocking": 1.08,
+			"speed": 0.9
+		},
+		"training_affinities": {
+			"strength": 1.12,
+			"toughness": 1.1,
+			"stamina": 1.06
+		},
+		"synergy_tags": ["gravik", "power"]
+	},
+	{
+		"id": "sp_cerebron",
+		"display_name": "Cerebron",
+		"description": "Tactical, high-awareness competitors; strong reads and technique.",
+		"stat_roll_weights": {
+			"awareness": 1.15,
+			"route_running": 1.08,
+			"coverage": 1.08,
+			"throw_accuracy": 1.06
+		},
+		"training_affinities": {
+			"awareness": 1.12,
+			"route_running": 1.06,
+			"coverage": 1.06
+		},
+		"synergy_tags": ["cerebron", "tactical"]
+	},
+	{
+		"id": "sp_durant",
+		"display_name": "Durant",
+		"description": "Durable, endurance-focused; consistent over long drives and seasons.",
+		"stat_roll_weights": {
+			"stamina": 1.15,
+			"toughness": 1.1,
+			"carrying": 1.06,
+			"agility": 0.94
+		},
+		"training_affinities": {
+			"stamina": 1.12,
+			"toughness": 1.08,
+			"strength": 1.05
+		},
+		"synergy_tags": ["durant", "endurance"]
+	}
+]
