@@ -3,6 +3,7 @@ class_name PlayCreatorValidators
 
 const ROUTE_ROLES := ["RB", "WR", "TE"]
 const OFFENSE_ACTIONS := ["run_block", "pass_block", "route", "carry", "drop_back", "handoff_mesh"]
+const DEFENSE_ACTIONS := ["cover_man", "cover_zone", "pass_rush", "run_stop", "pursue"]
 const QB_MODES := ["handoff", "dropback_progression", "quick_throw"]
 
 
@@ -37,6 +38,15 @@ static func validate_play_dict(play_id: String, d: Dictionary, formations: Forma
 		var bcr := str(d.get("ball_carrier_role", ""))
 		if ptype == "run" and not bcr.is_empty() and not _role_on_formation(form, bcr):
 			return "Ball carrier role not on formation."
+	if side == "defense" and ptype in ["run_def", "pass_def"]:
+		var ra: Dictionary = d.get("role_assignments", {}) as Dictionary
+		for role_key in ra.keys():
+			var role := str(role_key)
+			if not _role_on_formation(form, role):
+				return "Role assignment %s not on formation." % role
+			var act := str((ra[role] as Dictionary).get("start_action", ""))
+			if act.is_empty() or act not in DEFENSE_ACTIONS:
+				return "Invalid start_action '%s' for %s." % [act, role]
 	return ""
 
 

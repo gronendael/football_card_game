@@ -92,13 +92,12 @@ Same `tile_delta_min` / `tile_delta_max` clamp on final net rows toward goal.
 
 ### Tick cover zone (`ZoneCoverageRunner`)
 
-- **`intent_action: cover_zone`** from defense play **`role_assignments`** (`PlayAuthoring.start_action_for_role` on `ctx.defense_play_row`), else role defaults (e.g. **S** → zone). Any defensive role can be assigned zone.
-- **Monitor box** from defender’s current tile: ±**2** rows (field depth), ±**1** column (`SimConstants.ZONE_MONITOR_*`).
-- **Overlapping claims:** each WR/TE/RB in a zone is assigned to the **nearest** Manhattan-distance zone defender; others **drift** without chasing that receiver.
-- **Chase target:** among receivers this defender won, step toward **deepest** (smallest `global_row`, toward scoring end).
-- **Empty zone:** drift toward deepest receiver **on the defender’s side** (cols `< LOS_BASE_COL` vs `>` vs middle column `== LOS_BASE_COL` uses whole width). Drift **clamped** to anchor ±**3** rows, ±**1** column (`ZONE_DRIFT_*`).
-- **Pursue ball carrier:** Pass — after resolve (`pass_done`), carrier ≠ QB → pursue. Run — pursue when `carrier.global_row <= los_row_engine` **or** early via **awareness** roll while RB is still deeper than LOS.
-- **Separation:** Zone defenders in the monitor box set **`receiver_zone_pressure_tier`** on receivers; merged with man CB tier in `_receiver_separations_from_world`.
+- **`intent_action: cover_zone`** from defense **`role_assignments`** or role defaults (e.g. **S**). **`ZoneCoverageProfile`** per role (S/CB/LB/DL): depth/width/aggression/reaction delay/anchor reach (hardcoded v1).
+- **Threat pick (deterministic):** each tick, zone defenders processed in stable **`player_id`** order. Score eligible WR/TE/RB within Chebyshev **≤ 7**; ignore if **> 4 rows behind** defender. Score = `route_depth×3×depth_mult` + separation + progression + role − distance/aggression − width − **stacking** (1 teammate on recv: −4; 2+: −12). Pick **one** max score; **one tile** toward live **predicted** cell (`facing` lead, no route data; no anchor cap while chasing that threat). Empty threat → drift to snap anchor.
+- **Pursue** overrides zone (pass after throw; run at/after LOS or awareness roll).
+- **Man vs zone:** **`cover_zone`** defenders do not get **`man_cover_target_id`**; CB man separation tiers (2-tile range) apply only to **`cover_man`**. At throw, zone CBs use **`receiver_zone_pressure_tier`** only (not man **`separation_tier`**).
+- **Separation:** best zone defender per receiver by score (no stack penalty) sets **`receiver_zone_pressure_tier`**; merged with man CB at throw for **`cover_man`** only.
+- **Visual:** `zone_visual_bias_*` sub-tile lean toward target; playback/Test Play only — does not affect tackle/separation math.
 
 ---
 

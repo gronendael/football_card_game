@@ -1477,13 +1477,138 @@
 		"play_type": "pass_def",
 		"side": "defense"
 	},
+	"play_def_18865": {
+		"description": "",
+		"formation_id": "fmt_529973800_80089",
+		"name": "2 Safeties - Zone",
+		"play_type": "pass_def",
+		"role_assignments": {
+			"CB1": {
+				"start_action": "cover_zone"
+			},
+			"CB2": {
+				"start_action": "cover_zone"
+			},
+			"DL1": {
+				"start_action": "pass_rush"
+			},
+			"DL2": {
+				"start_action": "pass_rush"
+			},
+			"LB1": {
+				"start_action": "cover_zone"
+			},
+			"S1": {
+				"start_action": "cover_zone"
+			},
+			"S2": {
+				"start_action": "cover_zone"
+			}
+		},
+		"side": "defense"
+	},
+	"play_off_31836": {
+		"ball_carrier_role": "RB1",
+		"description": "",
+		"formation_id": "off_pro",
+		"name": "Run Left",
+		"play_type": "run",
+		"role_assignments": {
+			"OL1": {
+				"start_action": "run_block"
+			},
+			"OL2": {
+				"start_action": "run_block"
+			},
+			"OL3": {
+				"start_action": "run_block"
+			},
+			"QB": {
+				"start_action": "handoff_mesh"
+			},
+			"RB1": {
+				"start_action": "handoff_mesh"
+			},
+			"RB2": {
+				"start_action": "route"
+			},
+			"WR1": {
+				"start_action": "route"
+			}
+		},
+		"routes": {
+			"RB1": {
+				"waypoints": [
+					[
+						-1.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					]
+				]
+			},
+			"RB2": {
+				"waypoints": [
+					[
+						1.0,
+						-1.0
+					],
+					[
+						1.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					]
+				]
+			},
+			"WR1": {
+				"waypoints": [
+					[
+						0.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					],
+					[
+						0.0,
+						-1.0
+					]
+				]
+			}
+		},
+		"side": "offense",
+		"tile_delta_max": 10.0,
+		"tile_delta_min": 0.0
+	},
 	"play_off_67239": {
 		"description": "",
 		"formation_id": "off_empty",
 		"name": "Go Deep",
 		"play_type": "pass",
 		"qb_script": {
-			"dropback_ticks": 7,
+			"dropback_ticks": 7.0,
 			"mode": "handoff",
 			"progression": [
 				"WR1",
@@ -1523,79 +1648,86 @@
 			"TE1": {
 				"waypoints": [
 					[
-						0,
-						-1
+						0.0,
+						-1.0
 					],
 					[
-						0,
-						-1
+						0.0,
+						-1.0
 					],
 					[
-						0,
-						-1
+						0.0,
+						-1.0
 					],
 					[
-						1,
-						-1
+						1.0,
+						-1.0
 					],
 					[
-						1,
-						-1
+						1.0,
+						-1.0
 					]
 				]
 			},
 			"WR1": {
 				"waypoints": [
 					[
-						0,
-						-1
+						0.0,
+						-1.0
 					],
 					[
-						0,
-						-1
+						0.0,
+						-1.0
 					],
 					[
-						0,
-						-1
+						0.0,
+						-1.0
 					],
 					[
-						0,
-						-1
+						0.0,
+						-1.0
 					],
 					[
-						0,
-						-1
+						0.0,
+						-1.0
 					]
 				]
 			},
 			"WR3": {
 				"waypoints": [
 					[
-						0,
-						-1
+						0.0,
+						-1.0
 					],
 					[
-						0,
-						-1
+						0.0,
+						-1.0
 					],
 					[
-						0,
-						-1
+						0.0,
+						-1.0
 					],
 					[
-						0,
-						-1
+						0.0,
+						-1.0
 					],
 					[
-						0,
-						-1
+						0.0,
+						-1.0
 					]
 				]
 			}
 		},
 		"side": "offense",
-		"tile_delta_max": 13,
-		"tile_delta_min": 0
+		"tile_delta_max": 13.0,
+		"tile_delta_min": 0.0
+	},
+	"play_off_95846": {
+		"description": "",
+		"formation_id": "fmt_529973800_80089",
+		"name": "2 Safeties - Zone",
+		"play_type": "pass_def",
+		"side": "defense"
 	},
 	"punt_01": {
 		"description": "Directional punt variant.",

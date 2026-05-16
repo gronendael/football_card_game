@@ -59,6 +59,7 @@ func run(
 			world.contact_cooldown -= 1
 		_process_shed_attempts(ctx, world, sim_log)
 		_try_blocking_engagements(ctx, world, sim_log, bucket)
+		ZoneCoverageRunner.prepare_zone_tick(ctx, world, play_row, bucket, pass_resolved)
 		_move_players(ctx, world, sim_log, bucket, qb_drop_ticks, pass_resolved)
 		_update_coverage_tiers(ctx, world, sim_log)
 		if bucket == BUCKET_PASS and PlayTickEngine.tick_authoritative and not pass_resolved:
@@ -299,7 +300,7 @@ func _assign_man_coverage(w: SimWorld, ctx: PlaySimContext) -> void:
 		if wid.is_empty() or cid.is_empty():
 			continue
 		var cbs := w.get_player(cid)
-		if cbs != null:
+		if cbs != null and cbs.intent_action != "cover_zone":
 			cbs.man_cover_target_id = wid
 
 
@@ -580,6 +581,8 @@ func _update_coverage_tiers(ctx: PlaySimContext, w: SimWorld, sim_log: PlayEvent
 	for pid in w.players.keys():
 		var cb: SimPlayerState = w.players[pid] as SimPlayerState
 		if cb == null or cb.side != "def" or not cb.role.to_upper().begins_with("CB"):
+			continue
+		if cb.intent_action == "cover_zone":
 			continue
 		if cb.man_cover_target_id.is_empty():
 			continue
@@ -889,7 +892,7 @@ func _receiver_separations_from_world(
 			sep = ZoneCoverageRunner.adjust_sep_for_coverage_tier(sep, wr_st.receiver_zone_pressure_tier)
 		else:
 			var wr_pos := wr_st.grid_pos()
-			if not cb_st.man_cover_target_id.is_empty():
+			if cb_st.intent_action != "cover_zone" and not cb_st.man_cover_target_id.is_empty():
 				var assigned := w.get_player(cb_st.man_cover_target_id)
 				if assigned != null:
 					wr_pos = assigned.grid_pos()
@@ -901,7 +904,11 @@ func _receiver_separations_from_world(
 				sep = ZoneCoverageRunner.adjust_sep_for_coverage_tier(sep, eff_far)
 			else:
 				sep = _calc.separation_wr_vs_cb(ctx, wr, cb, recv_role)
-				var eff_near := ZoneCoverageRunner.merge_worse_receiver_tier(cb_st.separation_tier, wr_st.receiver_zone_pressure_tier)
+				var eff_near: String
+				if cb_st.intent_action == "cover_zone":
+					eff_near = wr_st.receiver_zone_pressure_tier
+				else:
+					eff_near = ZoneCoverageRunner.merge_worse_receiver_tier(cb_st.separation_tier, wr_st.receiver_zone_pressure_tier)
 				sep = ZoneCoverageRunner.adjust_sep_for_coverage_tier(sep, eff_near)
 				cb_disp = "%s (%d tiles, %s)" % [cb_disp, dist, eff_near]
 		log.add(

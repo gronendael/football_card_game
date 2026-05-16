@@ -28,6 +28,8 @@ static func blend_snapshots(snap_a: Dictionary, snap_b: Dictionary, alpha: float
 		var merged: Dictionary = pa.duplicate(true)
 		merged["global_row"] = row
 		merged["global_col"] = col
+		merged["zone_visual_bias_col"] = lerpf(float(pa.get("zone_visual_bias_col", 0.0)), float(pb.get("zone_visual_bias_col", 0.0)), u)
+		merged["zone_visual_bias_row"] = lerpf(float(pa.get("zone_visual_bias_row", 0.0)), float(pb.get("zone_visual_bias_row", 0.0)), u)
 		players_out.append(merged)
 	return {
 		"tick": lerpf(float(snap_a.get("tick", 0)), float(snap_b.get("tick", 0)), u),

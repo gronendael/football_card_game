@@ -3960,7 +3960,8 @@ func _sim_world_pos_for_playback(pd: Dictionary) -> Vector2:
 	else:
 		disp_r = int(field_grid.call("perspective_row", g_row, offense_home))
 		disp_r = clampi(disp_r, 0, FieldGrid.TOTAL_ROWS - 1)
-	return field_grid.call("world_pos_from_tile", disp_r, g_col) as Vector2
+	var base: Vector2 = field_grid.call("world_pos_from_tile", disp_r, g_col) as Vector2
+	return base + ZoneCoverageRunner.visual_world_offset(field_grid, pd)
 
 
 func _maybe_begin_tick_sim_playback(play_result: Dictionary) -> bool:

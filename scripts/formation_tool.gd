@@ -9,6 +9,7 @@ const FORMATION_TOOL_GRID_COL_W := 280
 const FORMATION_TOOL_GRID_MIN_H := 660
 const FORMATION_TOOL_PANEL_MIN_X := 664
 const PALETTE_DROP_SCROLL := preload("res://scripts/formation_palette_drop_scroll.gd")
+const ToolsModalLayout := preload("res://scripts/tools_modal_layout.gd")
 
 var _on_saved: Callable = Callable()
 var _data: Array = []
@@ -18,6 +19,7 @@ var _pending_shell: String = ""
 var _editing_id: String = ""
 
 var _dim: ColorRect
+var _modal_scroll: ScrollContainer
 var _panel: PanelContainer
 var _stack: MarginContainer
 
@@ -54,6 +56,7 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_build_ui()
 	_show_list()
+	call_deferred("_clamp_modal_on_screen")
 
 
 func _build_ui() -> void:
@@ -72,11 +75,7 @@ func _build_ui() -> void:
 	margin_wrap.add_theme_constant_override("margin_bottom", 12)
 	add_child(margin_wrap)
 
-	var scroll := ScrollContainer.new()
-	scroll.set_anchors_preset(Control.PRESET_FULL_RECT)
-	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	scroll.mouse_filter = Control.MOUSE_FILTER_STOP
-	margin_wrap.add_child(scroll)
+	_modal_scroll = ToolsModalLayout.add_centered_scroll(margin_wrap)
 
 	_panel = PanelContainer.new()
 	_panel.mouse_filter = Control.MOUSE_FILTER_STOP
@@ -85,7 +84,7 @@ func _build_ui() -> void:
 	psb.bg_color = Color(0.14, 0.14, 0.16, 1.0)
 	psb.set_corner_radius_all(8)
 	_panel.add_theme_stylebox_override("panel", psb)
-	scroll.add_child(_panel)
+	_modal_scroll.add_child(_panel)
 
 	var margin := MarginContainer.new()
 	margin.add_theme_constant_override("margin_left", 12)
@@ -317,6 +316,12 @@ func _show_list() -> void:
 	_shell_view.visible = false
 	_editor_view.visible = false
 	_refresh_formation_list()
+	call_deferred("_clamp_modal_on_screen")
+
+
+func _clamp_modal_on_screen() -> void:
+	await get_tree().process_frame
+	ToolsModalLayout.clamp_scroll_to_viewport(_modal_scroll, _panel)
 
 
 func _on_filter_tags_changed(_new_text: String) -> void:
@@ -461,6 +466,7 @@ func _open_editor_new() -> void:
 	_shell_view.visible = false
 	_editor_view.visible = true
 	_status_label.text = "Place exactly 7 positions."
+	call_deferred("_clamp_modal_on_screen")
 
 
 func _on_edit_pressed() -> void:
@@ -487,6 +493,7 @@ func _on_edit_pressed() -> void:
 	_shell_view.visible = false
 	_editor_view.visible = true
 	_status_label.text = ""
+	call_deferred("_clamp_modal_on_screen")
 
 
 func _on_editor_placements_changed(_count: int) -> void:

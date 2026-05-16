@@ -24,6 +24,13 @@ var separation_tier: String = SimConstants.SEP_OPEN
 ## Snap anchor for cover_zone drift cap (engine tile).
 var zone_anchor_col: int = 0
 var zone_anchor_row: int = 0
+## Chosen threat this tick (zone scoring).
+var zone_target_id: String = ""
+var zone_target_col: int = -1
+var zone_target_row: int = -1
+## Presentation-only sub-tile lean toward zone target (tile units).
+var zone_visual_bias_col: float = 0.0
+var zone_visual_bias_row: float = 0.0
 ## Offense: worst coverage tier applied by any zone defender this tick (pass separation).
 var receiver_zone_pressure_tier: String = SimConstants.SEP_OPEN
 
@@ -52,4 +59,9 @@ func to_dict() -> Dictionary:
 		"route_stem_dir_row": route_stem_dir.y,
 		"route_waypoints_remaining": maxi(0, route_waypoints.size() - route_waypoint_index),
 		"receiver_zone_pressure_tier": receiver_zone_pressure_tier,
+		"zone_target_id": zone_target_id,
+		"zone_target_col": zone_target_col,
+		"zone_target_row": zone_target_row,
+		"zone_visual_bias_col": zone_visual_bias_col,
+		"zone_visual_bias_row": zone_visual_bias_row,
 	}

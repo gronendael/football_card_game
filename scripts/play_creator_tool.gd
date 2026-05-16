@@ -2,6 +2,7 @@ extends CanvasLayer
 class_name PlayCreatorTool
 
 const PLAYS_PATH := "res://data/plays.json"
+const ToolsModalLayout := preload("res://scripts/tools_modal_layout.gd")
 const LIST_W := 720
 const COL1_W := 220
 const ASSIGN_W := 200
@@ -38,6 +39,7 @@ var _dirty: bool = false
 var _saved_snapshot: Dictionary = {}
 
 var _dim: ColorRect
+var _modal_scroll: ScrollContainer
 var _panel: PanelContainer
 var _stack: MarginContainer
 var _list_view: VBoxContainer
@@ -102,10 +104,7 @@ func _build_ui() -> void:
 	margin_wrap.add_theme_constant_override("margin_bottom", 12)
 	add_child(margin_wrap)
 
-	var scroll := ScrollContainer.new()
-	scroll.set_anchors_preset(Control.PRESET_FULL_RECT)
-	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	margin_wrap.add_child(scroll)
+	_modal_scroll = ToolsModalLayout.add_centered_scroll(margin_wrap)
 
 	_panel = PanelContainer.new()
 	_panel.custom_minimum_size = Vector2(PANEL_MIN_X, 0)
@@ -113,7 +112,7 @@ func _build_ui() -> void:
 	psb.bg_color = Color(0.14, 0.14, 0.16, 1.0)
 	psb.set_corner_radius_all(8)
 	_panel.add_theme_stylebox_override("panel", psb)
-	scroll.add_child(_panel)
+	_modal_scroll.add_child(_panel)
 
 	var margin := MarginContainer.new()
 	margin.add_theme_constant_override("margin_left", 12)
@@ -303,6 +302,7 @@ func _show_list() -> void:
 	_editor_view.visible = false
 	_dirty = false
 	_refresh_play_list()
+	call_deferred("_clamp_modal_on_screen")
 
 
 func _mark_dirty() -> void:
@@ -466,6 +466,12 @@ func _open_editor(pid: String, row: Dictionary) -> void:
 	if not _desc_edit.text_changed.is_connected(_mark_dirty):
 		_desc_edit.text_changed.connect(_mark_dirty)
 	_status_label.text = ""
+	call_deferred("_clamp_modal_on_screen")
+
+
+func _clamp_modal_on_screen() -> void:
+	await get_tree().process_frame
+	ToolsModalLayout.clamp_scroll_to_viewport(_modal_scroll, _panel)
 
 
 func _set_side_pick(side: String) -> void:
@@ -539,8 +545,16 @@ func _current_formation_id() -> String:
 
 
 func _on_side_changed(_i: int) -> void:
+	if _edit_is_new:
+		_editing_id = _gen_play_id(_current_side(), _current_play_type())
+		_id_readout.text = _editing_id
 	_rebuild_type_pick()
 	_rebuild_formation_pick()
+	if _formation_pick.item_count > 0:
+		_formation_pick.select(0)
+		var form := _formations.get_by_id(_current_formation_id())
+		if not form.is_empty():
+			_play_editor.load_formation(form)
 	_rebuild_assignments_ui()
 	_mark_dirty()
 
@@ -575,6 +589,9 @@ func _rebuild_assignments_ui() -> void:
 	var form := _formations.get_by_id(_current_formation_id())
 	if not form.is_empty():
 		_play_editor.load_formation(form)
+	if side == "defense" and ptype in ["run_def", "pass_def"]:
+		_build_defense_role_actions_ui()
+		return
 	if side != "offense" or ptype not in ["run", "pass"]:
 		return
 	_assign_box.add_child(_mk_lbl("Role actions"))
@@ -622,6 +639,39 @@ func _rebuild_assignments_ui() -> void:
 		_assign_box.add_child(_labeled("Primary", _prog_primary))
 		_assign_box.add_child(_labeled("Secondary", _prog_secondary))
 		_assign_box.add_child(_labeled("Tertiary", _prog_tertiary))
+
+
+func _build_defense_role_actions_ui() -> void:
+	_assign_box.add_child(_mk_lbl("Role actions"))
+	for role in _play_editor.roles_on_field():
+		var row := HBoxContainer.new()
+		var rl := Label.new()
+		rl.text = role
+		rl.custom_minimum_size = Vector2(48, 0)
+		row.add_child(rl)
+		var ob := OptionButton.new()
+		for a in PlayCreatorValidators.DEFENSE_ACTIONS:
+			ob.add_item(a)
+		ob.item_selected.connect(_mark_dirty)
+		_role_actions[role] = ob
+		row.add_child(ob)
+		_assign_box.add_child(row)
+		_apply_defense_action_default(role, ob)
+
+
+func _apply_defense_action_default(role: String, ob: OptionButton) -> void:
+	var r := role.to_upper()
+	var default_act := "pursue"
+	if r.begins_with("CB"):
+		default_act = "cover_man"
+	elif r.begins_with("S"):
+		default_act = "cover_zone"
+	elif r.begins_with("DL") or r.begins_with("LB"):
+		default_act = "pass_rush"
+	for i in ob.item_count:
+		if ob.get_item_text(i) == default_act:
+			ob.select(i)
+			return
 
 
 func _prog_option() -> OptionButton:
@@ -701,6 +751,12 @@ func _build_row_from_editor() -> Dictionary:
 			var ob: OptionButton = _role_actions[role] as OptionButton
 			ra[role] = {"start_action": ob.get_item_text(ob.selected)}
 		row["role_assignments"] = ra
+	elif side == "defense" and ptype in ["run_def", "pass_def"]:
+		var ra_def: Dictionary = {}
+		for role in _role_actions.keys():
+			var ob_def: OptionButton = _role_actions[role] as OptionButton
+			ra_def[role] = {"start_action": ob_def.get_item_text(ob_def.selected)}
+		row["role_assignments"] = ra_def
 		var routes := _play_editor.get_routes()
 		if not routes.is_empty():
 			row["routes"] = routes

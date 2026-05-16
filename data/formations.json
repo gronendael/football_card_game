@@ -150,38 +150,38 @@
 		"name": "Empty Backfield",
 		"positions": [
 			{
-				"delta_col": -3,
-				"delta_row": 0,
+				"delta_col": -3.0,
+				"delta_row": 0.0,
 				"role": "WR1"
 			},
 			{
-				"delta_col": -2,
-				"delta_row": 0,
+				"delta_col": -2.0,
+				"delta_row": 0.0,
 				"role": "TE1"
 			},
 			{
-				"delta_col": -1,
-				"delta_row": 0,
+				"delta_col": -1.0,
+				"delta_row": 0.0,
 				"role": "OL1"
 			},
 			{
-				"delta_col": 0,
-				"delta_row": 0,
+				"delta_col": 0.0,
+				"delta_row": 0.0,
 				"role": "OL2"
 			},
 			{
-				"delta_col": 1,
-				"delta_row": 0,
+				"delta_col": 1.0,
+				"delta_row": 0.0,
 				"role": "OL3"
 			},
 			{
-				"delta_col": 3,
-				"delta_row": 0,
+				"delta_col": 3.0,
+				"delta_row": 0.0,
 				"role": "WR3"
 			},
 			{
-				"delta_col": 0,
-				"delta_row": 1,
+				"delta_col": 0.0,
+				"delta_row": 1.0,
 				"role": "QB"
 			}
 		],
@@ -808,5 +808,50 @@
 		"tags": [
 			"i"
 		]
+	},
+	{
+		"description": "",
+		"formation_shell": "scrimmage_defense",
+		"id": "fmt_529973800_80089",
+		"name": "2 Safeties",
+		"positions": [
+			{
+				"delta_col": -1,
+				"delta_row": -3,
+				"role": "S1"
+			},
+			{
+				"delta_col": 1,
+				"delta_row": -3,
+				"role": "S2"
+			},
+			{
+				"delta_col": 0,
+				"delta_row": -2,
+				"role": "LB1"
+			},
+			{
+				"delta_col": -3,
+				"delta_row": -1,
+				"role": "CB1"
+			},
+			{
+				"delta_col": -1,
+				"delta_row": -1,
+				"role": "DL1"
+			},
+			{
+				"delta_col": 1,
+				"delta_row": -1,
+				"role": "DL2"
+			},
+			{
+				"delta_col": 3,
+				"delta_row": -1,
+				"role": "CB2"
+			}
+		],
+		"side": "defense",
+		"tags": []
 	}
 ]

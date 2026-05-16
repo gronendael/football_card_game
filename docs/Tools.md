@@ -26,11 +26,11 @@ When the main game scene starts, **play clock** and **game clock** stay idle unt
 
 ## Play Creator
 
-- **Open:** **Tools → Play Creator…** (`PlayCreatorTool` overlay).
+- **Open:** **Tools → Play Creator…** (`PlayCreatorTool` overlay). Formation / Play Creator panels are **centered** on screen ([scripts/tools_modal_layout.gd](../scripts/tools_modal_layout.gd)); Test Play remains full-screen.
 - **Data:** reads/writes [`data/plays.json`](../data/plays.json). **Save** reloads `PlaysCatalog` in the running game. Does not change playbooks until those rows reference new ids.
 - **List:** search by play name; filter **Type** (offense/defense/special), **Sub-type** (`play_type`, e.g. offense Run/Pass), and **Formation**; sortable columns **ID**, **Name**, **Type**, **Formation**; double-click to edit.
-- **Editor:** Id (read-only, auto `play_off_*` / `play_def_*` / `play_sp_*` on create), Name, Description, Side, Play type, Formation picker. Offense **run/pass** adds per-role **start_action**, **routes** (step list + field overlay on the 7×20 grid), **ball_carrier_role** (run), **QB script** + receiver **primary/secondary/tertiary** (pass). **Save** writes and stays in the editor; **Close** prompts Save / Discard / Cancel if changed. **Test play** opens Test Play with the saved offense id.
-- **Sim:** [scripts/play_authoring.gd](../scripts/play_authoring.gd) reads optional `routes`, `role_assignments`, `ball_carrier_role`, `qb_script`, `receiver_progression` on the offense play row. **Tick sim** (`PlayTickEngine`) and **pass targeting** (`PassTargetSelector` via `PassSimResolver`) use them when present; tick sim also calls `PlayRouteTemplates.enrich_play_row` for any still-incomplete row.
+- **Editor:** Id (read-only, auto `play_off_*` / `play_def_*` / `play_sp_*` on create; **updates when Side changes** on a new play). Name, Description, Side, Play type, Formation picker. Offense **run/pass** adds per-role **start_action**, **routes** (step list + field overlay on the 7×20 grid), **ball_carrier_role** (run), **QB script** + receiver **primary/secondary/tertiary** (pass). Defense **run_def/pass_def** adds per-role **start_action** (`cover_man`, `cover_zone`, `pass_rush`, `run_stop`, `pursue`; role-based defaults). **Save** writes and stays in the editor; **Close** prompts Save / Discard / Cancel if changed. **Test play** opens Test Play with the saved offense id.
+- **Sim:** [scripts/play_authoring.gd](../scripts/play_authoring.gd) reads optional `routes`, `role_assignments`, `ball_carrier_role`, `qb_script`, `receiver_progression` on offense rows and **`role_assignments`** on defense rows (`ctx.defense_play_row`). **Tick sim** (`PlayTickEngine`) and **pass targeting** (`PassTargetSelector` via `PassSimResolver`) use them when present; tick sim also calls `PlayRouteTemplates.enrich_play_row` for any still-incomplete row.
 
 ## Test Play
 
